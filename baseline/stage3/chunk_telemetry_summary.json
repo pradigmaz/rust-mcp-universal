@@ -1,0 +1,95 @@
+﻿{
+    "generated_at_utc":  "2026-03-03T13:16:17Z",
+    "query_count":  12,
+    "chunk_coverage_avg":  1,
+    "chunk_coverage_min":  1,
+    "chunk_source_histogram":  {
+                                   "chunk_embedding_index":  12
+                               },
+    "per_query":  [
+                      {
+                          "id":  "code-01",
+                          "query":  "run_query_benchmark command implementation",
+                          "chunk_coverage":  1,
+                          "chunk_source":  "chunk_embedding_index",
+                          "selected_context":  20
+                      },
+                      {
+                          "id":  "code-02",
+                          "query":  "query_benchmark_with_auto_index engine function",
+                          "chunk_coverage":  1,
+                          "chunk_source":  "chunk_embedding_index",
+                          "selected_context":  20
+                      },
+                      {
+                          "id":  "code-03",
+                          "query":  "query_benchmark_schema dataset_path mcp tool",
+                          "chunk_coverage":  1,
+                          "chunk_source":  "chunk_embedding_index",
+                          "selected_context":  20
+                      },
+                      {
+                          "id":  "code-04",
+                          "query":  "chunk selection logic query context budget",
+                          "chunk_coverage":  1,
+                          "chunk_source":  "chunk_embedding_index",
+                          "selected_context":  20
+                      },
+                      {
+                          "id":  "design-01",
+                          "query":  "hybrid lexical semantic rerank pipeline",
+                          "chunk_coverage":  1,
+                          "chunk_source":  "chunk_embedding_index",
+                          "selected_context":  20
+                      },
+                      {
+                          "id":  "design-02",
+                          "query":  "embedding backend local_dense transformer",
+                          "chunk_coverage":  1,
+                          "chunk_source":  "chunk_embedding_index",
+                          "selected_context":  20
+                      },
+                      {
+                          "id":  "design-03",
+                          "query":  "index scope include_paths exclude_paths reindex glob",
+                          "chunk_coverage":  1,
+                          "chunk_source":  "chunk_embedding_index",
+                          "selected_context":  20
+                      },
+                      {
+                          "id":  "design-04",
+                          "query":  "mcp tools additionalProperties false input schema",
+                          "chunk_coverage":  1,
+                          "chunk_source":  "chunk_embedding_index",
+                          "selected_context":  20
+                      },
+                      {
+                          "id":  "bugfix-01",
+                          "query":  "semantic rerank failed lexical ranking retained",
+                          "chunk_coverage":  1,
+                          "chunk_source":  "chunk_embedding_index",
+                          "selected_context":  20
+                      },
+                      {
+                          "id":  "bugfix-02",
+                          "query":  "schema migration sqlite table meta",
+                          "chunk_coverage":  1,
+                          "chunk_source":  "chunk_embedding_index",
+                          "selected_context":  20
+                      },
+                      {
+                          "id":  "bugfix-03",
+                          "query":  "reindex delete model_metadata and meta tables",
+                          "chunk_coverage":  1,
+                          "chunk_source":  "chunk_embedding_index",
+                          "selected_context":  20
+                      },
+                      {
+                          "id":  "bugfix-04",
+                          "query":  "parse_required_non_empty_string query_benchmark args",
+                          "chunk_coverage":  1,
+                          "chunk_source":  "chunk_embedding_index",
+                          "selected_context":  20
+                      }
+                  ]
+}

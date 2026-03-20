@@ -1,0 +1,29 @@
+{
+  "generated_at_utc": "2026-03-16T20:02:01Z",
+  "baseline_source": "baseline/stage0/query_benchmark_baseline_summary.json",
+  "policy": {
+    "rollback_if_any": [
+      "recall_at_k < min.recall_at_k",
+      "mrr_at_k < min.mrr_at_k",
+      "ndcg_at_k < min.ndcg_at_k",
+      "avg_estimated_tokens > max.avg_estimated_tokens",
+      "latency_p50_ms > max.latency_p50_ms",
+      "latency_p95_ms > max.latency_p95_ms"
+    ],
+    "notes": [
+      "Quality guard допускает до 2% просадки от baseline.",
+      "Token-cost guard допускает до 5% роста.",
+      "Latency guard: p50 <= +20%, p95 <= min(+12%, +30ms)."
+    ]
+  },
+  "min": {
+    "recall_at_k": 0.735,
+    "mrr_at_k": 0.4022777527570724,
+    "ndcg_at_k": 0.44451017379760743
+  },
+  "max": {
+    "avg_estimated_tokens": 1198.6499816894532,
+    "latency_p50_ms": 165.72238769531251,
+    "latency_p95_ms": 177.22509765625003
+  }
+}

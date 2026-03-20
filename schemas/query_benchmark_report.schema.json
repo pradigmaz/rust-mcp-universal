@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QueryBenchmarkReport",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "dataset_path",
+        "k",
+        "query_count",
+        "recall_at_k",
+        "mrr_at_k",
+        "ndcg_at_k",
+        "avg_estimated_tokens",
+        "latency_p50_ms",
+        "latency_p95_ms"
+      ],
+      "properties": {
+        "dataset_path": { "type": "string", "minLength": 1 },
+        "k": { "type": "integer", "minimum": 1 },
+        "query_count": { "type": "integer", "minimum": 0 },
+        "recall_at_k": { "type": "number", "minimum": 0, "maximum": 1 },
+        "mrr_at_k": { "type": "number", "minimum": 0, "maximum": 1 },
+        "ndcg_at_k": { "type": "number", "minimum": 0, "maximum": 1 },
+        "avg_estimated_tokens": { "type": "number", "minimum": 0 },
+        "latency_p50_ms": { "type": "number", "minimum": 0 },
+        "latency_p95_ms": { "type": "number", "minimum": 0 }
+      }
+    },
+    {
+      "$ref": "./query_benchmark_compare_report.schema.json"
+    }
+  ]
+}

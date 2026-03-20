@@ -1,0 +1,11 @@
+﻿{
+    "dataset_path":  "baseline/stage0/query_benchmark_dataset.json",
+    "k":  10,
+    "query_count":  12,
+    "recall_at_k":  0.7083333,
+    "mrr_at_k":  0.23921956,
+    "ndcg_at_k":  0.3562452,
+    "avg_estimated_tokens":  966.3333,
+    "latency_p50_ms":  31.8296,
+    "latency_p95_ms":  35.6269
+}

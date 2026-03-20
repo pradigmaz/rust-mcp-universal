@@ -1,0 +1,76 @@
+{
+  "generated_at_utc": "2026-03-16T20:02:01Z",
+  "benchmark_command": "rmu-cli --project-path . --json query-benchmark --dataset baseline/stage0/query_benchmark_dataset.json --semantic --k 10 --limit 20 --max-chars 12000 --max-tokens 3000",
+  "runs_count": 5,
+  "median_rule": "median_of_5_runs",
+  "runs": [
+    {
+      "run": 1,
+      "dataset_path": "baseline/stage0/query_benchmark_dataset.json",
+      "k": 10,
+      "query_count": 14,
+      "recall_at_k": 0.75,
+      "mrr_at_k": 0.4104875028133392,
+      "ndcg_at_k": 0.4535818099975586,
+      "avg_estimated_tokens": 1141.5714111328125,
+      "latency_p50_ms": 129.36219787597656,
+      "latency_p95_ms": 151.85101318359375
+    },
+    {
+      "run": 2,
+      "dataset_path": "baseline/stage0/query_benchmark_dataset.json",
+      "k": 10,
+      "query_count": 14,
+      "recall_at_k": 0.75,
+      "mrr_at_k": 0.4104875028133392,
+      "ndcg_at_k": 0.4535818099975586,
+      "avg_estimated_tokens": 1141.5714111328125,
+      "latency_p50_ms": 132.44940185546875,
+      "latency_p95_ms": 158.2366943359375
+    },
+    {
+      "run": 3,
+      "dataset_path": "baseline/stage0/query_benchmark_dataset.json",
+      "k": 10,
+      "query_count": 14,
+      "recall_at_k": 0.75,
+      "mrr_at_k": 0.4104875028133392,
+      "ndcg_at_k": 0.4535818099975586,
+      "avg_estimated_tokens": 1141.5714111328125,
+      "latency_p50_ms": 138.10198974609375,
+      "latency_p95_ms": 160.86358642578125
+    },
+    {
+      "run": 4,
+      "dataset_path": "baseline/stage0/query_benchmark_dataset.json",
+      "k": 10,
+      "query_count": 14,
+      "recall_at_k": 0.75,
+      "mrr_at_k": 0.4104875028133392,
+      "ndcg_at_k": 0.4535818099975586,
+      "avg_estimated_tokens": 1141.5714111328125,
+      "latency_p50_ms": 141.5260009765625,
+      "latency_p95_ms": 168.6328125
+    },
+    {
+      "run": 5,
+      "dataset_path": "baseline/stage0/query_benchmark_dataset.json",
+      "k": 10,
+      "query_count": 14,
+      "recall_at_k": 0.75,
+      "mrr_at_k": 0.4104875028133392,
+      "ndcg_at_k": 0.4535818099975586,
+      "avg_estimated_tokens": 1141.5714111328125,
+      "latency_p50_ms": 141.53199768066406,
+      "latency_p95_ms": 157.17459106445313
+    }
+  ],
+  "median": {
+    "recall_at_k": 0.75,
+    "mrr_at_k": 0.4104875028133392,
+    "ndcg_at_k": 0.4535818099975586,
+    "avg_estimated_tokens": 1141.5714111328125,
+    "latency_p50_ms": 138.10198974609375,
+    "latency_p95_ms": 158.2366943359375
+  }
+}

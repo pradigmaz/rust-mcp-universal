@@ -1,0 +1,123 @@
+{
+  "queries": [
+    {
+      "id": "code-01",
+      "stratum": "code",
+      "query": "run_query_benchmark command implementation",
+      "qrels": [
+        { "path": "crates/cli/src/commands/query.rs", "relevance": 1.0 }
+      ]
+    },
+    {
+      "id": "code-02",
+      "stratum": "code",
+      "query": "query_benchmark_with_auto_index engine function",
+      "qrels": [
+        { "path": "crates/core/src/engine/benchmark.rs", "relevance": 1.0 }
+      ]
+    },
+    {
+      "id": "code-03",
+      "stratum": "code",
+      "query": "query_benchmark_schema dataset_path mcp tool",
+      "qrels": [
+        { "path": "crates/mcp-server/src/rpc_tools/registry.rs", "relevance": 1.0 }
+      ]
+    },
+    {
+      "id": "code-04",
+      "stratum": "code",
+      "query": "chunk selection logic query context budget",
+      "qrels": [
+        { "path": "crates/core/src/engine/query/chunking.rs", "relevance": 1.0 }
+      ]
+    },
+    {
+      "id": "design-01",
+      "stratum": "design",
+      "query": "hybrid lexical semantic rerank pipeline",
+      "qrels": [
+        { "path": "crates/core/src/engine/query.rs", "relevance": 1.0 },
+        { "path": "crates/core/src/vector_rank/rerank.rs", "relevance": 0.8 }
+      ]
+    },
+    {
+      "id": "design-02",
+      "stratum": "design",
+      "query": "embedding backend local_dense transformer",
+      "qrels": [
+        { "path": "crates/core/src/embedding_backend.rs", "relevance": 1.0 }
+      ]
+    },
+    {
+      "id": "design-03",
+      "stratum": "design",
+      "query": "index scope include_paths exclude_paths reindex glob",
+      "qrels": [
+        { "path": "crates/core/src/index_scope/mod.rs", "relevance": 1.0 },
+        { "path": "crates/core/src/index_scope/glob/matcher.rs", "relevance": 0.8 }
+      ]
+    },
+    {
+      "id": "design-04",
+      "stratum": "design",
+      "query": "mcp tools additionalProperties false input schema",
+      "qrels": [
+        { "path": "crates/mcp-server/src/rpc_tools/registry.rs", "relevance": 1.0 }
+      ]
+    },
+    {
+      "id": "bugfix-01",
+      "stratum": "bugfix",
+      "query": "semantic rerank failed lexical ranking retained",
+      "qrels": [
+        { "path": "crates/core/src/report/helpers.rs", "relevance": 1.0 },
+        { "path": "crates/core/src/engine/query.rs", "relevance": 0.7 }
+      ]
+    },
+    {
+      "id": "bugfix-02",
+      "stratum": "bugfix",
+      "query": "schema migration sqlite table meta",
+      "qrels": [
+        { "path": "crates/core/src/engine/schema.rs", "relevance": 1.0 }
+      ]
+    },
+    {
+      "id": "bugfix-03",
+      "stratum": "bugfix",
+      "query": "reindex delete model_metadata and meta tables",
+      "qrels": [
+        { "path": "crates/core/src/engine/storage.rs", "relevance": 1.0 }
+      ]
+    },
+    {
+      "id": "bugfix-04",
+      "stratum": "bugfix",
+      "query": "parse_required_non_empty_string query_benchmark args",
+      "qrels": [
+        { "path": "crates/mcp-server/src/rpc_tools/handlers.rs", "relevance": 1.0 }
+      ]
+    },
+    {
+      "id": "design-05",
+      "stratum": "design",
+      "query": "graph neighbor pool file graph edges rerank connected files",
+      "qrels": [
+        { "path": "crates/core/src/engine/query/graph_stage.rs", "relevance": 1.0 },
+        { "path": "crates/core/src/engine/query/fusion.rs", "relevance": 0.8 },
+        { "path": "crates/core/src/report/pipeline.rs", "relevance": 0.6 }
+      ]
+    },
+    {
+      "id": "bugfix-05",
+      "stratum": "bugfix",
+      "query": "rebuild file graph edges on explicit index run even when files unchanged",
+      "qrels": [
+        { "path": "crates/core/src/engine/storage.rs", "relevance": 1.0 },
+        { "path": "crates/core/src/engine/indexing/run/commit.rs", "relevance": 0.8 },
+        { "path": "crates/core/src/engine/indexing/run/pass/filters.rs", "relevance": 0.7 }
+      ]
+    }
+  ]
+}

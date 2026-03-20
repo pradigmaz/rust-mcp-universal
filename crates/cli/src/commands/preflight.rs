@@ -1,0 +1,168 @@
+use anyhow::{Result, bail};
+
+use crate::args::Command;
+use crate::error::{CODE_CONFIRM_REQUIRED, cli_error};
+use crate::validation::{require_max, require_min};
+
+use super::modes::{
+    parse_changed_since, parse_changed_since_commit, parse_context_mode, parse_index_profile,
+    parse_semantic_fail_mode,
+};
+
+pub(super) fn preflight_validate(command: &Command) -> Result<()> {
+    let limit_max = usize::try_from(i64::MAX).unwrap_or(usize::MAX);
+    match command {
+        Command::DeleteIndex { yes } => {
+            if !yes {
+                return Err(cli_error(
+                    CODE_CONFIRM_REQUIRED,
+                    "delete-index requires --yes",
+                ));
+            }
+        }
+        Command::Search {
+            limit,
+            semantic_fail_mode,
+            ..
+        } => {
+            let _ = require_min("limit", *limit, 1)?;
+            let _ = require_max("limit", *limit, limit_max)?;
+            let _ = parse_semantic_fail_mode(semantic_fail_mode)?;
+        }
+        Command::SemanticSearch {
+            limit,
+            semantic_fail_mode,
+            ..
+        } => {
+            let _ = require_min("limit", *limit, 1)?;
+            let _ = require_max("limit", *limit, limit_max)?;
+            let _ = parse_semantic_fail_mode(semantic_fail_mode)?;
+        }
+        Command::SymbolLookup { name, limit, .. }
+        | Command::SymbolReferences { name, limit, .. } => {
+            let _ = require_min("limit", *limit, 1)?;
+            let _ = require_max("limit", *limit, limit_max)?;
+            if name.trim().is_empty() {
+                bail!("`name` must be non-empty");
+            }
+        }
+        Command::RelatedFiles { path, limit, .. } => {
+            let _ = require_min("limit", *limit, 1)?;
+            let _ = require_max("limit", *limit, limit_max)?;
+            if path.trim().is_empty() {
+                bail!("`path` must be non-empty");
+            }
+        }
+        Command::CallPath {
+            from, to, max_hops, ..
+        } => {
+            let _ = require_min("max_hops", *max_hops, 1)?;
+            if from.trim().is_empty() {
+                bail!("`from` must be non-empty");
+            }
+            if to.trim().is_empty() {
+                bail!("`to` must be non-empty");
+            }
+        }
+        Command::Context {
+            limit,
+            semantic_fail_mode,
+            max_chars,
+            max_tokens,
+            ..
+        }
+        | Command::Report {
+            limit,
+            semantic_fail_mode,
+            max_chars,
+            max_tokens,
+            ..
+        } => {
+            let _ = require_min("limit", *limit, 1)?;
+            let _ = require_max("limit", *limit, limit_max)?;
+            let _ = require_min("max_chars", *max_chars, 256)?;
+            let _ = require_min("max_tokens", *max_tokens, 64)?;
+            let _ = parse_semantic_fail_mode(semantic_fail_mode)?;
+        }
+        Command::ContextPack {
+            mode,
+            limit,
+            semantic_fail_mode,
+            max_chars,
+            max_tokens,
+            ..
+        } => {
+            let _ = require_min("limit", *limit, 1)?;
+            let _ = require_max("limit", *limit, limit_max)?;
+            let _ = require_min("max_chars", *max_chars, 256)?;
+            let _ = require_min("max_tokens", *max_tokens, 64)?;
+            let _ = parse_semantic_fail_mode(semantic_fail_mode)?;
+            let _ = parse_context_mode(mode)?;
+        }
+        Command::QueryBenchmark {
+            k,
+            limit,
+            semantic_fail_mode,
+            max_chars,
+            max_tokens,
+            baseline,
+            thresholds,
+            runs,
+            enforce_gates,
+            ..
+        } => {
+            let _ = require_min("k", *k, 1)?;
+            let _ = require_min("limit", *limit, 1)?;
+            let _ = require_max("limit", *limit, limit_max)?;
+            let _ = require_min("max_chars", *max_chars, 256)?;
+            let _ = require_min("max_tokens", *max_tokens, 64)?;
+            let _ = require_min("runs", *runs, 1)?;
+            let _ = parse_semantic_fail_mode(semantic_fail_mode)?;
+            let baseline_mode_requested =
+                baseline.is_some() || thresholds.is_some() || *runs > 1 || *enforce_gates;
+            if baseline_mode_requested && baseline.is_none() {
+                bail!("`query-benchmark` baseline-vs-candidate mode requires --baseline");
+            }
+            if *enforce_gates && thresholds.is_none() {
+                bail!("`--enforce-gates` requires --thresholds");
+            }
+        }
+        Command::Agent {
+            query,
+            limit,
+            semantic_fail_mode,
+            max_chars,
+            max_tokens,
+            ..
+        } => {
+            let _ = require_min("limit", *limit, 1)?;
+            let _ = require_max("limit", *limit, limit_max)?;
+            let _ = require_min("max_chars", *max_chars, 256)?;
+            let _ = require_min("max_tokens", *max_tokens, 64)?;
+            let _ = parse_semantic_fail_mode(semantic_fail_mode)?;
+            if let Some(raw_query) = query {
+                if raw_query.trim().is_empty() {
+                    bail!("`query` must be non-empty when provided");
+                }
+            }
+        }
+        Command::Index(index_args)
+        | Command::SemanticIndex(index_args)
+        | Command::ScopePreview(index_args) => {
+            if let Some(raw_profile) = &index_args.profile {
+                let _ = parse_index_profile(raw_profile)?;
+            }
+            if let Some(raw_changed_since) = &index_args.changed_since {
+                let _ = parse_changed_since(raw_changed_since)?;
+            }
+            if let Some(raw_changed_since_commit) = &index_args.changed_since_commit {
+                let _ = parse_changed_since_commit(raw_changed_since_commit)?;
+            }
+            if index_args.changed_since.is_some() && index_args.changed_since_commit.is_some() {
+                bail!("`changed_since` and `changed_since_commit` are mutually exclusive");
+            }
+        }
+        Command::Status | Command::Brief | Command::DbMaintenance { .. } => {}
+    }
+    Ok(())
+}

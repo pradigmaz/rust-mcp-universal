@@ -1,0 +1,71 @@
+﻿{
+    "generated_at_utc":  "2026-03-03T13:16:03Z",
+    "benchmark_command":  "target/debug/rmu-cli --project-path . --json query-benchmark --dataset baseline/stage0/query_benchmark_dataset.json --semantic --k 10 --limit 20 --max-chars 12000 --max-tokens 3000",
+    "runs_count":  5,
+    "median_rule":  "median_of_5_runs",
+    "runs":  [
+                 {
+                     "dataset_path":  "baseline/stage0/query_benchmark_dataset.json",
+                     "k":  10,
+                     "query_count":  12,
+                     "recall_at_k":  0.33333334,
+                     "mrr_at_k":  0.24444443,
+                     "ndcg_at_k":  0.24952103,
+                     "avg_estimated_tokens":  1285.5,
+                     "latency_p50_ms":  89.82101,
+                     "latency_p95_ms":  110.354
+                 },
+                 {
+                     "dataset_path":  "baseline/stage0/query_benchmark_dataset.json",
+                     "k":  10,
+                     "query_count":  12,
+                     "recall_at_k":  0.33333334,
+                     "mrr_at_k":  0.24444443,
+                     "ndcg_at_k":  0.24952103,
+                     "avg_estimated_tokens":  1285.5,
+                     "latency_p50_ms":  84.992,
+                     "latency_p95_ms":  104.3624
+                 },
+                 {
+                     "dataset_path":  "baseline/stage0/query_benchmark_dataset.json",
+                     "k":  10,
+                     "query_count":  12,
+                     "recall_at_k":  0.33333334,
+                     "mrr_at_k":  0.24444443,
+                     "ndcg_at_k":  0.24952103,
+                     "avg_estimated_tokens":  1285.5,
+                     "latency_p50_ms":  81.5366,
+                     "latency_p95_ms":  103.0674
+                 },
+                 {
+                     "dataset_path":  "baseline/stage0/query_benchmark_dataset.json",
+                     "k":  10,
+                     "query_count":  12,
+                     "recall_at_k":  0.33333334,
+                     "mrr_at_k":  0.24444443,
+                     "ndcg_at_k":  0.24952103,
+                     "avg_estimated_tokens":  1285.5,
+                     "latency_p50_ms":  94.743,
+                     "latency_p95_ms":  104.8106
+                 },
+                 {
+                     "dataset_path":  "baseline/stage0/query_benchmark_dataset.json",
+                     "k":  10,
+                     "query_count":  12,
+                     "recall_at_k":  0.33333334,
+                     "mrr_at_k":  0.24444443,
+                     "ndcg_at_k":  0.24952103,
+                     "avg_estimated_tokens":  1285.5,
+                     "latency_p50_ms":  90.729904,
+                     "latency_p95_ms":  107.8891
+                 }
+             ],
+    "median":  {
+                   "recall_at_k":  0.33333334,
+                   "mrr_at_k":  0.24444443,
+                   "ndcg_at_k":  0.24952103,
+                   "avg_estimated_tokens":  1285.5,
+                   "latency_p50_ms":  89.82101,
+                   "latency_p95_ms":  104.8106
+               }
+}

@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QueryBenchmarkCompareReport",
+  "type": "object",
+  "required": [
+    "mode",
+    "dataset_path",
+    "query_count",
+    "k",
+    "runs_count",
+    "median_rule",
+    "baseline",
+    "candidate",
+    "diff",
+    "thresholds",
+    "enforce_gates"
+  ],
+  "properties": {
+    "mode": { "const": "baseline_vs_candidate" },
+    "dataset_path": { "type": "string", "minLength": 1 },
+    "query_count": { "type": "integer", "minimum": 0 },
+    "k": { "type": "integer", "minimum": 1 },
+    "runs_count": { "type": "integer", "minimum": 1 },
+    "median_rule": { "type": "string", "minLength": 1 },
+    "baseline": {
+      "type": "object",
+      "required": ["path", "metrics"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "metrics": {
+          "type": "object",
+          "required": [
+            "recall_at_k",
+            "mrr_at_k",
+            "ndcg_at_k",
+            "avg_estimated_tokens",
+            "latency_p50_ms",
+            "latency_p95_ms"
+          ],
+          "properties": {
+            "recall_at_k": { "type": "number", "minimum": 0, "maximum": 1 },
+            "mrr_at_k": { "type": "number", "minimum": 0, "maximum": 1 },
+            "ndcg_at_k": { "type": "number", "minimum": 0, "maximum": 1 },
+            "avg_estimated_tokens": { "type": "number", "minimum": 0 },
+            "latency_p50_ms": { "type": "number", "minimum": 0 },
+            "latency_p95_ms": { "type": "number", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "required": ["runs", "median"],
+      "properties": {
+        "runs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "dataset_path",
+              "k",
+              "query_count",
+              "recall_at_k",
+              "mrr_at_k",
+              "ndcg_at_k",
+              "avg_estimated_tokens",
+              "latency_p50_ms",
+              "latency_p95_ms"
+            ],
+            "properties": {
+              "dataset_path": { "type": "string", "minLength": 1 },
+              "k": { "type": "integer", "minimum": 1 },
+              "query_count": { "type": "integer", "minimum": 0 },
+              "recall_at_k": { "type": "number", "minimum": 0, "maximum": 1 },
+              "mrr_at_k": { "type": "number", "minimum": 0, "maximum": 1 },
+              "ndcg_at_k": { "type": "number", "minimum": 0, "maximum": 1 },
+              "avg_estimated_tokens": { "type": "number", "minimum": 0 },
+              "latency_p50_ms": { "type": "number", "minimum": 0 },
+              "latency_p95_ms": { "type": "number", "minimum": 0 }
+            }
+          }
+        },
+        "median": {
+          "type": "object",
+          "required": [
+            "recall_at_k",
+            "mrr_at_k",
+            "ndcg_at_k",
+            "avg_estimated_tokens",
+            "latency_p50_ms",
+            "latency_p95_ms"
+          ],
+          "properties": {
+            "recall_at_k": { "type": "number", "minimum": 0, "maximum": 1 },
+            "mrr_at_k": { "type": "number", "minimum": 0, "maximum": 1 },
+            "ndcg_at_k": { "type": "number", "minimum": 0, "maximum": 1 },
+            "avg_estimated_tokens": { "type": "number", "minimum": 0 },
+            "latency_p50_ms": { "type": "number", "minimum": 0 },
+            "latency_p95_ms": { "type": "number", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "diff": {
+      "type": "object",
+      "required": [
+        "recall_at_k",
+        "mrr_at_k",
+        "ndcg_at_k",
+        "avg_estimated_tokens",
+        "latency_p50_ms",
+        "latency_p95_ms"
+      ],
+      "properties": {
+        "recall_at_k": {
+          "type": "object",
+          "required": ["baseline", "candidate", "delta_abs", "delta_pct", "direction"],
+          "properties": {
+            "baseline": { "type": "number" },
+            "candidate": { "type": "number" },
+            "delta_abs": { "type": "number" },
+            "delta_pct": {},
+            "direction": { "type": "string", "minLength": 1 }
+          }
+        },
+        "mrr_at_k": {
+          "type": "object",
+          "required": ["baseline", "candidate", "delta_abs", "delta_pct", "direction"],
+          "properties": {
+            "baseline": { "type": "number" },
+            "candidate": { "type": "number" },
+            "delta_abs": { "type": "number" },
+            "delta_pct": {},
+            "direction": { "type": "string", "minLength": 1 }
+          }
+        },
+        "ndcg_at_k": {
+          "type": "object",
+          "required": ["baseline", "candidate", "delta_abs", "delta_pct", "direction"],
+          "properties": {
+            "baseline": { "type": "number" },
+            "candidate": { "type": "number" },
+            "delta_abs": { "type": "number" },
+            "delta_pct": {},
+            "direction": { "type": "string", "minLength": 1 }
+          }
+        },
+        "avg_estimated_tokens": {
+          "type": "object",
+          "required": ["baseline", "candidate", "delta_abs", "delta_pct", "direction"],
+          "properties": {
+            "baseline": { "type": "number" },
+            "candidate": { "type": "number" },
+            "delta_abs": { "type": "number" },
+            "delta_pct": {},
+            "direction": { "type": "string", "minLength": 1 }
+          }
+        },
+        "latency_p50_ms": {
+          "type": "object",
+          "required": ["baseline", "candidate", "delta_abs", "delta_pct", "direction"],
+          "properties": {
+            "baseline": { "type": "number" },
+            "candidate": { "type": "number" },
+            "delta_abs": { "type": "number" },
+            "delta_pct": {},
+            "direction": { "type": "string", "minLength": 1 }
+          }
+        },
+        "latency_p95_ms": {
+          "type": "object",
+          "required": ["baseline", "candidate", "delta_abs", "delta_pct", "direction"],
+          "properties": {
+            "baseline": { "type": "number" },
+            "candidate": { "type": "number" },
+            "delta_abs": { "type": "number" },
+            "delta_pct": {},
+            "direction": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "required": [
+        "path",
+        "configured",
+        "run_evaluations",
+        "candidate_median_evaluation",
+        "passed"
+      ],
+      "properties": {
+        "path": {},
+        "configured": {},
+        "run_evaluations": {
+          "type": "array"
+        },
+        "candidate_median_evaluation": {},
+        "passed": {}
+      }
+    },
+    "enforce_gates": { "type": "boolean" }
+  }
+}

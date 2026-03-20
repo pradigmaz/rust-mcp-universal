@@ -1,0 +1,72 @@
+﻿{
+    "generated_at_utc":  "2026-03-03T12:24:50Z",
+    "git_head":  null,
+    "freeze":  {
+                   "cli":  {
+                               "binary":  "target/release/rmu-cli.exe",
+                               "global_flags":  [
+                                                    "--project-path",
+                                                    "--db-path",
+                                                    "--json",
+                                                    "-j"
+                                                ],
+                               "commands":  [
+                                                "index",
+                                                "semantic-index",
+                                                "delete-index",
+                                                "status",
+                                                "search",
+                                                "semantic-search",
+                                                "context",
+                                                "report",
+                                                "query-benchmark",
+                                                "brief",
+                                                "agent"
+                                            ]
+                           },
+                   "mcp":  {
+                               "tools":  [
+                                             "set_project_path",
+                                             "index_status",
+                                             "workspace_brief",
+                                             "agent_bootstrap",
+                                             "index",
+                                             "semantic_index",
+                                             "delete_index",
+                                             "search_candidates",
+                                             "semantic_search",
+                                             "build_context_under_budget",
+                                             "query_report",
+                                             "query_benchmark"
+                                         ]
+                           },
+                   "schemas":  [
+                                   {
+                                       "file":  "schemas/mcp_query_benchmark_tool_result.schema.json",
+                                       "sha256":  "2b97b5905f1956fb70d49a44f59023e12b4b266f9d5a789929189fef7fa03103"
+                                   },
+                                   {
+                                       "file":  "schemas/mcp_query_report_tool_result.schema.json",
+                                       "sha256":  "879bd455acba3b13c10d14bfb54a326febbcfe17d2a59dcffbb64ffd3dbd10f5"
+                                   },
+                                   {
+                                       "file":  "schemas/query_benchmark_report.schema.json",
+                                       "sha256":  "eacc6c811ef8612007fbe094d3fad6740a4dcb858664fd01be2dc15c15be34b1"
+                                   },
+                                   {
+                                       "file":  "schemas/query_report.schema.json",
+                                       "sha256":  "087fb0bcedf0c7ced19433def84258edfd5e98c85e4b2bccb9e096d26bc1e5fc"
+                                   }
+                               ],
+                   "source_hashes":  [
+                                         {
+                                             "file":  "crates/cli/src/args.rs",
+                                             "sha256":  "9f60894607deb55df8f363dcdea803937bf20b4d85642d138d28e4f3697688fc"
+                                         },
+                                         {
+                                             "file":  "crates/mcp-server/src/rpc_tools/registry.rs",
+                                             "sha256":  "5f013e078aa7767c3987a31049433e8b2a31596c44fa41e151d5265938112b14"
+                                         }
+                                     ]
+               }
+}

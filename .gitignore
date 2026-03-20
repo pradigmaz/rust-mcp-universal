@@ -1,0 +1,72 @@
+/target/
+/.rmu/
+/.tmp_*/
+/.tmp_integration/
+/.tmp_scope_check/
+/.codex/
+/.codex-planning/
+
+# Databases and caches
+*.db
+*.sqlite
+*.sqlite3
+*.sqlite-shm
+*.sqlite-wal
+*.db-shm
+*.db-wal
+
+# Logs and runtime artifacts
+*.log
+*.pid
+*.tmp
+*.temp
+*.bak
+*.orig
+
+# Coverage / profiling
+*.profraw
+*.profdata
+coverage/
+htmlcov/
+.coverage
+
+# IDE / editor
+.idea/
+.vscode/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+.python-version
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Rust incremental/cache leftovers
+**/*.rs.bk
+node_modules/
+dist/
+build/
+out/
+.cache/
+.turbo/
+.next/
+.nuxt/
+.svelte-kit/
+.direnv/
+.env
+.env.*
+*.local
+
+DETAILS.md
+CODE_REVIEW_CHECKLIST.md
+CODE_AUDIT_MIRI.md
+SEMANTIC_IMPROVEMENT_CHECKPLAN.md
+CODEBASE_AUDIT.md
+DETAILS_ANALYSIS.md

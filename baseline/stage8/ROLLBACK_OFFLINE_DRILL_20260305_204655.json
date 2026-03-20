@@ -1,0 +1,34 @@
+﻿{
+    "timestamp_utc":  "2026-03-05T17:46:56.0521677Z",
+    "project_path":  "C:\\Users\\Zaikana\\AppData\\Local\\Temp\\rmu_offline_drill_20260305_204655",
+    "offline_drill":  {
+                          "index_ok":  true,
+                          "status_migration_off_ok":  true,
+                          "lexical_search_ok":  true,
+                          "lexical_hits":  2,
+                          "semantic_search_ok":  true,
+                          "semantic_search_hits":  4
+                      },
+    "fast_rollback_drill":  {
+                                "benchmark_ok":  true,
+                                "rollback_level":  "fast",
+                                "rollback_reasons":  [
+                                                         "quality regression beyond gate",
+                                                         "latency regression beyond gate",
+                                                         "token-cost regression beyond gate"
+                                                     ],
+                                "rollback_fast_actions":  [
+                                                              "set vector_layer_enabled=false",
+                                                              "set rollout_phase=shadow",
+                                                              "set semantic_fail_mode=fail_open"
+                                                          ]
+                            },
+    "full_rollback_drill":  {
+                                "backup_created":  true,
+                                "delete_index_ok":  true,
+                                "migration_off_after_delete_failed_as_expected":  true,
+                                "restore_status_ok":  true,
+                                "restore_files":  4,
+                                "restore_semantic_vectors":  4
+                            }
+}

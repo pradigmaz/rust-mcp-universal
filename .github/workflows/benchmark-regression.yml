@@ -1,0 +1,93 @@
+name: Benchmark Regression Gate
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+
+jobs:
+  release-gate:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Prepare trusted benchmark inputs from PR base
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          DATASET_PATH="baseline/stage0/query_benchmark_dataset.json"
+          BASELINE_PATH="baseline/stage0/query_benchmark_baseline_summary.json"
+          THRESHOLDS_PATH="baseline/stage0/release_rollback_thresholds.json"
+
+          mkdir -p .ci-base .ci-artifacts
+
+          if ! git cat-file -e "${BASE_SHA}^{commit}"; then
+            echo "Base commit ${BASE_SHA} is missing locally, fetching it"
+            git fetch --no-tags --depth=1 origin "${BASE_SHA}"
+          fi
+
+          echo "Reading trusted dataset/baseline/thresholds from base commit ${BASE_SHA}"
+          git show "${BASE_SHA}:${DATASET_PATH}" > .ci-base/query_benchmark_dataset.json
+          git show "${BASE_SHA}:${BASELINE_PATH}" > .ci-base/query_benchmark_baseline_summary.json
+          git show "${BASE_SHA}:${THRESHOLDS_PATH}" > .ci-base/release_rollback_thresholds.json
+
+      - name: Run benchmark compare-mode with enforced gates
+        id: gate
+        shell: bash
+        run: |
+          set -uo pipefail
+
+          OUTPUT_JSON=".ci-artifacts/query_benchmark_compare_report.json"
+          STDERR_LOG=".ci-artifacts/query_benchmark_compare_stderr.log"
+
+          set +e
+          cargo run --locked -p rmu-cli -- \
+            --project-path . \
+            --json \
+            query-benchmark \
+            --dataset .ci-base/query_benchmark_dataset.json \
+            --baseline .ci-base/query_benchmark_baseline_summary.json \
+            --thresholds .ci-base/release_rollback_thresholds.json \
+            --semantic \
+            --k 10 \
+            --limit 20 \
+            --max-chars 12000 \
+            --max-tokens 3000 \
+            --runs 5 \
+            --enforce-gates \
+            2> >(tee "${STDERR_LOG}" >&2) | tee "${OUTPUT_JSON}"
+          GATE_EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+
+          echo "gate_exit_code=${GATE_EXIT_CODE}" >> "${GITHUB_OUTPUT}"
+          exit "${GATE_EXIT_CODE}"
+
+      - name: Upload benchmark gate artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-regression-gate
+          if-no-files-found: warn
+          path: |
+            .ci-artifacts/query_benchmark_compare_report.json
+            .ci-artifacts/query_benchmark_compare_stderr.log
+            .ci-base/query_benchmark_dataset.json
+            .ci-base/query_benchmark_baseline_summary.json
+            .ci-base/release_rollback_thresholds.json

@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QueryReport",
+  "type": "object",
+  "required": [
+    "query_id",
+    "timestamp_utc",
+    "project_root",
+    "budget",
+    "retrieval_pipeline",
+    "selected_context",
+    "confidence",
+    "gaps",
+    "index_telemetry"
+  ],
+  "properties": {
+    "query_id": { "type": "string" },
+    "timestamp_utc": { "type": "string" },
+    "project_root": { "type": "string" },
+    "budget": {
+      "type": "object",
+      "required": ["max_tokens", "used_estimate", "hard_truncated"],
+      "properties": {
+        "max_tokens": { "type": "integer", "minimum": 0 },
+        "used_estimate": { "type": "integer", "minimum": 0 },
+        "hard_truncated": { "type": "boolean" }
+      }
+    },
+    "retrieval_pipeline": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["stage", "candidates", "kept"],
+        "properties": {
+          "stage": { "type": "string" },
+          "candidates": { "type": "integer", "minimum": 0 },
+          "kept": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "selected_context": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "score",
+          "chars",
+          "chunk_idx",
+          "start_line",
+          "end_line",
+          "chunk_source",
+          "why",
+          "explain"
+        ],
+        "properties": {
+          "path": { "type": "string" },
+          "score": { "type": "number" },
+          "chars": { "type": "integer", "minimum": 0 },
+          "chunk_idx": { "type": "integer", "minimum": 0 },
+          "start_line": { "type": "integer", "minimum": 0 },
+          "end_line": { "type": "integer", "minimum": 0 },
+          "chunk_source": { "type": "string" },
+          "why": { "type": "array", "items": { "type": "string" } },
+          "explain": {
+            "type": "object",
+            "required": [
+              "lexical",
+              "graph",
+              "semantic",
+              "rrf",
+              "graph_rrf",
+              "rank_before",
+              "rank_after",
+              "semantic_source",
+              "semantic_outcome",
+              "graph_seed_path",
+              "graph_edge_kinds",
+              "graph_hops"
+            ],
+            "properties": {
+              "lexical": { "type": "number" },
+              "graph": { "type": "number" },
+              "semantic": { "type": "number" },
+              "rrf": { "type": "number" },
+              "graph_rrf": { "type": "number" },
+              "rank_before": { "type": "integer", "minimum": 1 },
+              "rank_after": { "type": "integer", "minimum": 1 },
+              "semantic_source": { "type": "string" },
+              "semantic_outcome": { "type": "string" },
+              "graph_seed_path": { "type": "string" },
+              "graph_edge_kinds": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "graph_hops": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+    "confidence": {
+      "type": "object",
+      "required": ["overall", "reasons", "signals"],
+      "properties": {
+        "overall": { "type": "number", "minimum": 0, "maximum": 1 },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "signals": {
+          "type": "object",
+          "required": [
+            "margin_top1_top2",
+            "explain_coverage",
+            "semantic_coverage",
+            "semantic_outcome",
+            "stage_drop_ratio",
+            "hard_truncated"
+          ],
+          "properties": {
+            "margin_top1_top2": { "type": "number", "minimum": 0 },
+            "explain_coverage": { "type": "number", "minimum": 0, "maximum": 1 },
+            "semantic_coverage": { "type": "number", "minimum": 0, "maximum": 1 },
+            "semantic_outcome": { "type": "string" },
+            "stage_drop_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+            "hard_truncated": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "gaps": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "index_telemetry": {
+      "type": "object",
+      "required": [
+        "last_index_lock_wait_ms",
+        "last_embedding_cache_hits",
+        "last_embedding_cache_misses",
+        "chunk_coverage",
+        "chunk_source"
+      ],
+      "properties": {
+        "last_index_lock_wait_ms": { "type": "integer", "minimum": 0 },
+        "last_embedding_cache_hits": { "type": "integer", "minimum": 0 },
+        "last_embedding_cache_misses": { "type": "integer", "minimum": 0 },
+        "chunk_coverage": { "type": "number", "minimum": 0, "maximum": 1 },
+        "chunk_source": { "type": "string" }
+      }
+    }
+  }
+}

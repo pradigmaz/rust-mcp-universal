@@ -1,0 +1,23 @@
+﻿{
+    "generated_at_utc":  "2026-03-03T13:17:21Z",
+    "criteria":  {
+                     "chunk_coverage":  {
+                                            "required":  "\u003e= 0.95",
+                                            "actual":  1,
+                                            "pass":  true
+                                        },
+                     "avg_estimated_tokens":  {
+                                                  "required":  "\u003c= 1569.87911",
+                                                  "baseline":  1846.9166,
+                                                  "actual":  1285.5,
+                                                  "pass":  true
+                                              },
+                     "ndcg_at_k":  {
+                                       "required":  "\u003e= baseline",
+                                       "baseline":  0.19167012,
+                                       "actual":  0.24952103,
+                                       "pass":  true
+                                   }
+                 },
+    "overall_pass":  true
+}

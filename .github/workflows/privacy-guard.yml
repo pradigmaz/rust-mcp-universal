@@ -1,0 +1,33 @@
+name: Privacy Guard
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+
+jobs:
+  privacy-guard:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Run privacy guard unit tests
+        run: python scripts/test_check_privacy_paths.py
+
+      - name: Scan tracked docs/examples/config artifacts
+        run: python scripts/check_privacy_paths.py
