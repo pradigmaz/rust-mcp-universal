@@ -125,7 +125,7 @@ pub(super) fn path_role_prior(
     let normalized = path.replace('\\', "/");
     let is_code_source = matches!(
         language,
-        "rust" | "python" | "go" | "javascript" | "typescript" | "tsx" | "jsx"
+        "rust" | "python" | "go" | "java" | "javascript" | "typescript" | "tsx" | "jsx"
     );
     let is_src_path =
         normalized == "src" || normalized.starts_with("src/") || normalized.contains("/src/");

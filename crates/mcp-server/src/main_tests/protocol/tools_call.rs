@@ -183,10 +183,22 @@ fn tools_call_set_project_path_accepts_unicode_path_values() {
     .to_string();
     let response = expect_single_response(&set_path, &mut state);
     assert!(response.error.is_none());
+    let result = response.result.expect("result expected");
     assert_eq!(
-        response.result.expect("result expected")["structuredContent"]["project_path"],
+        result["structuredContent"]["project_path"],
         json!(project_dir.display().to_string())
     );
+    assert_eq!(
+        result["structuredContent"]["gitignore_created"],
+        json!(true)
+    );
+    assert_eq!(
+        result["structuredContent"]["gitignore_updated"],
+        json!(true)
+    );
+    let gitignore = fs::read_to_string(project_dir.join(".gitignore")).expect("read gitignore");
+    assert!(gitignore.contains(".rmu/"));
+    assert!(gitignore.contains(".codex/"));
 
     let search = json!({
         "jsonrpc": "2.0",

@@ -41,3 +41,4 @@ pub use rollout::{
     RollbackLevel, RollbackRecommendation, RollbackSignals, RolloutDecision,
     decide_semantic_rollout, recommend_rollback, stable_cycles_observed,
 };
+pub use utils::{GitignoreUpdate, ensure_root_gitignore};

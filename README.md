@@ -110,6 +110,28 @@ startup_timeout_sec = 180
 tool_timeout_sec = 180
 ```
 
+### Windows fresh-start launcher
+
+На Windows лучше указывать в MCP-конфиге не `rmu-mcp-server.exe` напрямую, а launcher:
+
+- `scripts/rmu-mcp-server-fresh.cmd`
+
+Этот launcher перед каждым стартом завершает старый `rmu-mcp-server.exe` из этого же checkout и только потом поднимает новый foreground-процесс. Это убирает висящие фоновые экземпляры после rebuild.
+
+Пример JSON-конфига для Windows:
+
+```json
+{
+  "mcpServers": {
+    "rmu-universal": {
+      "command": "D:\\rust и оптимизация\\rust-mcp-universal\\scripts\\rmu-mcp-server-fresh.cmd",
+      "args": [],
+      "timeout": 180000
+    }
+  }
+}
+```
+
 ## Основные MCP tools
 
 - `set_project_path` — привязать сервер к нужному репозиторию;
@@ -121,6 +143,20 @@ tool_timeout_sec = 180
 - `symbol_lookup_v2`, `symbol_references_v2`, `related_files_v2` — навигация по коду.
 
 Для navigation tools результат нужно читать из `result.structuredContent.hits`.
+
+## Авто `.gitignore`
+
+При первом пользовательском входе через CLI и `set_project_path` сервер теперь автоматически создаёт корневой `.gitignore`, если его ещё нет, и поддерживает в нём короткий RMU-managed block для служебного мусора:
+
+- `.rmu/`
+- `.codex/`
+- `.qodo/`
+- `.idea/`
+- `.vscode/`
+- `.DS_Store`
+- `Thumbs.db`
+
+Существующие пользовательские правила не удаляются: RMU обновляет только свой помеченный блок.
 
 ## Структура проекта
 

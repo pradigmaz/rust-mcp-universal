@@ -2,6 +2,8 @@ use std::path::Path;
 
 mod common;
 mod fingerprint;
+mod java;
+mod java_support;
 mod javascript;
 mod python;
 mod rust;
@@ -40,6 +42,7 @@ pub(crate) use fingerprint::{
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum GraphSourceKind {
+    Java,
     Rust,
     Python,
     JavaScript { jsx: bool },
@@ -49,6 +52,7 @@ pub(crate) enum GraphSourceKind {
 impl GraphSourceKind {
     pub(crate) fn language_label(self) -> &'static str {
         match self {
+            Self::Java => "java",
             Self::Rust => "rust",
             Self::Python => "python",
             Self::JavaScript { .. } => "javascript",
@@ -62,6 +66,7 @@ impl GraphSourceKind {
 
     fn synthetic_path(self) -> &'static str {
         match self {
+            Self::Java => "graph.java",
             Self::Rust => "graph.rs",
             Self::Python => "graph.py",
             Self::JavaScript { jsx: false } => "graph.js",
@@ -74,6 +79,7 @@ impl GraphSourceKind {
 
 fn graph_source_kind_from_language(language: &str) -> GraphSourceKind {
     match language {
+        "java" => GraphSourceKind::Java,
         "rust" => GraphSourceKind::Rust,
         "python" => GraphSourceKind::Python,
         "javascript" => GraphSourceKind::JavaScript { jsx: false },
@@ -83,7 +89,10 @@ fn graph_source_kind_from_language(language: &str) -> GraphSourceKind {
 }
 
 pub(crate) fn supports_graph_extraction(language: &str) -> bool {
-    matches!(language, "rust" | "python" | "javascript" | "typescript")
+    matches!(
+        language,
+        "java" | "rust" | "python" | "javascript" | "typescript"
+    )
 }
 
 pub(crate) fn graph_source_kind_for_path(path: &Path, language: &str) -> Option<GraphSourceKind> {
@@ -93,6 +102,7 @@ pub(crate) fn graph_source_kind_for_path(path: &Path, language: &str) -> Option<
         .map(str::to_ascii_lowercase)
         .as_deref()
     {
+        Some("java") => Some(GraphSourceKind::Java),
         Some("jsx") => Some(GraphSourceKind::JavaScript { jsx: true }),
         Some("tsx") => Some(GraphSourceKind::TypeScript { jsx: true }),
         Some("ts") => Some(GraphSourceKind::TypeScript { jsx: false }),
@@ -104,6 +114,7 @@ pub(crate) fn graph_source_kind_for_path(path: &Path, language: &str) -> Option<
 
 pub(crate) fn extract_graph_for_kind(kind: GraphSourceKind, source: &str) -> GraphExtraction {
     match kind {
+        GraphSourceKind::Java => java::extract_java_heuristic(source),
         GraphSourceKind::Rust => rust::extract_rust_heuristic(source),
         GraphSourceKind::Python => python::extract_python_heuristic(source),
         GraphSourceKind::JavaScript { .. } | GraphSourceKind::TypeScript { .. } => {

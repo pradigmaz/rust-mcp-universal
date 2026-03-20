@@ -1,5 +1,5 @@
 use anyhow::Result;
-use rmu_core::{Engine, MigrationMode, PrivacyMode, RolloutPhase};
+use rmu_core::{Engine, MigrationMode, PrivacyMode, RolloutPhase, ensure_root_gitignore};
 
 use crate::args::{App, Command};
 
@@ -32,6 +32,9 @@ pub(super) fn prepare(app: App) -> Result<PreparedRun> {
     let rollout_phase = parse_rollout_phase(&rollout_phase)?;
     let migration_mode = parse_migration_mode(&migration_mode)?;
     preflight_validate(&command)?;
+    if should_ensure_gitignore(&command) {
+        let _ = ensure_root_gitignore(&project_path);
+    }
     let engine = match &command {
         Command::Status | Command::ScopePreview(_) => {
             Engine::new_read_only_with_migration_mode(project_path, db_path, migration_mode)?
@@ -48,4 +51,26 @@ pub(super) fn prepare(app: App) -> Result<PreparedRun> {
         migration_mode,
         command,
     })
+}
+
+fn should_ensure_gitignore(command: &Command) -> bool {
+    match command {
+        Command::Index(_) | Command::SemanticIndex(_) => true,
+        Command::Search { auto_index, .. }
+        | Command::SemanticSearch { auto_index, .. }
+        | Command::SymbolLookup { auto_index, .. }
+        | Command::SymbolReferences { auto_index, .. }
+        | Command::RelatedFiles { auto_index, .. }
+        | Command::CallPath { auto_index, .. }
+        | Command::Context { auto_index, .. }
+        | Command::ContextPack { auto_index, .. }
+        | Command::Report { auto_index, .. }
+        | Command::Agent { auto_index, .. } => *auto_index,
+        Command::ScopePreview(_)
+        | Command::DeleteIndex { .. }
+        | Command::DbMaintenance { .. }
+        | Command::Status
+        | Command::QueryBenchmark { .. }
+        | Command::Brief => false,
+    }
 }

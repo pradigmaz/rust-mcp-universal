@@ -41,6 +41,9 @@ pub fn normalize_path(path: &Path) -> String {
 
 pub fn is_probably_ignored(path: &Path) -> bool {
     let text = normalize_path(path);
+    if text == ".gitignore" || text.ends_with("/.gitignore") {
+        return true;
+    }
     let patterns = [
         ".git/",
         ".hg/",
@@ -187,6 +190,8 @@ mod tests {
     #[test]
     fn is_probably_ignored_matches_common_language_artifact_directories() {
         for path in [
+            ".gitignore",
+            "nested/.gitignore",
             "node_modules/react/index.js",
             ".pnpm-store/v3/files.json",
             ".yarn/cache/pkg.tgz",

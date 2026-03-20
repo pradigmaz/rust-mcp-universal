@@ -2,7 +2,8 @@ use std::path::PathBuf;
 
 use anyhow::Result;
 use rmu_core::{
-    Engine, IndexProfile, IndexingOptions, MigrationMode, PrivacyMode, sanitize_value_for_privacy,
+    Engine, IndexProfile, IndexingOptions, MigrationMode, PrivacyMode, ensure_root_gitignore,
+    sanitize_value_for_privacy,
 };
 use serde_json::{Value, json};
 use time::{OffsetDateTime, UtcOffset, format_description::well_known::Rfc3339};
@@ -54,8 +55,19 @@ pub(super) fn handle_tool_call(params: Option<Value>, state: &mut ServerState) -
                     "set_project_path `project_path` must be an existing directory: {project_path}"
                 )));
             }
+            let gitignore_update = ensure_root_gitignore(&path);
             state.project_path = path;
-            tool_result(json!({"ok": true, "project_path": project_path}))
+            let mut payload = json!({"ok": true, "project_path": project_path});
+            match gitignore_update {
+                Ok(update) => {
+                    payload["gitignore_created"] = json!(update.created);
+                    payload["gitignore_updated"] = json!(update.updated);
+                }
+                Err(err) => {
+                    payload["gitignore_warning"] = json!(err.to_string());
+                }
+            }
+            tool_result(payload)
         }
         "index_status" => {
             reject_unknown_fields(&args, "index_status", &["migration_mode"])?;
