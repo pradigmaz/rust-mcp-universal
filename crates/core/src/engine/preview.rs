@@ -20,13 +20,14 @@ impl Engine {
         &self,
         options: &IndexingOptions,
     ) -> Result<ScopePreviewResult> {
-        let scope = IndexScope::new(options)?;
+        let options = self.resolve_indexing_options(options);
+        let scope = IndexScope::new(&options)?;
         let ignore_matcher = ProjectIgnoreMatcher::new(&self.project_root)?;
         let semantic_model = semantic_model_name();
         let existing_files = state_load::load_existing_file_state_read_only(self, &semantic_model)?;
         let selector = selector::resolve_run_selector(
             self,
-            options,
+            &options,
             &scope,
             &existing_files,
             &ignore_matcher,
@@ -39,7 +40,7 @@ impl Engine {
             &ignore_matcher,
         )?;
         let mut deleted_paths = deleted_paths::collect_deleted_paths(
-            options,
+            &options,
             &scope,
             &selector,
             &existing_files,

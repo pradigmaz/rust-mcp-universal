@@ -13,6 +13,10 @@ const RUST_MONOREPO_INCLUDES: &[&str] = &[
     "tests",
     "examples",
     "benches",
+    "apps/**/Cargo.toml",
+    "apps/**/src/**",
+    "tools/**/Cargo.toml",
+    "tools/**/src/**",
 ];
 
 const MIXED_INCLUDES: &[&str] = &[

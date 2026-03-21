@@ -13,11 +13,12 @@ use super::modes::{
 
 pub(crate) fn run_index(engine: &Engine, json: bool, index_args: IndexCommandArgs) -> Result<()> {
     let options = to_indexing_options(&index_args)?;
-    let summary = engine.index_path_with_options(&options)?;
+    let effective_options = engine.resolve_indexing_options(&options);
+    let summary = engine.index_path_with_options(&effective_options)?;
 
     if json {
         print_json(serde_json::to_string_pretty(&serde_json::json!({
-            "profile": options.profile.map(IndexProfile::as_str),
+            "profile": effective_options.profile.map(IndexProfile::as_str),
             "changed_since": options.changed_since.map(format_changed_since).transpose()?,
             "changed_since_commit": summary.changed_since_commit,
             "resolved_merge_base_commit": summary.resolved_merge_base_commit,
@@ -50,7 +51,7 @@ pub(crate) fn run_index(engine: &Engine, json: bool, index_args: IndexCommandArg
             summary.lock_wait_ms,
             summary.embedding_cache_hits,
             summary.embedding_cache_misses,
-            profile_label(options.profile),
+            profile_label(effective_options.profile),
             changed_since_label(summary.changed_since)?,
             summary
                 .changed_since_commit
@@ -75,12 +76,13 @@ pub(crate) fn run_semantic_index(
     index_args: IndexCommandArgs,
 ) -> Result<()> {
     let options = to_indexing_options(&index_args)?;
-    let summary = engine.index_path_with_options(&options)?;
+    let effective_options = engine.resolve_indexing_options(&options);
+    let summary = engine.index_path_with_options(&effective_options)?;
     let semantic_vectors_rebuilt = summary.changed > 0 || summary.added > 0;
 
     if json {
         print_json(serde_json::to_string_pretty(&serde_json::json!({
-            "profile": options.profile.map(IndexProfile::as_str),
+            "profile": effective_options.profile.map(IndexProfile::as_str),
             "changed_since": options.changed_since.map(format_changed_since).transpose()?,
             "changed_since_commit": summary.changed_since_commit,
             "resolved_merge_base_commit": summary.resolved_merge_base_commit,
@@ -115,7 +117,7 @@ pub(crate) fn run_semantic_index(
             summary.lock_wait_ms,
             summary.embedding_cache_hits,
             summary.embedding_cache_misses,
-            profile_label(options.profile),
+            profile_label(effective_options.profile),
             changed_since_label(summary.changed_since)?,
             summary
                 .changed_since_commit

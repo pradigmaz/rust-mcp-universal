@@ -34,7 +34,6 @@ pub(super) fn index(args: &Value, tool_name: &str, state: &mut ServerState) -> R
         parse_optional_string_list(args, tool_name, "include_paths")?.unwrap_or_default();
     let exclude_paths =
         parse_optional_string_list(args, tool_name, "exclude_paths")?.unwrap_or_default();
-    let profile = parse_optional_index_profile(args, tool_name)?.or(Some(IndexProfile::Mixed));
     let changed_since = parse_optional_changed_since(args, tool_name)?;
     let changed_since_commit = parse_optional_changed_since_commit(args, tool_name)?;
     if changed_since.is_some() && changed_since_commit.is_some() {
@@ -51,20 +50,22 @@ pub(super) fn index(args: &Value, tool_name: &str, state: &mut ServerState) -> R
         migration_mode,
     )
     .map_err(|err| tool_domain_error(err.to_string()))?;
+    let options = effective_indexing_options(
+        &engine,
+        parse_optional_index_profile(args, tool_name)?,
+        changed_since,
+        changed_since_commit,
+        include_paths.clone(),
+        exclude_paths.clone(),
+        reindex,
+    );
     let summary = engine
-        .index_path_with_options(&IndexingOptions {
-            profile,
-            changed_since,
-            changed_since_commit,
-            include_paths: include_paths.clone(),
-            exclude_paths: exclude_paths.clone(),
-            reindex,
-        })
+        .index_path_with_options(&options)
         .map_err(|err| tool_domain_error(err.to_string()))?;
     let semantic_vectors_rebuilt = summary.changed > 0 || summary.added > 0;
     tool_result(json!({
         "summary": {
-            "profile": profile.map(IndexProfile::as_str),
+            "profile": options.profile.map(IndexProfile::as_str),
             "changed_since": summary.changed_since.map(format_changed_since).transpose()?,
             "changed_since_commit": summary.changed_since_commit,
             "resolved_merge_base_commit": summary.resolved_merge_base_commit,
@@ -106,8 +107,6 @@ pub(super) fn scope_preview(args: &Value, state: &mut ServerState) -> Result<Val
         parse_optional_string_list(args, "scope_preview", "include_paths")?.unwrap_or_default();
     let exclude_paths =
         parse_optional_string_list(args, "scope_preview", "exclude_paths")?.unwrap_or_default();
-    let profile =
-        parse_optional_index_profile(args, "scope_preview")?.or(Some(IndexProfile::Mixed));
     let changed_since = parse_optional_changed_since(args, "scope_preview")?;
     let changed_since_commit = parse_optional_changed_since_commit(args, "scope_preview")?;
     if changed_since.is_some() && changed_since_commit.is_some() {
@@ -126,15 +125,17 @@ pub(super) fn scope_preview(args: &Value, state: &mut ServerState) -> Result<Val
         migration_mode,
     )
     .map_err(|err| tool_domain_error(err.to_string()))?;
+    let options = effective_indexing_options(
+        &engine,
+        parse_optional_index_profile(args, "scope_preview")?,
+        changed_since,
+        changed_since_commit,
+        include_paths,
+        exclude_paths,
+        reindex,
+    );
     let preview = engine
-        .scope_preview_with_options(&IndexingOptions {
-            profile,
-            changed_since,
-            changed_since_commit,
-            include_paths,
-            exclude_paths,
-            reindex,
-        })
+        .scope_preview_with_options(&options)
         .map_err(|err| tool_domain_error(err.to_string()))?;
     let mut payload = serde_json::to_value(preview)?;
     sanitize_value_for_privacy(privacy_mode, &mut payload);
@@ -159,4 +160,25 @@ pub(super) fn delete_index(args: &Value, state: &mut ServerState) -> Result<Valu
         .delete_index_storage()
         .map_err(|err| tool_domain_error(err.to_string()))?;
     tool_result(serde_json::to_value(summary)?)
+}
+
+fn effective_indexing_options(
+    engine: &Engine,
+    requested_profile: Option<IndexProfile>,
+    changed_since: Option<time::OffsetDateTime>,
+    changed_since_commit: Option<String>,
+    include_paths: Vec<String>,
+    exclude_paths: Vec<String>,
+    reindex: bool,
+) -> IndexingOptions {
+    engine.resolve_indexing_options(&IndexingOptions {
+        profile: requested_profile
+            .or_else(|| engine.resolve_default_index_profile(None))
+            .or(Some(IndexProfile::Mixed)),
+        changed_since,
+        changed_since_commit,
+        include_paths,
+        exclude_paths,
+        reindex,
+    })
 }

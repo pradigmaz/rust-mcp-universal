@@ -104,18 +104,23 @@ pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<V
 }
 
 fn ensure_query_index_ready(engine: &Engine, auto_index: bool) -> Result<()> {
+    if !auto_index {
+        let _ = engine.ensure_index_ready_with_policy(false)?;
+        return Ok(());
+    }
+
+    if engine.resolve_default_index_profile(None).is_some() {
+        let _ = engine.ensure_index_ready_with_policy(true)?;
+        return Ok(());
+    }
+
     match engine.ensure_index_ready_with_policy(false) {
         Ok(_) => {
-            if auto_index && index_contains_non_code_languages(engine)? {
+            if index_contains_non_code_languages(engine)? {
                 reindex_with_mixed_profile(engine)?;
             }
         }
-        Err(err) => {
-            if !auto_index {
-                return Err(err);
-            }
-            reindex_with_mixed_profile(engine)?;
-        }
+        Err(_) => reindex_with_mixed_profile(engine)?,
     }
     Ok(())
 }

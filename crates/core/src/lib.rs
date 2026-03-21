@@ -1,6 +1,7 @@
 mod artifact_fingerprint;
 mod benchmark_compare;
 mod db_store;
+mod default_index_profile;
 mod embedding_backend;
 pub mod engine;
 mod engine_brief;

@@ -95,6 +95,10 @@ fn index_profile_scope_resolver_returns_expected_rules() {
             "tests",
             "examples",
             "benches",
+            "apps/**/Cargo.toml",
+            "apps/**/src/**",
+            "tools/**/Cargo.toml",
+            "tools/**/src/**",
         ]
     );
     assert!(IndexProfile::Mixed.exclude_paths().contains(&"**/.next/**"));

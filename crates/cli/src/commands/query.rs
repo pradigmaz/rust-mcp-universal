@@ -183,4 +183,33 @@ mod tests {
         let _ = fs::remove_dir_all(project_dir);
         Ok(())
     }
+
+    #[test]
+    fn ensure_query_index_ready_auto_indexes_rust_workspace_with_rust_monorepo()
+    -> Result<(), Box<dyn Error>> {
+        let project_dir = temp_project_dir("rmu-cli-query-rust-default-profile");
+        fs::create_dir_all(project_dir.join("src"))?;
+        fs::create_dir_all(project_dir.join("docs"))?;
+        fs::write(
+            project_dir.join("Cargo.toml"),
+            "[package]\nname = \"demo\"\nversion = \"0.1.0\"\n",
+        )?;
+        fs::write(
+            project_dir.join("src/lib.rs"),
+            "pub fn cli_rust_default_profile() {}\n",
+        )?;
+        fs::write(
+            project_dir.join("docs/guide.md"),
+            "cli docs should stay out of the default rust scope\n",
+        )?;
+
+        let engine = Engine::new(project_dir.clone(), Some(project_dir.join(".rmu/index.db")))?;
+        ensure_query_index_ready(&engine, true)?;
+
+        let status = engine.index_status()?;
+        assert_eq!(status.files, 2);
+
+        let _ = fs::remove_dir_all(project_dir);
+        Ok(())
+    }
 }
