@@ -18,12 +18,28 @@ pub(super) struct RunStats {
 }
 
 #[derive(Debug, Default)]
-pub(super) struct PassResult {
+pub(crate) struct PassResult {
     pub(super) stats: RunStats,
     pub(super) present_paths: HashSet<String>,
     pub(super) failed_paths: HashSet<String>,
     pub(super) authoritative_deleted_paths: HashSet<String>,
     pub(super) failed_walk_prefixes: Vec<String>,
+    pub(super) graph_dirty_paths: HashSet<String>,
+    pub(super) graph_pre_refresh: HashMap<String, storage::GraphRefreshSeed>,
+}
+
+impl PassResult {
+    pub(crate) fn mark_graph_dirty(
+        &mut self,
+        tx: &rusqlite::Transaction<'_>,
+        path: &str,
+    ) -> anyhow::Result<()> {
+        if self.graph_dirty_paths.insert(path.to_string()) {
+            let seed = storage::capture_graph_refresh_seed(tx, path)?;
+            self.graph_pre_refresh.insert(path.to_string(), seed);
+        }
+        Ok(())
+    }
 }
 
 pub(super) struct PreparedIndexRun {

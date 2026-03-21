@@ -44,16 +44,22 @@ pub(super) fn finalize_and_commit(
         mut pass_result,
     } = input;
 
+    let present_paths = pass_result.present_paths.clone();
+    let failed_paths = pass_result.failed_paths.clone();
+    let authoritative_deleted_paths = pass_result.authoritative_deleted_paths.clone();
+    let failed_walk_prefixes = pass_result.failed_walk_prefixes.clone();
+
     pass_result.stats.deleted += prune_deleted_paths(PruneDeletedPathsInput {
         tx: &tx,
+        pass_result: &mut pass_result,
         existing_files,
         options,
         scope,
         selector,
-        present_paths: &pass_result.present_paths,
-        failed_paths: &pass_result.failed_paths,
-        authoritative_deleted_paths: &pass_result.authoritative_deleted_paths,
-        failed_walk_prefixes: &pass_result.failed_walk_prefixes,
+        present_paths: &present_paths,
+        failed_paths: &failed_paths,
+        authoritative_deleted_paths: &authoritative_deleted_paths,
+        failed_walk_prefixes: &failed_walk_prefixes,
     })?;
     prune_deleted_quality_paths(
         &tx,
@@ -61,12 +67,16 @@ pub(super) fn finalize_and_commit(
         options,
         scope,
         selector,
-        &pass_result.present_paths,
-        &pass_result.failed_paths,
-        &pass_result.authoritative_deleted_paths,
-        &pass_result.failed_walk_prefixes,
+        &present_paths,
+        &failed_paths,
+        &authoritative_deleted_paths,
+        &failed_walk_prefixes,
     )?;
-    storage::rebuild_file_graph_edges(&tx)?;
+    storage::refresh_file_graph_edges(
+        &tx,
+        &pass_result.graph_dirty_paths,
+        &pass_result.graph_pre_refresh,
+    )?;
 
     let finalize_metrics = FinalizeMetrics {
         lock_wait_ms,

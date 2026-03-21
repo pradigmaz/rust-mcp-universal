@@ -60,11 +60,7 @@ pub(super) fn index_file_chunks(
             semantic_model,
             usize::try_from(semantic_dim).unwrap_or(0),
         )?;
-        let vector = if let Some(vector) = cache_entry {
-            stats::mark_embedding_cache_hit(stats_state);
-            vector
-        } else {
-            stats::mark_embedding_cache_miss(stats_state);
+        let compute_chunk_embedding = || -> Result<Vec<f32>> {
             let computed = embed_for_index(&chunk.text);
             let json = vector_to_json(&computed)?;
             tx.execute(
@@ -74,7 +70,23 @@ pub(super) fn index_file_chunks(
                      SET dim = excluded.dim, vector_json = excluded.vector_json, created_at_utc = excluded.created_at_utc",
                 params![&chunk.chunk_hash, semantic_model, semantic_dim, &json, indexed_at],
             )?;
-            computed
+            Ok(computed)
+        };
+        let vector = match cache_entry {
+            storage::CachedChunkEmbeddingLookup::Hit(vector) => {
+                stats::mark_embedding_cache_hit(stats_state);
+                vector
+            }
+            storage::CachedChunkEmbeddingLookup::Missing => {
+                stats::mark_embedding_cache_miss(stats_state);
+                compute_chunk_embedding()?
+            }
+            storage::CachedChunkEmbeddingLookup::Corrupted(err) => {
+                drop(err);
+                storage::delete_cached_chunk_embedding(tx, &chunk.chunk_hash, semantic_model)?;
+                stats::mark_embedding_cache_miss(stats_state);
+                compute_chunk_embedding()?
+            }
         };
         let vector_json = vector_to_json(&vector)?;
         chunk_embedding_count += 1;

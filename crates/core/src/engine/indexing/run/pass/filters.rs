@@ -3,9 +3,7 @@ use std::path::Path;
 use std::time::SystemTime;
 
 use super::super::types::PassResult;
-use crate::artifact_fingerprint::CURRENT_ARTIFACT_FINGERPRINT_VERSION;
 use crate::engine::storage;
-use crate::graph::{CURRENT_GRAPH_EDGE_FINGERPRINT_VERSION, CURRENT_GRAPH_FINGERPRINT_VERSION};
 use crate::index_scope::IndexScope;
 use crate::quality::CURRENT_QUALITY_RULESET_VERSION;
 use crate::utils::{ProjectIgnoreMatcher, is_probably_ignored, normalize_path};
@@ -65,54 +63,13 @@ pub(crate) fn system_time_to_unix_ms(value: SystemTime) -> i64 {
 }
 
 pub(crate) fn is_state_complete(state: &storage::ExistingFileState) -> bool {
-    artifact_fingerprints_match(state)
-        && graph_counts_match(state)
-        && graph_fingerprint_matches(state)
-        && graph_edge_fingerprint_matches(state)
-        && quality_fingerprint_matches(state)
+    storage::state_completeness_report(state).is_complete()
 }
 
 pub(crate) fn is_quality_state_complete(state: &storage::ExistingQualityState) -> bool {
     state.quality_ruleset_version == CURRENT_QUALITY_RULESET_VERSION
         && state.quality_violation_count == state.actual_quality_violation_count
         && state.quality_violation_hash == state.actual_quality_violation_hash
-}
-
-fn artifact_fingerprints_match(state: &storage::ExistingFileState) -> bool {
-    state.artifact_fingerprint_version == Some(CURRENT_ARTIFACT_FINGERPRINT_VERSION)
-        && state.fts_sample_hash.as_deref() == state.actual_fts_sample_hash.as_deref()
-        && state.chunk_manifest_count == Some(state.actual_chunk_manifest_count)
-        && state.chunk_manifest_hash.as_deref() == Some(state.actual_chunk_manifest_hash.as_str())
-        && state.chunk_embedding_count == Some(state.actual_chunk_embedding_count)
-        && state.chunk_embedding_hash.as_deref() == Some(state.actual_chunk_embedding_hash.as_str())
-        && state.semantic_vector_hash.as_deref() == state.actual_semantic_vector_hash.as_deref()
-        && state.ann_bucket_count == Some(state.actual_ann_bucket_count)
-        && state.ann_bucket_hash.as_deref() == Some(state.actual_ann_bucket_hash.as_str())
-}
-
-fn graph_counts_match(state: &storage::ExistingFileState) -> bool {
-    state.graph_symbol_count == Some(state.actual_graph_symbol_count)
-        && state.graph_ref_count == Some(state.actual_graph_ref_count)
-        && state.graph_module_dep_count == Some(state.actual_graph_module_dep_count)
-}
-
-fn graph_fingerprint_matches(state: &storage::ExistingFileState) -> bool {
-    state.graph_content_hash.as_deref() == Some(state.actual_graph_content_hash.as_str())
-        && state.graph_fingerprint_version == Some(CURRENT_GRAPH_FINGERPRINT_VERSION)
-}
-
-fn graph_edge_fingerprint_matches(state: &storage::ExistingFileState) -> bool {
-    state.graph_edge_out_count == Some(state.actual_graph_edge_out_count)
-        && state.graph_edge_in_count == Some(state.actual_graph_edge_in_count)
-        && state.graph_edge_hash.as_deref() == Some(state.actual_graph_edge_hash.as_str())
-        && state.graph_edge_fingerprint_version == Some(CURRENT_GRAPH_EDGE_FINGERPRINT_VERSION)
-}
-
-fn quality_fingerprint_matches(state: &storage::ExistingFileState) -> bool {
-    state.quality_ruleset_version == Some(CURRENT_QUALITY_RULESET_VERSION)
-        && state.quality_violation_count == Some(state.actual_quality_violation_count)
-        && state.quality_violation_hash.as_deref()
-            == Some(state.actual_quality_violation_hash.as_str())
 }
 
 fn clamp_i128_to_i64(value: i128) -> i64 {
@@ -129,7 +86,9 @@ fn clamp_i128_to_i64(value: i128) -> i64 {
 mod tests {
     use super::{is_quality_state_complete, is_state_complete};
     use crate::artifact_fingerprint::CURRENT_ARTIFACT_FINGERPRINT_VERSION;
-    use crate::engine::storage::{ExistingFileState, ExistingQualityState};
+    use crate::engine::storage::{
+        ExistingFileState, ExistingQualityState, FileStateSection, state_completeness_report,
+    };
     use crate::graph::{CURRENT_GRAPH_EDGE_FINGERPRINT_VERSION, CURRENT_GRAPH_FINGERPRINT_VERSION};
     use crate::quality::{CURRENT_QUALITY_RULESET_VERSION, violations_hash};
 
@@ -269,6 +228,18 @@ mod tests {
         let mut state = complete_state();
         state.graph_edge_fingerprint_version = Some(CURRENT_GRAPH_EDGE_FINGERPRINT_VERSION - 1);
         assert!(!is_state_complete(&state));
+    }
+
+    #[test]
+    fn state_completeness_report_surfaces_failed_sections() {
+        let mut state = complete_state();
+        state.graph_edge_hash = None;
+        state.quality_violation_hash = Some("other".to_string());
+
+        let report = state_completeness_report(&state);
+        assert!(!report.is_complete());
+        assert!(report.contains(FileStateSection::GraphEdges));
+        assert!(report.contains(FileStateSection::Quality));
     }
 
     #[test]

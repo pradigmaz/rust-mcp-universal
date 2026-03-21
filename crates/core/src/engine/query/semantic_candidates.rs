@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use rusqlite::Connection;
 
+use crate::model::SemanticFailMode;
 use crate::vector_rank::semantic_model_name;
 
 use super::vector_utils::{cosine_similarity, is_zero_vector, parse_vector_with_dim, trim_excerpt};
@@ -26,6 +27,12 @@ pub(super) struct SemanticFileCandidate {
     pub(super) semantic_fallback: bool,
 }
 
+#[derive(Debug, Clone, Default)]
+pub(super) struct SemanticFileCandidateBatch {
+    pub(super) candidates: Vec<SemanticFileCandidate>,
+    pub(super) corrupted_rows: usize,
+}
+
 type RawSemanticCandidateRow = (String, String, String, i64, String);
 
 pub(super) fn semantic_file_candidates(
@@ -33,26 +40,35 @@ pub(super) fn semantic_file_candidates(
     query_vec: &[f32],
     candidate_limit: usize,
     probe_factor: f32,
-) -> Result<Vec<SemanticFileCandidate>> {
+    fail_mode: SemanticFailMode,
+) -> Result<SemanticFileCandidateBatch> {
     if candidate_limit == 0 {
-        return Ok(Vec::new());
+        return Ok(SemanticFileCandidateBatch::default());
     }
     if is_zero_vector(query_vec) {
-        return Ok(Vec::new());
+        return Ok(SemanticFileCandidateBatch::default());
     }
 
     let model_name = semantic_model_name();
+    let strict_corruption = fail_mode == SemanticFailMode::FailClosed;
     if let Some(candidates) = ann_probing::semantic_candidates_from_ann(
         conn,
         query_vec,
         &model_name,
         candidate_limit,
         probe_factor,
+        strict_corruption,
     )? {
         return Ok(candidates);
     }
 
-    fallback::semantic_candidates_from_full_scan(conn, query_vec, &model_name, candidate_limit)
+    fallback::semantic_candidates_from_full_scan(
+        conn,
+        query_vec,
+        &model_name,
+        candidate_limit,
+        strict_corruption,
+    )
 }
 
 fn score_semantic_candidates(
@@ -60,12 +76,23 @@ fn score_semantic_candidates(
     query_vec: &[f32],
     candidate_limit: usize,
     telemetry: RetrievalTelemetry,
-) -> Result<Vec<SemanticFileCandidate>> {
+    strict_corruption: bool,
+) -> Result<SemanticFileCandidateBatch> {
     let mut scored = Vec::with_capacity(rows.len());
+    let mut corrupted_rows = 0_usize;
     for (path, raw_vector, sample, size_bytes, language) in rows {
-        let vector = parse_vector_with_dim(&raw_vector, query_vec.len()).with_context(|| {
+        let vector = match parse_vector_with_dim(&raw_vector, query_vec.len()).with_context(|| {
             format!("invalid semantic vector for semantic candidate path `{path}`")
-        })?;
+        }) {
+            Ok(vector) => vector,
+            Err(err) => {
+                if strict_corruption {
+                    return Err(err);
+                }
+                corrupted_rows = corrupted_rows.saturating_add(1);
+                continue;
+            }
+        };
         let semantic_score = cosine_similarity(query_vec, &vector).max(0.0);
         scored.push(SemanticFileCandidate {
             path,
@@ -83,7 +110,10 @@ fn score_semantic_candidates(
             .then_with(|| a.path.cmp(&b.path))
     });
     scored.truncate(candidate_limit);
-    Ok(scored)
+    Ok(SemanticFileCandidateBatch {
+        candidates: scored,
+        corrupted_rows,
+    })
 }
 
 #[cfg(test)]

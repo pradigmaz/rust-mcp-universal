@@ -5,8 +5,8 @@ use crate::vector_rank::ann_bucket_keys;
 
 use super::telemetry::RetrievalTelemetry;
 use super::{
-    RawSemanticCandidateRow, SemanticFileCandidate, ann_accept_floor, ann_probe_limit_with_factor,
-    score_semantic_candidates,
+    RawSemanticCandidateRow, SemanticFileCandidateBatch, ann_accept_floor,
+    ann_probe_limit_with_factor, score_semantic_candidates,
 };
 
 pub(super) fn semantic_candidates_from_ann(
@@ -15,7 +15,8 @@ pub(super) fn semantic_candidates_from_ann(
     model_name: &str,
     candidate_limit: usize,
     probe_factor: f32,
-) -> Result<Option<Vec<SemanticFileCandidate>>> {
+    strict_corruption: bool,
+) -> Result<Option<SemanticFileCandidateBatch>> {
     let keys = ann_bucket_keys(query_vec);
     if keys.len() < 4 {
         return Ok(None);
@@ -86,12 +87,17 @@ pub(super) fn semantic_candidates_from_ann(
             },
         )
         .collect::<Vec<RawSemanticCandidateRow>>();
-    let mut candidates =
-        score_semantic_candidates(rows, query_vec, candidate_limit, RetrievalTelemetry::ann())?;
+    let mut batch = score_semantic_candidates(
+        rows,
+        query_vec,
+        candidate_limit,
+        RetrievalTelemetry::ann(),
+        strict_corruption,
+    )?;
     let ann_floor = ann_accept_floor(candidate_limit);
-    if candidates.len() < ann_floor {
+    if batch.candidates.len() < ann_floor {
         return Ok(None);
     }
-    candidates.truncate(candidate_limit);
-    Ok(Some(candidates))
+    batch.candidates.truncate(candidate_limit);
+    Ok(Some(batch))
 }

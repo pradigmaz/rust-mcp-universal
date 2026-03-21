@@ -67,10 +67,12 @@ pub(super) fn search_with_meta(engine: &Engine, options: &QueryOptions) -> Resul
             query_vec.as_deref().unwrap_or(&[]),
             candidate_limit,
             profile.probe_factor,
+            options.semantic_fail_mode,
         );
         match semantic_file_result {
-            Ok(candidates) => {
-                semantic_file_pool = candidates;
+            Ok(batch) => {
+                semantic_stage_failed = batch.corrupted_rows > 0 && batch.candidates.is_empty();
+                semantic_file_pool = batch.candidates;
             }
             Err(err) => {
                 if options.semantic_fail_mode == SemanticFailMode::FailClosed {

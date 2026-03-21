@@ -6,7 +6,7 @@ use rusqlite::Transaction;
 use time::OffsetDateTime;
 
 use super::super::{compatibility, storage};
-use super::run::types::RunSelector;
+use super::run::types::{PassResult, RunSelector};
 use super::util::path_under_walk_error;
 use crate::index_scope::IndexScope;
 use crate::model::IndexingOptions;
@@ -26,6 +26,7 @@ pub(super) struct FinalizeMetrics<'a> {
 
 pub(super) struct PruneDeletedPathsInput<'a, 'conn> {
     pub tx: &'a Transaction<'conn>,
+    pub pass_result: &'a mut PassResult,
     pub existing_files: &'a HashMap<String, storage::ExistingFileState>,
     pub options: &'a IndexingOptions,
     pub scope: &'a IndexScope,
@@ -86,12 +87,14 @@ pub(super) fn prune_deleted_paths(input: PruneDeletedPathsInput<'_, '_>) -> Resu
     let mut deleted = 0;
     for path in input.existing_files.keys() {
         if !input.options.reindex && input.scope.has_rules() && !input.scope.allows(path) {
+            input.pass_result.mark_graph_dirty(input.tx, path)?;
             storage::remove_path_index(input.tx, path)?;
             deleted += 1;
             continue;
         }
         if matches!(input.selector, RunSelector::Commit(_)) {
             if input.authoritative_deleted_paths.contains(path) {
+                input.pass_result.mark_graph_dirty(input.tx, path)?;
                 storage::remove_path_index(input.tx, path)?;
                 deleted += 1;
             }
@@ -105,6 +108,7 @@ pub(super) fn prune_deleted_paths(input: PruneDeletedPathsInput<'_, '_>) -> Resu
         {
             continue;
         }
+        input.pass_result.mark_graph_dirty(input.tx, path)?;
         storage::remove_path_index(input.tx, path)?;
         deleted += 1;
     }

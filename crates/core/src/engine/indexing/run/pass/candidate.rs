@@ -81,6 +81,7 @@ pub(super) fn index_candidate_path(
             &indexed_at,
         )?;
         if config.existing_files.contains_key(rel_text) {
+            pass_result.mark_graph_dirty(tx, rel_text)?;
             storage::remove_path_index(tx, rel_text)?;
             pass_result.stats.changed += 1;
         }
@@ -127,6 +128,7 @@ pub(super) fn index_candidate_path(
     }
 
     let existed_before = config.existing_files.contains_key(rel_text);
+    pass_result.mark_graph_dirty(tx, rel_text)?;
     let indexed_at = source::now_indexed_at()?;
     let graph_artifacts =
         graph::build_graph_artifacts(path, &source_snapshot.language, &source_snapshot.full_text);
@@ -180,6 +182,9 @@ fn handle_source_io_failure(
         stats::IoFailurePolicy::AuthoritativeRemoval => {
             if config.existing_quality.contains_key(rel_text) {
                 storage::remove_path_quality(tx, rel_text)?;
+            }
+            if config.existing_files.contains_key(rel_text) {
+                pass_result.mark_graph_dirty(tx, rel_text)?;
             }
             stats::mark_authoritative_removed_path_as_skipped(
                 tx,

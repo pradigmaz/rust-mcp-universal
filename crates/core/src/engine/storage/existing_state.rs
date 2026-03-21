@@ -9,6 +9,13 @@ use super::artifact_state::{
 use super::graph_state::{load_actual_graph_edge_state, load_actual_graph_state};
 use super::quality_state::load_actual_quality_state;
 
+#[path = "existing_state/completeness.rs"]
+mod completeness;
+
+pub(in crate::engine) use completeness::state_completeness_report;
+#[cfg(test)]
+pub(in crate::engine) use completeness::FileStateSection;
+
 #[derive(Debug, Clone)]
 pub(in crate::engine) struct ExistingFileState {
     pub(in crate::engine) sha256: String,

@@ -74,3 +74,40 @@ fn explain_breakdown_is_reproducible_for_same_query_inputs() -> Result<(), Box<d
     cleanup_project(&project_dir);
     Ok(())
 }
+
+#[test]
+fn report_falls_back_when_chunk_embedding_payload_is_corrupted() -> Result<(), Box<dyn Error>> {
+    let (project_dir, engine) = setup_indexed_project()?;
+    let db_path = project_dir.join(".rmu/index.db");
+    let conn = Connection::open(&db_path)?;
+    conn.execute(
+        "UPDATE chunk_embeddings
+         SET vector_json = '[1,2,3]'
+         WHERE rowid = (SELECT rowid FROM chunk_embeddings LIMIT 1)",
+        [],
+    )?;
+
+    let report = engine.build_report(
+        &QueryOptions {
+            query: "alpha_beta_gamma".to_string(),
+            limit: 10,
+            detailed: true,
+            semantic: true,
+            semantic_fail_mode: SemanticFailMode::FailOpen,
+            privacy_mode: PrivacyMode::Off,
+            context_mode: None,
+        },
+        20_000,
+        6_000,
+    )?;
+
+    assert!(
+        report
+            .selected_context
+            .iter()
+            .any(|item| item.chunk_source == "chunk_embedding_fallback")
+    );
+
+    cleanup_project(&project_dir);
+    Ok(())
+}

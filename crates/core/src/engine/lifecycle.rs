@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::db_store;
 use crate::db_store::touch_database_metadata;
@@ -42,7 +42,7 @@ pub(super) fn resolve_paths_read_only(
 
 pub(super) fn init_db(engine: &Engine) -> Result<()> {
     let database_preexisted = engine.db_path.exists();
-    let mut conn = open_db(engine)?;
+    let mut conn = open_db_path(&engine.db_path)?;
     compatibility::ensure_schema_preflight(&conn)?;
     if engine.migration_mode == MigrationMode::Off {
         if !database_preexisted {
@@ -62,14 +62,16 @@ pub(super) fn init_db(engine: &Engine) -> Result<()> {
 }
 
 pub(super) fn open_db(engine: &Engine) -> Result<Connection> {
-    let conn = Connection::open(&engine.db_path)
-        .with_context(|| format!("failed to open db {}", engine.db_path.display()))?;
-    conn.execute_batch(schema::OPEN_DB_PRAGMAS_SQL)
-        .context("failed to apply sqlite pragmas")?;
+    let preexisting = engine.db_path.exists();
+    let conn = open_db_path(&engine.db_path)?;
+    if preexisting {
+        touch_existing_access_with_conn_best_effort(engine, &conn);
+    }
     Ok(conn)
 }
 
 pub(super) fn open_db_read_only(engine: &Engine) -> Result<Connection> {
+    touch_existing_access_best_effort(engine);
     let conn =
         Connection::open_with_flags(&engine.db_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
             .with_context(|| format!("failed to open db {}", engine.db_path.display()))?;
@@ -105,6 +107,49 @@ pub(super) fn touch_access(engine: &Engine) -> Result<()> {
     let Some(_touch_lock) = RebuildLockGuard::try_acquire(&engine.db_path)? else {
         return Ok(());
     };
-    let conn = open_db(engine)?;
+    let conn = open_db_path(&engine.db_path)?;
     touch_database_metadata(&conn, &engine.project_root)
+}
+
+fn open_db_path(db_path: &Path) -> Result<Connection> {
+    let conn =
+        Connection::open(db_path).with_context(|| format!("failed to open db {}", db_path.display()))?;
+    conn.execute_batch(schema::OPEN_DB_PRAGMAS_SQL)
+        .context("failed to apply sqlite pragmas")?;
+    Ok(conn)
+}
+
+fn touch_existing_access_best_effort(engine: &Engine) {
+    let _ = touch_existing_access(engine);
+}
+
+fn touch_existing_access(engine: &Engine) -> Result<()> {
+    if !engine.db_path.exists() {
+        return Ok(());
+    }
+    let Some(_touch_lock) = RebuildLockGuard::try_acquire(&engine.db_path)? else {
+        return Ok(());
+    };
+    let conn = Connection::open_with_flags(
+        &engine.db_path,
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE,
+    )
+    .with_context(|| format!("failed to open db {}", engine.db_path.display()))?;
+    conn.execute_batch(schema::OPEN_DB_PRAGMAS_SQL)
+        .context("failed to apply sqlite pragmas")?;
+    touch_database_metadata(&conn, &engine.project_root)
+}
+
+fn touch_existing_access_with_conn_best_effort(engine: &Engine, conn: &Connection) {
+    let _ = touch_existing_access_with_conn(engine, conn);
+}
+
+fn touch_existing_access_with_conn(engine: &Engine, conn: &Connection) -> Result<()> {
+    if !engine.db_path.exists() {
+        return Ok(());
+    }
+    let Some(_touch_lock) = RebuildLockGuard::try_acquire(&engine.db_path)? else {
+        return Ok(());
+    };
+    touch_database_metadata(conn, &engine.project_root)
 }
