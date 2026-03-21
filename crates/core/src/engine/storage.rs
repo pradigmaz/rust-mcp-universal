@@ -12,6 +12,8 @@ mod graph_state;
 mod ops;
 #[path = "storage/quality_state.rs"]
 mod quality_state;
+#[path = "storage/quality_state_read.rs"]
+mod quality_state_read;
 
 pub(super) use cache::{
     CachedChunkEmbeddingLookup, delete_cached_chunk_embedding, load_cached_chunk_embedding,
@@ -24,4 +26,6 @@ pub(crate) use ops::{
     UpsertQualitySnapshotInput, clear_index_tables, remove_path_index, remove_path_quality,
     update_path_source_mtime, upsert_meta, upsert_quality_snapshot,
 };
-pub(super) use quality_state::{ExistingQualityState, load_existing_quality_state};
+pub(crate) use quality_state::ExistingQualityState;
+pub(super) use quality_state::load_existing_quality_state;
+pub(crate) use quality_state_read::load_existing_quality_state_conn;

@@ -14,7 +14,9 @@ use crate::rpc_tools::parsing::{
 };
 use crate::rpc_tools::result::tool_result;
 
-use super::{parse_optional_migration_mode, parse_optional_privacy_mode};
+use super::{
+    ensure_query_index_ready, parse_optional_migration_mode, parse_optional_privacy_mode,
+};
 
 pub(super) fn rule_violations(args: &Value, state: &mut ServerState) -> Result<Value> {
     reject_unknown_fields(
@@ -63,8 +65,9 @@ pub(super) fn rule_violations(args: &Value, state: &mut ServerState) -> Result<V
     .map_err(|err| tool_domain_error(err.to_string()))?;
 
     if auto_index {
+        ensure_query_index_ready(&engine, true).map_err(|err| tool_domain_error(err.to_string()))?;
         engine
-            .workspace_brief_with_policy(true)
+            .refresh_quality_if_needed()
             .map_err(|err| tool_domain_error(err.to_string()))?;
     } else if !engine.db_path.exists() {
         return Err(tool_domain_error(

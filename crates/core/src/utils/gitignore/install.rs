@@ -32,7 +32,7 @@ pub fn install_ignore_rules(
     let update = install_managed_block(&path)?;
     Ok(IgnoreInstallReport {
         target,
-        path: path.display().to_string(),
+        path: path.to_string_lossy().replace('\\', "/"),
         created: update.created,
         updated: update.updated,
         warning: None,

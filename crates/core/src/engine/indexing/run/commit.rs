@@ -88,6 +88,7 @@ pub(super) fn finalize_and_commit(
         unchanged: pass_result.stats.unchanged,
         deleted: pass_result.stats.deleted,
         project_root: &engine.project_root,
+        options,
         semantic_model,
         semantic_dim: usize::try_from(semantic_dim)
             .ok()

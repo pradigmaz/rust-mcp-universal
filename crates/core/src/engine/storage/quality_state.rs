@@ -24,7 +24,7 @@ impl Default for ActualQualityState {
 }
 
 #[derive(Debug, Clone)]
-pub(in crate::engine) struct ExistingQualityState {
+pub(crate) struct ExistingQualityState {
     pub(in crate::engine) source_mtime_unix_ms: Option<i64>,
     pub(in crate::engine) quality_ruleset_version: i64,
     pub(in crate::engine) quality_metric_count: i64,
@@ -35,6 +35,16 @@ pub(in crate::engine) struct ExistingQualityState {
     pub(in crate::engine) actual_quality_metric_hash: String,
     pub(in crate::engine) actual_quality_violation_count: i64,
     pub(in crate::engine) actual_quality_violation_hash: String,
+}
+
+impl ExistingQualityState {
+    pub(crate) fn is_complete(&self, expected_ruleset_version: i64) -> bool {
+        self.quality_ruleset_version == expected_ruleset_version
+            && self.quality_metric_count == self.actual_quality_metric_count
+            && self.quality_metric_hash == self.actual_quality_metric_hash
+            && self.quality_violation_count == self.actual_quality_violation_count
+            && self.quality_violation_hash == self.actual_quality_violation_hash
+    }
 }
 
 pub(in crate::engine) fn load_actual_quality_state(

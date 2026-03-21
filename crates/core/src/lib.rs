@@ -8,6 +8,7 @@ mod engine_quality;
 mod engine_status;
 mod graph;
 mod index_scope;
+mod index_scope_meta;
 pub mod model;
 mod privacy;
 mod quality;

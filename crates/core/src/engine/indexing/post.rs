@@ -9,6 +9,7 @@ use super::super::{compatibility, storage};
 use super::run::types::{PassResult, RunSelector};
 use super::util::path_under_walk_error;
 use crate::index_scope::IndexScope;
+use crate::index_scope_meta::write_effective_index_scope_meta;
 use crate::model::IndexingOptions;
 
 pub(super) struct FinalizeMetrics<'a> {
@@ -20,6 +21,7 @@ pub(super) struct FinalizeMetrics<'a> {
     pub unchanged: usize,
     pub deleted: usize,
     pub project_root: &'a Path,
+    pub options: &'a IndexingOptions,
     pub semantic_model: &'a str,
     pub semantic_dim: u32,
 }
@@ -75,6 +77,7 @@ pub(super) fn finalize_index_metadata(
         "project_root",
         &metrics.project_root.display().to_string(),
     )?;
+    write_effective_index_scope_meta(tx, metrics.options)?;
     compatibility::write_index_identity_meta(tx, metrics.semantic_model, metrics.semantic_dim)?;
 
     let access_at =

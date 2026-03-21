@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use anyhow::Result;
 use rusqlite::params;
 
-use super::status::read_quality_status;
+use super::compute_quality_status;
 use crate::engine::Engine;
 use crate::model::{
     QualityMode, QualityStatus, QualityViolationEntry, RuleViolationFileHit, RuleViolationsOptions,
@@ -17,11 +17,11 @@ pub(super) fn load_quality_summary(engine: &Engine) -> Result<WorkspaceQualitySu
     if !engine.db_path.exists() {
         return Ok(empty_quality_summary(QualityStatus::Unavailable));
     }
-    let conn = engine.open_db_read_only()?;
-    let status = read_quality_status(&conn)?;
+    let status = compute_quality_status(engine)?;
     if status == QualityStatus::Unavailable {
         return Ok(empty_quality_summary(status));
     }
+    let conn = engine.open_db_read_only()?;
 
     let summary = try_load_quality_summary(&conn).unwrap_or_else(|_| empty_quality_summary(QualityStatus::Degraded));
     Ok(WorkspaceQualitySummary { status, ..summary })
@@ -38,14 +38,14 @@ pub(super) fn load_rule_violations(
         });
     }
 
-    let conn = engine.open_db_read_only()?;
-    let status = read_quality_status(&conn)?;
+    let status = compute_quality_status(engine)?;
     if status == QualityStatus::Unavailable {
         return Ok(RuleViolationsResult {
             summary: empty_rule_violations_summary(status),
             hits: Vec::new(),
         });
     }
+    let conn = engine.open_db_read_only()?;
 
     let result = try_load_rule_violations(&conn, options)
         .unwrap_or_else(|_| RuleViolationsResult {

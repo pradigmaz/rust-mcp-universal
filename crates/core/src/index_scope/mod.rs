@@ -120,6 +120,10 @@ impl IndexScope {
     }
 }
 
+pub(crate) fn normalize_scope_pattern(raw: &str) -> String {
+    normalize::normalize(raw)
+}
+
 fn parse_rules<'a>(values: impl IntoIterator<Item = &'a str>) -> Result<Vec<ScopeRule>> {
     values
         .into_iter()

@@ -157,6 +157,64 @@ fn rule_violations_auto_index_backfills_missing_quality_rows() {
         result["structuredContent"]["summary"]["violating_files"],
         json!(1)
     );
+    assert_eq!(
+        result["structuredContent"]["summary"]["status"],
+        json!("ready")
+    );
+
+    let _ = fs::remove_dir_all(project_dir);
+}
+
+#[test]
+fn rule_violations_auto_index_uses_mixed_profile_for_fresh_typescript_repos() {
+    let project_dir = temp_dir("rmu-mcp-tests-rule-violations-auto-index-mixed");
+    fs::create_dir_all(project_dir.join("src")).expect("create src");
+    fs::create_dir_all(project_dir.join("docs")).expect("create docs");
+    fs::write(
+        project_dir.join("src/main.ts"),
+        (0..301)
+            .map(|idx| format!("export const line_{idx} = {idx};\n"))
+            .collect::<String>(),
+    )
+    .expect("write ts source");
+    fs::write(
+        project_dir.join("docs/design.md"),
+        (0..301)
+            .map(|idx| format!("docs_line_{idx}\n"))
+            .collect::<String>(),
+    )
+    .expect("write docs");
+
+    let mut state = state_for(project_dir.clone(), Some(project_dir.join(".rmu/index.db")));
+    let result = handle_tool_call(
+        Some(json!({
+            "name": "rule_violations",
+            "arguments": {
+                "auto_index": true,
+                "limit": 10
+            }
+        })),
+        &mut state,
+    )
+    .expect("rule_violations auto_index should succeed on a fresh TS repo");
+
+    assert_eq!(result["isError"], json!(false));
+    assert_eq!(result["structuredContent"]["summary"]["status"], json!("ready"));
+    assert_eq!(result["structuredContent"]["summary"]["violating_files"], json!(1));
+    assert_eq!(
+        result["structuredContent"]["hits"][0]["path"],
+        json!("src/main.ts")
+    );
+
+    let status = handle_tool_call(
+        Some(json!({
+            "name": "index_status",
+            "arguments": {}
+        })),
+        &mut state,
+    )
+    .expect("index_status should succeed");
+    assert_eq!(status["structuredContent"]["files"], json!(1));
 
     let _ = fs::remove_dir_all(project_dir);
 }

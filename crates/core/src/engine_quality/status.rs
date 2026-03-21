@@ -2,8 +2,11 @@ use anyhow::Result;
 use rusqlite::{Connection, OptionalExtension, params};
 
 use crate::engine::Engine;
+use crate::engine::storage::load_existing_quality_state_conn;
 use crate::model::QualityStatus;
 use crate::quality::CURRENT_QUALITY_RULESET_VERSION;
+
+use super::scope::build_full_quality_refresh_plan;
 
 const META_QUALITY_STATUS: &str = "quality.status";
 const META_QUALITY_RULESET_VERSION: &str = "quality.ruleset_version";
@@ -21,38 +24,25 @@ pub(super) fn quality_tables_available(conn: &Connection) -> Result<bool> {
     Ok(rows.len() == 3)
 }
 
-pub(super) fn read_quality_status(conn: &Connection) -> Result<QualityStatus> {
-    if !quality_tables_available(conn)? {
+pub(crate) fn compute_quality_status(engine: &Engine) -> Result<QualityStatus> {
+    if !engine.db_path.exists() {
         return Ok(QualityStatus::Unavailable);
     }
 
-    let stored = conn
-        .query_row(
-            "SELECT value FROM meta WHERE key = ?1",
-            [META_QUALITY_STATUS],
-            |row| row.get::<_, String>(0),
-        )
-        .optional()?;
-    let stored = stored
-        .as_deref()
-        .and_then(QualityStatus::parse)
-        .unwrap_or(QualityStatus::Stale);
+    let conn = engine.open_db_read_only()?;
+    if !quality_tables_available(&conn)? {
+        return Ok(QualityStatus::Unavailable);
+    }
 
-    if stored == QualityStatus::Degraded {
+    if stored_quality_status(&conn)? == QualityStatus::Degraded {
         return Ok(QualityStatus::Degraded);
     }
-    if quality_refresh_needed_conn(conn)? {
+
+    let plan = build_full_quality_refresh_plan(engine, &conn)?;
+    if quality_refresh_needed_conn(&conn, &plan)? {
         return Ok(QualityStatus::Stale);
     }
     Ok(QualityStatus::Ready)
-}
-
-pub(crate) fn quality_index_needs_refresh(engine: &Engine) -> Result<bool> {
-    if !engine.db_path.exists() {
-        return Ok(false);
-    }
-    let conn = engine.open_db_read_only()?;
-    Ok(read_quality_status(&conn)? != QualityStatus::Ready)
 }
 
 pub(super) fn write_quality_status_ready(tx: &rusqlite::Transaction<'_>) -> Result<()> {
@@ -87,36 +77,38 @@ pub(super) fn write_quality_status_unavailable(conn: &Connection) -> Result<()> 
     Ok(())
 }
 
-fn quality_refresh_needed_conn(conn: &Connection) -> Result<bool> {
-    let missing_quality_rows: i64 = conn.query_row(
-        r#"
-        SELECT COUNT(1)
-        FROM files f
-        LEFT JOIN file_quality q ON q.path = f.path
-        WHERE q.path IS NULL
-        "#,
-        [],
-        |row| row.get(0),
-    )?;
-    if missing_quality_rows > 0 {
+fn stored_quality_status(conn: &Connection) -> Result<QualityStatus> {
+    Ok(conn
+        .query_row(
+            "SELECT value FROM meta WHERE key = ?1",
+            [META_QUALITY_STATUS],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()?
+        .as_deref()
+        .and_then(QualityStatus::parse)
+        .unwrap_or(QualityStatus::Stale))
+}
+
+fn quality_refresh_needed_conn(
+    conn: &Connection,
+    plan: &super::scope::QualityRefreshPlan,
+) -> Result<bool> {
+    let existing_quality = load_existing_quality_state_conn(conn)?;
+    if !plan.deleted_paths.is_empty() {
         return Ok(true);
     }
 
-    let outdated_rows: i64 = conn.query_row(
-        "SELECT COUNT(1) FROM file_quality WHERE quality_ruleset_version != ?1",
-        [CURRENT_QUALITY_RULESET_VERSION],
-        |row| row.get(0),
-    )?;
-    if outdated_rows > 0 {
-        return Ok(true);
+    for path in &plan.refresh_paths {
+        let Some(state) = existing_quality.get(path) else {
+            return Ok(true);
+        };
+        if !state.is_complete(CURRENT_QUALITY_RULESET_VERSION) {
+            return Ok(true);
+        }
     }
 
-    let missing_metrics: i64 = conn.query_row(
-        "SELECT COUNT(1) FROM file_quality WHERE quality_metric_hash = ''",
-        [],
-        |row| row.get(0),
-    )?;
-    Ok(missing_metrics > 0)
+    Ok(false)
 }
 
 fn write_quality_meta(

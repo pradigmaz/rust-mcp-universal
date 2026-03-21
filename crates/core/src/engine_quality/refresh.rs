@@ -2,23 +2,16 @@ use std::collections::HashSet;
 use std::fs;
 
 use anyhow::Result;
-use walkdir::WalkDir;
 
 use super::status::{write_quality_status_degraded, write_quality_status_ready, write_quality_status_unavailable};
+use super::scope::{QualityRefreshPlan, build_full_quality_refresh_plan};
 use crate::engine::Engine;
 use crate::engine::storage::{UpsertQualitySnapshotInput, remove_path_quality, upsert_quality_snapshot};
-use crate::index_scope::IndexScope;
 use crate::quality::{
     IndexedQualityMetrics, build_indexed_quality_facts, build_oversize_quality_facts,
     evaluate_quality, quality_metrics_hash, violations_hash,
 };
-use crate::utils::{INDEX_FILE_LIMIT, ProjectIgnoreMatcher, infer_language, is_probably_ignored, normalize_path};
-
-#[derive(Debug, Default)]
-struct QualityRefreshPlan {
-    refresh_paths: HashSet<String>,
-    deleted_paths: HashSet<String>,
-}
+use crate::utils::{INDEX_FILE_LIMIT, infer_language};
 
 #[derive(Debug)]
 struct QualityRefreshRecord {
@@ -52,47 +45,10 @@ pub(super) fn refresh_quality_after_index(
 }
 
 pub(super) fn refresh_quality_only(engine: &Engine) -> Result<()> {
-    let plan = build_full_quality_refresh_plan(engine)?;
+    let conn = engine.open_db_read_only()?;
+    let plan = build_full_quality_refresh_plan(engine, &conn)?;
     let _ = apply_quality_refresh(engine, plan);
     Ok(())
-}
-
-fn build_full_quality_refresh_plan(engine: &Engine) -> Result<QualityRefreshPlan> {
-    let scope = IndexScope::new(&crate::model::IndexingOptions::default())?;
-    let ignore_matcher = ProjectIgnoreMatcher::new(&engine.project_root)?;
-    let conn = engine.open_db()?;
-    let existing_quality_paths = load_existing_quality_paths(&conn)?;
-    let mut present_paths = HashSet::new();
-
-    for walk_entry in WalkDir::new(&engine.project_root).into_iter() {
-        let Ok(entry) = walk_entry else {
-            continue;
-        };
-        if !entry.file_type().is_file() {
-            continue;
-        }
-        let Ok(relative) = entry.path().strip_prefix(&engine.project_root) else {
-            continue;
-        };
-        if is_probably_ignored(relative) || ignore_matcher.is_ignored(relative, false) {
-            continue;
-        }
-        let rel_text = normalize_path(relative);
-        if !scope.allows(&rel_text) {
-            continue;
-        }
-        present_paths.insert(rel_text);
-    }
-
-    let deleted_paths = existing_quality_paths
-        .difference(&present_paths)
-        .cloned()
-        .collect::<HashSet<_>>();
-
-    Ok(QualityRefreshPlan {
-        refresh_paths: present_paths,
-        deleted_paths,
-    })
 }
 
 fn apply_quality_refresh(engine: &Engine, plan: QualityRefreshPlan) -> Result<()> {
@@ -226,13 +182,6 @@ fn build_refresh_record(
     }))
 }
 
-fn load_existing_quality_paths(conn: &rusqlite::Connection) -> Result<HashSet<String>> {
-    let mut stmt = conn.prepare("SELECT path FROM file_quality")?;
-    Ok(stmt
-        .query_map([], |row| row.get::<_, String>(0))?
-        .collect::<rusqlite::Result<HashSet<_>>>()?)
-}
-
 fn load_indexed_quality_metrics(
     conn: &rusqlite::Connection,
     path: &str,
@@ -257,7 +206,7 @@ fn load_indexed_quality_metrics(
         .unwrap_or_default())
 }
 
-fn sorted_paths(paths: &HashSet<String>) -> Vec<String> {
+fn sorted_paths(paths: &std::collections::HashSet<String>) -> Vec<String> {
     let mut sorted = paths.iter().cloned().collect::<Vec<_>>();
     sorted.sort();
     sorted
