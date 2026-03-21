@@ -19,9 +19,9 @@ pub use navigation::{
     SymbolReferenceHit,
 };
 pub use quality::{
-    QualityMode, QualityViolationEntry, RuleViolationFileHit, RuleViolationsOptions,
-    RuleViolationsResult, RuleViolationsSortBy, RuleViolationsSummary, WorkspaceQualitySummary,
-    WorkspaceQualityTopRule,
+    QualityMode, QualityStatus, QualityViolationEntry, RuleViolationFileHit,
+    RuleViolationsOptions, RuleViolationsResult, RuleViolationsSortBy, RuleViolationsSummary,
+    WorkspaceQualitySummary, WorkspaceQualityTopRule,
 };
 pub use query::{QueryOptions, SearchHit};
 pub use report::{

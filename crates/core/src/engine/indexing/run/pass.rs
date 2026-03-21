@@ -17,8 +17,6 @@ mod files;
 pub(crate) mod filters;
 #[path = "pass/graph.rs"]
 mod graph;
-#[path = "pass/quality.rs"]
-mod quality;
 #[path = "pass/source.rs"]
 mod source;
 #[path = "pass/stats.rs"]

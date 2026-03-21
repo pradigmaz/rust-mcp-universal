@@ -2,10 +2,12 @@ use std::collections::HashMap;
 
 use anyhow::{Result, anyhow};
 
-use crate::quality::violations_hash;
+use crate::quality::{quality_metrics_hash, violations_hash};
 
 #[derive(Debug, Clone)]
 pub(in crate::engine) struct ActualQualityState {
+    pub(in crate::engine) metric_count: i64,
+    pub(in crate::engine) metric_hash: String,
     pub(in crate::engine) violation_count: i64,
     pub(in crate::engine) violation_hash: String,
 }
@@ -13,6 +15,8 @@ pub(in crate::engine) struct ActualQualityState {
 impl Default for ActualQualityState {
     fn default() -> Self {
         Self {
+            metric_count: 0,
+            metric_hash: quality_metrics_hash(&[]),
             violation_count: 0,
             violation_hash: violations_hash(&[]),
         }
@@ -23,8 +27,12 @@ impl Default for ActualQualityState {
 pub(in crate::engine) struct ExistingQualityState {
     pub(in crate::engine) source_mtime_unix_ms: Option<i64>,
     pub(in crate::engine) quality_ruleset_version: i64,
+    pub(in crate::engine) quality_metric_count: i64,
+    pub(in crate::engine) quality_metric_hash: String,
     pub(in crate::engine) quality_violation_count: i64,
     pub(in crate::engine) quality_violation_hash: String,
+    pub(in crate::engine) actual_quality_metric_count: i64,
+    pub(in crate::engine) actual_quality_metric_hash: String,
     pub(in crate::engine) actual_quality_violation_count: i64,
     pub(in crate::engine) actual_quality_violation_hash: String,
 }
@@ -32,6 +40,33 @@ pub(in crate::engine) struct ExistingQualityState {
 pub(in crate::engine) fn load_actual_quality_state(
     tx: &rusqlite::Transaction<'_>,
 ) -> Result<HashMap<String, ActualQualityState>> {
+    let mut metric_stmt = tx.prepare(
+        r#"
+        SELECT path, metric_id, metric_value
+        FROM file_quality_metrics
+        ORDER BY path ASC, metric_id ASC
+        "#,
+    )?;
+    let metric_rows = metric_stmt
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, i64>(2)?,
+            ))
+        })?
+        .collect::<rusqlite::Result<Vec<_>>>()?;
+    let mut metrics_grouped = HashMap::<String, Vec<crate::quality::QualityMetricEntry>>::new();
+    for (path, metric_id, metric_value) in metric_rows {
+        metrics_grouped
+            .entry(path)
+            .or_default()
+            .push(crate::quality::QualityMetricEntry {
+                metric_id,
+                metric_value,
+            });
+    }
+
     let mut stmt = tx.prepare(
         r#"
         SELECT path, rule_id, actual_value, threshold_value, message
@@ -65,10 +100,17 @@ pub(in crate::engine) fn load_actual_quality_state(
     }
 
     let mut out = HashMap::with_capacity(grouped.len());
-    for (path, violations) in grouped {
+    for path in metrics_grouped.keys().chain(grouped.keys()) {
+        if out.contains_key(path) {
+            continue;
+        }
+        let metrics = metrics_grouped.get(path).cloned().unwrap_or_default();
+        let violations = grouped.get(path).cloned().unwrap_or_default();
         out.insert(
-            path,
+            path.clone(),
             ActualQualityState {
+                metric_count: i64::try_from(metrics.len()).unwrap_or(i64::MAX),
+                metric_hash: quality_metrics_hash(&metrics),
                 violation_count: i64::try_from(violations.len()).unwrap_or(i64::MAX),
                 violation_hash: violations_hash(&violations),
             },
@@ -88,6 +130,8 @@ pub(in crate::engine) fn load_existing_quality_state(
             source_mtime_unix_ms,
             quality_mode,
             quality_ruleset_version,
+            quality_metric_count,
+            quality_metric_hash,
             quality_violation_count,
             quality_violation_hash
         FROM file_quality
@@ -102,6 +146,8 @@ pub(in crate::engine) fn load_existing_quality_state(
                 row.get::<_, i64>(3)?,
                 row.get::<_, i64>(4)?,
                 row.get::<_, String>(5)?,
+                row.get::<_, i64>(6)?,
+                row.get::<_, String>(7)?,
             ))
         })?
         .collect::<rusqlite::Result<Vec<_>>>()?;
@@ -112,6 +158,8 @@ pub(in crate::engine) fn load_existing_quality_state(
         source_mtime_unix_ms,
         quality_mode_raw,
         quality_ruleset_version,
+        quality_metric_count,
+        quality_metric_hash,
         quality_violation_count,
         quality_violation_hash,
     ) in rows
@@ -127,8 +175,12 @@ pub(in crate::engine) fn load_existing_quality_state(
             ExistingQualityState {
                 source_mtime_unix_ms,
                 quality_ruleset_version,
+                quality_metric_count,
+                quality_metric_hash,
                 quality_violation_count,
                 quality_violation_hash,
+                actual_quality_metric_count: actual_state.metric_count,
+                actual_quality_metric_hash: actual_state.metric_hash,
                 actual_quality_violation_count: actual_state.violation_count,
                 actual_quality_violation_hash: actual_state.violation_hash,
             },

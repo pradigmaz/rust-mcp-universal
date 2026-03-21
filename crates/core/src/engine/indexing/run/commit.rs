@@ -3,14 +3,15 @@ use std::collections::HashMap;
 use anyhow::Result;
 
 use super::super::post::{
-    FinalizeMetrics, PruneDeletedPathsInput, finalize_index_metadata, prune_deleted_paths,
-    prune_deleted_quality_paths,
+    FinalizeMetrics, PruneDeletedPathsInput, collect_deleted_quality_paths,
+    finalize_index_metadata, prune_deleted_paths,
 };
 use super::types::{PassResult, RunSelector};
 use crate::engine::{Engine, IndexSummary, storage};
 use crate::index_scope::IndexScope;
 use crate::model::IndexingOptions;
 use crate::rebuild_lock::RebuildLockGuard;
+use crate::engine_quality;
 
 pub(super) struct FinalizeCommitInput<'a> {
     pub(super) engine: &'a Engine,
@@ -61,8 +62,7 @@ pub(super) fn finalize_and_commit(
         authoritative_deleted_paths: &authoritative_deleted_paths,
         failed_walk_prefixes: &failed_walk_prefixes,
     })?;
-    prune_deleted_quality_paths(
-        &tx,
+    let deleted_quality_paths = collect_deleted_quality_paths(
         existing_quality,
         options,
         scope,
@@ -71,7 +71,8 @@ pub(super) fn finalize_and_commit(
         &failed_paths,
         &authoritative_deleted_paths,
         &failed_walk_prefixes,
-    )?;
+    );
+    pass_result.quality_deleted_paths.extend(deleted_quality_paths);
     storage::refresh_file_graph_edges(
         &tx,
         &pass_result.graph_dirty_paths,
@@ -96,8 +97,7 @@ pub(super) fn finalize_and_commit(
     finalize_index_metadata(&tx, &finalize_metrics)?;
 
     tx.commit()?;
-    drop(rebuild_lock);
-    Ok(IndexSummary {
+    let summary = IndexSummary {
         scanned: pass_result.stats.scanned,
         indexed: pass_result.stats.indexed,
         skipped_binary_or_large: pass_result.stats.skipped,
@@ -117,5 +117,12 @@ pub(super) fn finalize_and_commit(
         lock_wait_ms,
         embedding_cache_hits: pass_result.stats.embedding_cache_hits,
         embedding_cache_misses: pass_result.stats.embedding_cache_misses,
-    })
+    };
+    engine_quality::refresh_quality_after_index(
+        engine,
+        &pass_result.quality_refresh_paths,
+        &pass_result.quality_deleted_paths,
+    )?;
+    drop(rebuild_lock);
+    Ok(summary)
 }

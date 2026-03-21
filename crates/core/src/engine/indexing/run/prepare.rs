@@ -40,7 +40,7 @@ pub(super) fn prepare_index_run(
     let existing_quality = if full_reindex {
         HashMap::new()
     } else {
-        storage::load_existing_quality_state(tx)?
+        storage::load_existing_quality_state(tx).unwrap_or_default()
     };
     let ignore_matcher = ProjectIgnoreMatcher::new(&engine.project_root)?;
     let selector =

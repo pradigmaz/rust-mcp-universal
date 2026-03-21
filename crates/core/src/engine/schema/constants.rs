@@ -132,6 +132,8 @@ pub(super) const INIT_DB_SCHEMA_SQL: &str = r#"
                 quality_mode TEXT NOT NULL,
                 source_mtime_unix_ms INTEGER,
                 quality_ruleset_version INTEGER NOT NULL,
+                quality_metric_count INTEGER NOT NULL,
+                quality_metric_hash TEXT NOT NULL,
                 quality_violation_count INTEGER NOT NULL,
                 quality_violation_hash TEXT NOT NULL,
                 quality_indexed_at_utc TEXT NOT NULL
@@ -139,6 +141,15 @@ pub(super) const INIT_DB_SCHEMA_SQL: &str = r#"
             CREATE INDEX IF NOT EXISTS idx_file_quality_language ON file_quality(language);
             CREATE INDEX IF NOT EXISTS idx_file_quality_violation_count
                 ON file_quality(quality_violation_count);
+
+            CREATE TABLE IF NOT EXISTS file_quality_metrics (
+                path TEXT NOT NULL,
+                metric_id TEXT NOT NULL,
+                metric_value INTEGER NOT NULL,
+                PRIMARY KEY(path, metric_id)
+            );
+            CREATE INDEX IF NOT EXISTS idx_file_quality_metrics_metric
+                ON file_quality_metrics(metric_id);
 
             CREATE TABLE IF NOT EXISTS file_rule_violations (
                 path TEXT NOT NULL,
@@ -159,7 +170,7 @@ pub(super) const OPEN_DB_PRAGMAS_SQL: &str = r#"
             PRAGMA busy_timeout = 5000;
             "#;
 
-pub(super) const REQUIRED_SCHEMA_TABLES: [&str; 13] = [
+pub(super) const REQUIRED_SCHEMA_TABLES: [&str; 11] = [
     "meta",
     "files",
     "files_fts",
@@ -171,6 +182,4 @@ pub(super) const REQUIRED_SCHEMA_TABLES: [&str; 13] = [
     "file_chunks",
     "chunk_embeddings",
     "model_metadata",
-    "file_quality",
-    "file_rule_violations",
 ];

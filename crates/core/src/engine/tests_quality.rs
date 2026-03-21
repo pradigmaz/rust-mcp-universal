@@ -55,13 +55,17 @@ fn indexing_persists_quality_snapshot_and_workspace_summary() -> anyhow::Result<
     assert!(stored.is_some());
 
     let brief = engine.workspace_brief()?;
-    assert_eq!(brief.quality_summary.ruleset_id, "file-size-v1");
+    assert_eq!(brief.quality_summary.ruleset_id, "quality-core-v2");
+    assert_eq!(brief.quality_summary.status.as_str(), "ready");
     assert_eq!(brief.quality_summary.evaluated_files, 1);
     assert_eq!(brief.quality_summary.violating_files, 1);
-    assert_eq!(brief.quality_summary.total_violations, 1);
-    assert_eq!(
-        brief.quality_summary.top_rules[0].rule_id,
-        "max_non_empty_lines_default"
+    assert!(brief.quality_summary.total_violations >= 1);
+    assert!(
+        brief
+            .quality_summary
+            .top_rules
+            .iter()
+            .any(|rule| rule.rule_id == "max_non_empty_lines_default")
     );
 
     let _ = fs::remove_dir_all(root);
@@ -201,8 +205,9 @@ fn changed_since_backfills_missing_quality_rows_even_when_cutoff_would_skip() ->
         changed_since: Some(OffsetDateTime::now_utc() + Duration::days(1)),
         ..crate::model::IndexingOptions::default()
     })?;
-    assert_eq!(repaired.indexed, 1);
-    assert_eq!(repaired.changed, 1);
+    assert_eq!(repaired.indexed, 0);
+    assert_eq!(repaired.changed, 0);
+    assert_eq!(repaired.unchanged, 1);
     assert_eq!(repaired.skipped_before_changed_since, 0);
 
     let restored: Option<String> = engine

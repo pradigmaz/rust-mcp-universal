@@ -68,6 +68,8 @@ pub(crate) fn is_state_complete(state: &storage::ExistingFileState) -> bool {
 
 pub(crate) fn is_quality_state_complete(state: &storage::ExistingQualityState) -> bool {
     state.quality_ruleset_version == CURRENT_QUALITY_RULESET_VERSION
+        && state.quality_metric_count == state.actual_quality_metric_count
+        && state.quality_metric_hash == state.actual_quality_metric_hash
         && state.quality_violation_count == state.actual_quality_violation_count
         && state.quality_violation_hash == state.actual_quality_violation_hash
 }
@@ -114,9 +116,6 @@ mod tests {
             graph_edge_in_count: Some(0),
             graph_edge_hash: Some("graph-edge-hash".to_string()),
             graph_edge_fingerprint_version: Some(CURRENT_GRAPH_EDGE_FINGERPRINT_VERSION),
-            quality_ruleset_version: Some(CURRENT_QUALITY_RULESET_VERSION),
-            quality_violation_count: Some(0),
-            quality_violation_hash: Some(violations_hash(&[])),
             actual_fts_sample_hash: Some("fts".to_string()),
             actual_chunk_manifest_count: 1,
             actual_chunk_manifest_hash: "chunk-manifest".to_string(),
@@ -132,8 +131,6 @@ mod tests {
             actual_graph_edge_out_count: 0,
             actual_graph_edge_in_count: 0,
             actual_graph_edge_hash: "graph-edge-hash".to_string(),
-            actual_quality_violation_count: 0,
-            actual_quality_violation_hash: violations_hash(&[]),
         }
     }
 
@@ -141,8 +138,12 @@ mod tests {
         ExistingQualityState {
             source_mtime_unix_ms: Some(1),
             quality_ruleset_version: CURRENT_QUALITY_RULESET_VERSION,
+            quality_metric_count: 1,
+            quality_metric_hash: "metrics".to_string(),
             quality_violation_count: 0,
             quality_violation_hash: violations_hash(&[]),
+            actual_quality_metric_count: 1,
+            actual_quality_metric_hash: "metrics".to_string(),
             actual_quality_violation_count: 0,
             actual_quality_violation_hash: violations_hash(&[]),
         }
@@ -234,19 +235,10 @@ mod tests {
     fn state_completeness_report_surfaces_failed_sections() {
         let mut state = complete_state();
         state.graph_edge_hash = None;
-        state.quality_violation_hash = Some("other".to_string());
 
         let report = state_completeness_report(&state);
         assert!(!report.is_complete());
         assert!(report.contains(FileStateSection::GraphEdges));
-        assert!(report.contains(FileStateSection::Quality));
-    }
-
-    #[test]
-    fn state_complete_rejects_missing_quality_backfill_metadata() {
-        let mut state = complete_state();
-        state.quality_violation_hash = None;
-        assert!(!is_state_complete(&state));
     }
 
     #[test]
@@ -258,6 +250,13 @@ mod tests {
     fn quality_state_complete_rejects_ruleset_version_mismatch() {
         let mut state = complete_quality_state();
         state.quality_ruleset_version = CURRENT_QUALITY_RULESET_VERSION - 1;
+        assert!(!is_quality_state_complete(&state));
+    }
+
+    #[test]
+    fn quality_state_complete_rejects_metric_hash_mismatch() {
+        let mut state = complete_quality_state();
+        state.actual_quality_metric_hash = "other".to_string();
         assert!(!is_quality_state_complete(&state));
     }
 }

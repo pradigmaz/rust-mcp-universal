@@ -1,6 +1,5 @@
 use crate::artifact_fingerprint::CURRENT_ARTIFACT_FINGERPRINT_VERSION;
 use crate::graph::{CURRENT_GRAPH_EDGE_FINGERPRINT_VERSION, CURRENT_GRAPH_FINGERPRINT_VERSION};
-use crate::quality::CURRENT_QUALITY_RULESET_VERSION;
 
 use super::ExistingFileState;
 
@@ -9,7 +8,6 @@ pub(in crate::engine) enum FileStateSection {
     Artifacts,
     Graph,
     GraphEdges,
-    Quality,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -48,7 +46,6 @@ const FILE_STATE_SECTION_CHECKS: &[(FileStateSection, FileStateSectionCheck)] = 
     (FileStateSection::Artifacts, artifact_section_complete),
     (FileStateSection::Graph, graph_section_complete),
     (FileStateSection::GraphEdges, graph_edge_section_complete),
-    (FileStateSection::Quality, quality_section_complete),
 ];
 
 fn artifact_section_complete(state: &ExistingFileState) -> bool {
@@ -76,11 +73,4 @@ fn graph_edge_section_complete(state: &ExistingFileState) -> bool {
         && state.graph_edge_in_count == Some(state.actual_graph_edge_in_count)
         && state.graph_edge_hash.as_deref() == Some(state.actual_graph_edge_hash.as_str())
         && state.graph_edge_fingerprint_version == Some(CURRENT_GRAPH_EDGE_FINGERPRINT_VERSION)
-}
-
-fn quality_section_complete(state: &ExistingFileState) -> bool {
-    state.quality_ruleset_version == Some(CURRENT_QUALITY_RULESET_VERSION)
-        && state.quality_violation_count == Some(state.actual_quality_violation_count)
-        && state.quality_violation_hash.as_deref()
-            == Some(state.actual_quality_violation_hash.as_str())
 }

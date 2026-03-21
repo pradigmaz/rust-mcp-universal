@@ -4,9 +4,9 @@ use anyhow::Result;
 use walkdir::WalkDir;
 
 use super::super::types::PassResult;
-use super::{PassConfig, files, filters, graph, quality, source, stats, walk};
+use super::{PassConfig, files, filters, graph, source, stats, walk};
 use crate::engine::storage;
-use crate::utils::{INDEX_FILE_LIMIT, infer_language};
+use crate::utils::INDEX_FILE_LIMIT;
 
 pub(super) fn run_walking_pass(
     tx: &rusqlite::Transaction<'_>,
@@ -54,6 +54,7 @@ pub(super) fn index_candidate_path(
     changed_since_unix_ms: Option<i64>,
     pass_result: &mut PassResult,
 ) -> Result<()> {
+    let existing_file = config.existing_files.get(rel_text);
     let existing_quality = config.existing_quality.get(rel_text);
     let metadata = match source::read_source_metadata(path) {
         Ok(metadata) => metadata,
@@ -62,24 +63,20 @@ pub(super) fn index_candidate_path(
             return Ok(());
         }
     };
+    let core_needs_refresh =
+        filters::should_refresh_candidate(changed_since_unix_ms, existing_file, metadata.current_mtime_unix_ms);
+    let quality_needs_refresh = should_refresh_quality_candidate(
+        changed_since_unix_ms,
+        existing_quality,
+        metadata.current_mtime_unix_ms,
+    );
     if metadata.size_bytes > INDEX_FILE_LIMIT {
-        if !should_refresh_quality_candidate(
-            changed_since_unix_ms,
-            existing_quality,
-            metadata.current_mtime_unix_ms,
-        ) {
+        if !core_needs_refresh && !quality_needs_refresh {
             stats::mark_skipped_before_changed_since(&mut pass_result.stats);
             return Ok(());
         }
 
-        let indexed_at = source::now_indexed_at()?;
-        quality::persist_oversize_quality(
-            tx,
-            rel_text,
-            &infer_language(path),
-            &metadata,
-            &indexed_at,
-        )?;
+        pass_result.mark_quality_refresh(rel_text);
         if config.existing_files.contains_key(rel_text) {
             pass_result.mark_graph_dirty(tx, rel_text)?;
             storage::remove_path_index(tx, rel_text)?;
@@ -89,11 +86,7 @@ pub(super) fn index_candidate_path(
         return Ok(());
     }
 
-    if !filters::should_refresh_candidate(
-        changed_since_unix_ms,
-        config.existing_files.get(rel_text),
-        metadata.current_mtime_unix_ms,
-    ) {
+    if !core_needs_refresh && !quality_needs_refresh {
         stats::mark_skipped_before_changed_since(&mut pass_result.stats);
         return Ok(());
     }
@@ -107,7 +100,7 @@ pub(super) fn index_candidate_path(
     };
     if source_snapshot.is_binary {
         if existing_quality.is_some() {
-            storage::remove_path_quality(tx, rel_text)?;
+            pass_result.mark_quality_deleted(rel_text);
         }
         stats::mark_authoritative_removed_path_as_skipped(
             tx,
@@ -122,7 +115,9 @@ pub(super) fn index_candidate_path(
         && filters::is_unchanged(config.existing_files, rel_text, &source_snapshot.sha256)
     {
         storage::update_path_source_mtime(tx, rel_text, metadata.current_mtime_unix_ms)?;
-        storage::update_path_quality_mtime(tx, rel_text, metadata.current_mtime_unix_ms)?;
+        if quality_needs_refresh {
+            pass_result.mark_quality_refresh(rel_text);
+        }
         stats::mark_unchanged(&mut pass_result.stats);
         return Ok(());
     }
@@ -146,7 +141,7 @@ pub(super) fn index_candidate_path(
         },
         &mut pass_result.stats,
     )?;
-    quality::persist_indexed_quality(tx, rel_text, &source_snapshot, &metadata, &indexed_at)?;
+    pass_result.mark_quality_refresh(rel_text);
 
     stats::mark_indexed(&mut pass_result.stats, existed_before);
     Ok(())
@@ -181,7 +176,7 @@ fn handle_source_io_failure(
     match stats::classify_io_failure(err) {
         stats::IoFailurePolicy::AuthoritativeRemoval => {
             if config.existing_quality.contains_key(rel_text) {
-                storage::remove_path_quality(tx, rel_text)?;
+                pass_result.mark_quality_deleted(rel_text);
             }
             if config.existing_files.contains_key(rel_text) {
                 pass_result.mark_graph_dirty(tx, rel_text)?;

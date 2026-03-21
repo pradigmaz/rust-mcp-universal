@@ -29,7 +29,7 @@ mod query;
 #[path = "engine/schema.rs"]
 mod schema;
 #[path = "engine/storage.rs"]
-mod storage;
+pub(crate) mod storage;
 
 #[derive(Debug, Clone)]
 pub struct Engine {

@@ -1,5 +1,36 @@
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum QualityStatus {
+    #[default]
+    Ready,
+    Stale,
+    Degraded,
+    Unavailable,
+}
+
+impl QualityStatus {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Ready => "ready",
+            Self::Stale => "stale",
+            Self::Degraded => "degraded",
+            Self::Unavailable => "unavailable",
+        }
+    }
+
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "ready" => Some(Self::Ready),
+            "stale" => Some(Self::Stale),
+            "degraded" => Some(Self::Degraded),
+            "unavailable" => Some(Self::Unavailable),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum QualityMode {
@@ -34,6 +65,7 @@ pub struct WorkspaceQualityTopRule {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WorkspaceQualitySummary {
     pub ruleset_id: String,
+    pub status: QualityStatus,
     pub evaluated_files: usize,
     pub violating_files: usize,
     pub total_violations: usize,
@@ -63,6 +95,7 @@ pub struct RuleViolationFileHit {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RuleViolationsSummary {
     pub ruleset_id: String,
+    pub status: QualityStatus,
     pub evaluated_files: usize,
     pub violating_files: usize,
     pub total_violations: usize,

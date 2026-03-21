@@ -26,6 +26,8 @@ pub(crate) struct PassResult {
     pub(super) failed_walk_prefixes: Vec<String>,
     pub(super) graph_dirty_paths: HashSet<String>,
     pub(super) graph_pre_refresh: HashMap<String, storage::GraphRefreshSeed>,
+    pub(super) quality_refresh_paths: HashSet<String>,
+    pub(super) quality_deleted_paths: HashSet<String>,
 }
 
 impl PassResult {
@@ -39,6 +41,16 @@ impl PassResult {
             self.graph_pre_refresh.insert(path.to_string(), seed);
         }
         Ok(())
+    }
+
+    pub(crate) fn mark_quality_refresh(&mut self, path: &str) {
+        self.quality_deleted_paths.remove(path);
+        self.quality_refresh_paths.insert(path.to_string());
+    }
+
+    pub(crate) fn mark_quality_deleted(&mut self, path: &str) {
+        self.quality_refresh_paths.remove(path);
+        self.quality_deleted_paths.insert(path.to_string());
     }
 }
 
