@@ -110,3 +110,37 @@ pub(super) fn prune_deleted_paths(input: PruneDeletedPathsInput<'_, '_>) -> Resu
     }
     Ok(deleted)
 }
+
+#[allow(clippy::too_many_arguments)]
+pub(super) fn prune_deleted_quality_paths(
+    tx: &Transaction<'_>,
+    existing_quality: &HashMap<String, storage::ExistingQualityState>,
+    options: &IndexingOptions,
+    scope: &IndexScope,
+    selector: &RunSelector,
+    present_paths: &HashSet<String>,
+    failed_paths: &HashSet<String>,
+    authoritative_deleted_paths: &HashSet<String>,
+    failed_walk_prefixes: &[String],
+) -> Result<()> {
+    for path in existing_quality.keys() {
+        if !options.reindex && scope.has_rules() && !scope.allows(path) {
+            storage::remove_path_quality(tx, path)?;
+            continue;
+        }
+        if matches!(selector, RunSelector::Commit(_)) {
+            if authoritative_deleted_paths.contains(path) {
+                storage::remove_path_quality(tx, path)?;
+            }
+            continue;
+        }
+        if present_paths.contains(path) {
+            continue;
+        }
+        if failed_paths.contains(path) || path_under_walk_error(path, failed_walk_prefixes) {
+            continue;
+        }
+        storage::remove_path_quality(tx, path)?;
+    }
+    Ok(())
+}

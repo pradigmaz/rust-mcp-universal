@@ -17,6 +17,8 @@ mod files;
 pub(crate) mod filters;
 #[path = "pass/graph.rs"]
 mod graph;
+#[path = "pass/quality.rs"]
+mod quality;
 #[path = "pass/source.rs"]
 mod source;
 #[path = "pass/stats.rs"]
@@ -33,6 +35,7 @@ pub(super) struct PassConfig<'a> {
     pub(super) scope: &'a IndexScope,
     pub(super) ignore_matcher: &'a ProjectIgnoreMatcher,
     pub(super) existing_files: &'a HashMap<String, storage::ExistingFileState>,
+    pub(super) existing_quality: &'a HashMap<String, storage::ExistingQualityState>,
     pub(super) semantic_model: &'a str,
     pub(super) semantic_dim: i64,
 }

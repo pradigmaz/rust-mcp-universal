@@ -29,6 +29,10 @@ pub(crate) enum Command {
     Index(IndexCommandArgs),
     SemanticIndex(IndexCommandArgs),
     ScopePreview(IndexCommandArgs),
+    InstallIgnoreRules {
+        #[arg(long, default_value = "git-info-exclude")]
+        target: String,
+    },
     DeleteIndex {
         #[arg(long, default_value_t = false)]
         yes: bool,

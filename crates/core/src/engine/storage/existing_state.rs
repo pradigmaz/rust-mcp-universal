@@ -7,6 +7,7 @@ use super::artifact_state::{
     load_actual_chunk_manifest_state, load_actual_fts_state, load_actual_semantic_vector_state,
 };
 use super::graph_state::{load_actual_graph_edge_state, load_actual_graph_state};
+use super::quality_state::load_actual_quality_state;
 
 #[derive(Debug, Clone)]
 pub(in crate::engine) struct ExistingFileState {
@@ -30,6 +31,9 @@ pub(in crate::engine) struct ExistingFileState {
     pub(in crate::engine) graph_edge_in_count: Option<i64>,
     pub(in crate::engine) graph_edge_hash: Option<String>,
     pub(in crate::engine) graph_edge_fingerprint_version: Option<i64>,
+    pub(in crate::engine) quality_ruleset_version: Option<i64>,
+    pub(in crate::engine) quality_violation_count: Option<i64>,
+    pub(in crate::engine) quality_violation_hash: Option<String>,
     pub(in crate::engine) actual_fts_sample_hash: Option<String>,
     pub(in crate::engine) actual_chunk_manifest_count: i64,
     pub(in crate::engine) actual_chunk_manifest_hash: String,
@@ -45,6 +49,8 @@ pub(in crate::engine) struct ExistingFileState {
     pub(in crate::engine) actual_graph_edge_out_count: i64,
     pub(in crate::engine) actual_graph_edge_in_count: i64,
     pub(in crate::engine) actual_graph_edge_hash: String,
+    pub(in crate::engine) actual_quality_violation_count: i64,
+    pub(in crate::engine) actual_quality_violation_hash: String,
 }
 
 pub(in crate::engine) fn load_existing_file_state(
@@ -58,6 +64,7 @@ pub(in crate::engine) fn load_existing_file_state(
     let actual_ann_bucket_state = load_actual_ann_bucket_state(tx, semantic_model)?;
     let actual_graph_state = load_actual_graph_state(tx)?;
     let actual_graph_edge_state = load_actual_graph_edge_state(tx)?;
+    let actual_quality_state = load_actual_quality_state(tx)?;
     let mut stmt = tx.prepare(
         r#"
         SELECT
@@ -81,8 +88,12 @@ pub(in crate::engine) fn load_existing_file_state(
             f.graph_edge_out_count,
             f.graph_edge_in_count,
             f.graph_edge_hash,
-            f.graph_edge_fingerprint_version
+            f.graph_edge_fingerprint_version,
+            q.quality_ruleset_version,
+            q.quality_violation_count,
+            q.quality_violation_hash
         FROM files f
+        LEFT JOIN file_quality q ON q.path = f.path
         "#,
     )?;
     let rows = stmt
@@ -109,6 +120,9 @@ pub(in crate::engine) fn load_existing_file_state(
                 row.get::<_, Option<i64>>(18)?,
                 row.get::<_, Option<String>>(19)?,
                 row.get::<_, Option<i64>>(20)?,
+                row.get::<_, Option<i64>>(21)?,
+                row.get::<_, Option<i64>>(22)?,
+                row.get::<_, Option<String>>(23)?,
             ))
         })?
         .collect::<rusqlite::Result<Vec<_>>>()?;
@@ -136,6 +150,9 @@ pub(in crate::engine) fn load_existing_file_state(
         graph_edge_in_count,
         graph_edge_hash,
         graph_edge_fingerprint_version,
+        quality_ruleset_version,
+        quality_violation_count,
+        quality_violation_hash,
     ) in rows
     {
         let actual_fts_sample_hash = actual_fts_state.get(&path).cloned();
@@ -157,6 +174,7 @@ pub(in crate::engine) fn load_existing_file_state(
             .get(&path)
             .cloned()
             .unwrap_or_default();
+        let actual_quality_state = actual_quality_state.get(&path).cloned().unwrap_or_default();
         out.insert(
             path,
             ExistingFileState {
@@ -180,6 +198,9 @@ pub(in crate::engine) fn load_existing_file_state(
                 graph_edge_in_count,
                 graph_edge_hash,
                 graph_edge_fingerprint_version,
+                quality_ruleset_version,
+                quality_violation_count,
+                quality_violation_hash,
                 actual_fts_sample_hash,
                 actual_chunk_manifest_count: actual_chunk_manifest_state.count,
                 actual_chunk_manifest_hash: actual_chunk_manifest_state.content_hash,
@@ -195,6 +216,8 @@ pub(in crate::engine) fn load_existing_file_state(
                 actual_graph_edge_out_count: actual_graph_edge_state.outgoing_count,
                 actual_graph_edge_in_count: actual_graph_edge_state.incoming_count,
                 actual_graph_edge_hash: actual_graph_edge_state.content_hash,
+                actual_quality_violation_count: actual_quality_state.violation_count,
+                actual_quality_violation_hash: actual_quality_state.violation_hash,
             },
         );
     }

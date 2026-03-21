@@ -156,6 +156,42 @@ pub(super) fn ensure_file_graph_edges_table(conn: &Connection) -> Result<()> {
     Ok(())
 }
 
+pub(super) fn ensure_file_quality_tables(conn: &Connection) -> Result<()> {
+    conn.execute_batch(
+        r#"
+        CREATE TABLE IF NOT EXISTS file_quality (
+            path TEXT PRIMARY KEY,
+            language TEXT NOT NULL,
+            size_bytes INTEGER NOT NULL,
+            total_lines INTEGER,
+            non_empty_lines INTEGER,
+            import_count INTEGER,
+            quality_mode TEXT NOT NULL,
+            source_mtime_unix_ms INTEGER,
+            quality_ruleset_version INTEGER NOT NULL,
+            quality_violation_count INTEGER NOT NULL,
+            quality_violation_hash TEXT NOT NULL,
+            quality_indexed_at_utc TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_file_quality_language ON file_quality(language);
+        CREATE INDEX IF NOT EXISTS idx_file_quality_violation_count
+            ON file_quality(quality_violation_count);
+
+        CREATE TABLE IF NOT EXISTS file_rule_violations (
+            path TEXT NOT NULL,
+            rule_id TEXT NOT NULL,
+            actual_value INTEGER NOT NULL,
+            threshold_value INTEGER NOT NULL,
+            message TEXT NOT NULL,
+            PRIMARY KEY(path, rule_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_file_rule_violations_rule
+            ON file_rule_violations(rule_id);
+        "#,
+    )?;
+    Ok(())
+}
+
 fn ensure_table_columns(
     conn: &Connection,
     table_name: &str,

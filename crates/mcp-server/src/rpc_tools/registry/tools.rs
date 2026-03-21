@@ -3,8 +3,9 @@ use serde_json::{Value, json};
 use super::helpers::{json_schema_object, tool};
 use super::schemas::{
     budget_query_schema, call_path_schema, context_pack_schema, db_maintenance_schema,
-    index_schema, migration_mode_schema, navigation_schema, privacy_mode_schema,
-    query_benchmark_schema, query_schema, rollout_phase_schema, scope_preview_schema,
+    index_schema, install_ignore_rules_schema, migration_mode_schema, navigation_schema,
+    privacy_mode_schema, query_benchmark_schema, query_schema, rollout_phase_schema,
+    rule_violations_schema, scope_preview_schema,
 };
 
 pub(super) fn tools_list() -> Value {
@@ -17,6 +18,11 @@ pub(super) fn tools_list() -> Value {
                     &[("project_path", json!({"type": "string", "minLength": 1}))],
                     &["project_path"]
                 )
+            ),
+            tool(
+                "install_ignore_rules",
+                "Install RMU-managed ignore rules into .git/info/exclude or root .gitignore",
+                install_ignore_rules_schema()
             ),
             tool(
                 "index_status",
@@ -132,6 +138,11 @@ pub(super) fn tools_list() -> Value {
                 "semantic_search",
                 "Search indexed candidates with semantic rerank enabled",
                 query_schema(false)
+            ),
+            tool(
+                "rule_violations",
+                "Report persisted file-level quality violations from the quality index",
+                rule_violations_schema()
             ),
             tool(
                 "build_context_under_budget",

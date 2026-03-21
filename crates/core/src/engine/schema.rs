@@ -31,7 +31,7 @@ pub(super) fn apply_schema_migrations(
 use migrations::SchemaMigration;
 
 #[cfg(test)]
-const MIGRATIONS: [SchemaMigration; 9] = migrations::MIGRATIONS;
+const MIGRATIONS: [SchemaMigration; 10] = migrations::MIGRATIONS;
 
 #[cfg(test)]
 fn apply_schema_migrations_plan(
@@ -46,3 +46,7 @@ fn apply_schema_migrations_plan(
 #[cfg(test)]
 #[path = "schema_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "schema_quality_tests.rs"]
+mod quality_tests;

@@ -1,88 +1,36 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use anyhow::{Context, Result};
-use ignore::gitignore::{Gitignore, GitignoreBuilder};
+use anyhow::{Context, Result, anyhow};
+
+mod install;
+mod matcher;
+
+pub use install::{GitignoreUpdate, ensure_root_gitignore, install_ignore_rules};
+pub use matcher::ProjectIgnoreMatcher;
 
 const MANAGED_BLOCK_START: &str = "# --- RMU managed ignore block: start ---";
 const MANAGED_BLOCK_END: &str = "# --- RMU managed ignore block: end ---";
-const MANAGED_PATTERNS: &[&str] = &[
-    ".rmu/",
-    ".codex/",
-    ".qodo/",
-    ".idea/",
-    ".vscode/",
-    ".DS_Store",
-    "Thumbs.db",
-];
+const MANAGED_PATTERNS_RESOURCE: &str = include_str!("../../resources/ignore_patterns.txt");
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct GitignoreUpdate {
-    pub created: bool,
-    pub updated: bool,
+#[derive(Debug, Clone)]
+struct GitRepoContext {
+    repo_root: PathBuf,
+    info_exclude_path: PathBuf,
 }
 
-pub struct ProjectIgnoreMatcher {
-    project_root: PathBuf,
-    gitignore: Gitignore,
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+struct ManagedFileUpdate {
+    created: bool,
+    updated: bool,
 }
 
-pub fn ensure_root_gitignore(project_root: &Path) -> Result<GitignoreUpdate> {
-    let gitignore_path = project_root.join(".gitignore");
-    if !gitignore_path.exists() {
-        fs::write(&gitignore_path, render_managed_block("\n"))
-            .with_context(|| format!("failed to create {}", gitignore_path.display()))?;
-        return Ok(GitignoreUpdate {
-            created: true,
-            updated: true,
-        });
-    }
-
-    let existing = fs::read_to_string(&gitignore_path)
-        .with_context(|| format!("failed to read {}", gitignore_path.display()))?;
-    let (next, updated) = merge_managed_block(&existing);
-    if updated {
-        fs::write(&gitignore_path, next)
-            .with_context(|| format!("failed to update {}", gitignore_path.display()))?;
-    }
-
-    Ok(GitignoreUpdate {
-        created: false,
-        updated,
-    })
-}
-
-impl ProjectIgnoreMatcher {
-    pub fn new(project_root: &Path) -> Result<Self> {
-        let mut builder = GitignoreBuilder::new(project_root);
-        let root_gitignore = project_root.join(".gitignore");
-        if root_gitignore.is_file() {
-            if let Some(err) = builder.add(&root_gitignore) {
-                return Err(err)
-                    .with_context(|| format!("failed to load {}", root_gitignore.display()));
-            }
-        }
-        let gitignore = builder
-            .build()
-            .context("failed to build project .gitignore matcher")?;
-        Ok(Self {
-            project_root: project_root.to_path_buf(),
-            gitignore,
-        })
-    }
-
-    pub fn is_ignored(&self, path: &Path, is_dir: bool) -> bool {
-        let candidate = if path.is_absolute() {
-            path.strip_prefix(&self.project_root)
-                .unwrap_or(path)
-                .to_path_buf()
-        } else {
-            path.to_path_buf()
-        };
-        self.gitignore
-            .matched_path_or_any_parents(&candidate, is_dir)
-            .is_ignore()
-    }
+fn managed_patterns() -> Vec<&'static str> {
+    MANAGED_PATTERNS_RESOURCE
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+        .collect()
 }
 
 fn merge_managed_block(existing: &str) -> (String, bool) {
@@ -119,6 +67,15 @@ fn merge_managed_block(existing: &str) -> (String, bool) {
     (merged.clone(), merged != existing)
 }
 
+fn render_managed_block(line_ending: &str) -> String {
+    let patterns = managed_patterns();
+    let mut lines = Vec::with_capacity(patterns.len() + 2);
+    lines.push(MANAGED_BLOCK_START);
+    lines.extend(patterns);
+    lines.push(MANAGED_BLOCK_END);
+    format!("{}{}", lines.join(line_ending), line_ending)
+}
+
 fn managed_block_bounds(existing: &str) -> Option<(usize, usize)> {
     let start = existing.find(MANAGED_BLOCK_START)?;
     let end_marker = existing[start..].find(MANAGED_BLOCK_END)?;
@@ -131,81 +88,57 @@ fn managed_block_bounds(existing: &str) -> Option<(usize, usize)> {
     Some((start, end))
 }
 
-fn render_managed_block(line_ending: &str) -> String {
-    let mut lines = Vec::with_capacity(MANAGED_PATTERNS.len() + 2);
-    lines.push(MANAGED_BLOCK_START);
-    lines.extend(MANAGED_PATTERNS.iter().copied());
-    lines.push(MANAGED_BLOCK_END);
-    format!("{}{}", lines.join(line_ending), line_ending)
-}
-
 fn detect_line_ending(text: &str) -> &'static str {
     if text.contains("\r\n") { "\r\n" } else { "\n" }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::{ensure_root_gitignore, merge_managed_block};
-    use std::fs;
-    use std::path::PathBuf;
-    use std::time::{SystemTime, UNIX_EPOCH};
-
-    #[test]
-    fn creates_gitignore_with_managed_block_when_missing() {
-        let root = temp_dir("gitignore-create");
-        fs::create_dir_all(&root).expect("create temp root");
-
-        let update = ensure_root_gitignore(&root).expect("create gitignore");
-        assert!(update.created);
-        assert!(update.updated);
-
-        let gitignore = fs::read_to_string(root.join(".gitignore")).expect("read gitignore");
-        assert!(gitignore.contains(".rmu/"));
-        assert!(gitignore.contains(".codex/"));
-
-        cleanup(&root);
+fn resolve_git_repo_context(project_root: &Path) -> Result<Option<GitRepoContext>> {
+    for candidate_root in project_root.ancestors() {
+        let marker = candidate_root.join(".git");
+        if !marker.exists() {
+            continue;
+        }
+        let Some(git_dir) = resolve_git_dir(&marker)? else {
+            continue;
+        };
+        return Ok(Some(GitRepoContext {
+            repo_root: candidate_root.to_path_buf(),
+            info_exclude_path: git_dir.join("info").join("exclude"),
+        }));
     }
 
-    #[test]
-    fn appends_managed_block_without_removing_existing_rules() {
-        let existing = "target/\n.env\n";
-        let (merged, updated) = merge_managed_block(existing);
-        assert!(updated);
-        assert!(merged.starts_with("target/\n.env\n\n"));
-        assert!(merged.contains(".rmu/"));
-        assert!(merged.contains(".idea/"));
+    Ok(None)
+}
+
+fn resolve_git_dir(marker: &Path) -> Result<Option<PathBuf>> {
+    if marker.is_dir() {
+        return Ok(Some(marker.to_path_buf()));
+    }
+    if !marker.is_file() {
+        return Ok(None);
     }
 
-    #[test]
-    fn replaces_existing_managed_block_in_place() {
-        let existing = concat!(
-            "target/\n\n",
-            "# --- RMU managed ignore block: start ---\n",
-            ".rmu/\n",
-            "# --- RMU managed ignore block: end ---\n\n",
-            ".env\n",
-        );
-        let (merged, updated) = merge_managed_block(existing);
-        assert!(updated);
-        assert_eq!(
-            merged
-                .matches("# --- RMU managed ignore block: start ---")
-                .count(),
-            1
-        );
-        assert!(merged.contains(".codex/"));
-        assert!(merged.ends_with(".env\n"));
+    let raw = fs::read_to_string(marker)
+        .with_context(|| format!("failed to read git metadata from {}", marker.display()))?;
+    for line in raw.lines() {
+        let trimmed = line.trim();
+        let Some(remainder) = trimmed.strip_prefix("gitdir:") else {
+            continue;
+        };
+        let git_dir = PathBuf::from(remainder.trim());
+        let resolved = if git_dir.is_absolute() {
+            git_dir
+        } else {
+            marker
+                .parent()
+                .unwrap_or_else(|| Path::new("."))
+                .join(git_dir)
+        };
+        return Ok(Some(resolved));
     }
 
-    fn temp_dir(prefix: &str) -> PathBuf {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("clock should advance")
-            .as_nanos();
-        std::env::temp_dir().join(format!("rmu-core-{prefix}-{unique}"))
-    }
-
-    fn cleanup(path: &PathBuf) {
-        let _ = fs::remove_dir_all(path);
-    }
+    Err(anyhow!(
+        "failed to resolve git directory from {}",
+        marker.display()
+    ))
 }

@@ -3,6 +3,7 @@ use rusqlite::Connection;
 
 use crate::engine::Engine;
 use crate::engine::compatibility;
+use crate::engine_quality::{load_quality_summary, quality_index_needs_refresh};
 use crate::model::IndexingOptions;
 use crate::model::{WorkspaceBrief, WorkspaceLanguageStat, WorkspaceTopSymbol};
 
@@ -56,16 +57,22 @@ impl Engine {
     }
 
     pub fn workspace_brief_with_policy(&self, auto_index: bool) -> Result<WorkspaceBrief> {
-        let auto_indexed = self.ensure_index_ready_with_policy(auto_index)?;
+        let mut auto_indexed = self.ensure_index_ready_with_policy(auto_index)?;
+        if auto_index && quality_index_needs_refresh(self)? {
+            let _ = self.index_path_with_options(&IndexingOptions::default())?;
+            auto_indexed = true;
+        }
         let status = self.index_status()?;
         let languages = load_top_languages_for_brief(self, 8)?;
         let top_symbols = load_top_symbols_for_brief(self, 12)?;
+        let quality_summary = load_quality_summary(self)?;
 
         Ok(WorkspaceBrief {
             auto_indexed,
             index_status: status.clone(),
             languages,
             top_symbols,
+            quality_summary,
             recommendations: make_recommendations(&status),
         })
     }

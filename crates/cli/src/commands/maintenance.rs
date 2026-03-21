@@ -1,6 +1,9 @@
+use std::path::Path;
+
 use anyhow::Result;
 use rmu_core::{
-    DbMaintenanceOptions, Engine, PrivacyMode, sanitize_path_text, sanitize_value_for_privacy,
+    DbMaintenanceOptions, Engine, IgnoreInstallTarget, PrivacyMode, install_ignore_rules,
+    sanitize_path_text, sanitize_value_for_privacy,
 };
 
 use crate::error::{CODE_CONFIRM_REQUIRED, cli_error};
@@ -13,6 +16,30 @@ pub(crate) struct DbMaintenanceArgs {
     pub(crate) analyze: bool,
     pub(crate) stats: bool,
     pub(crate) prune: bool,
+}
+
+pub(crate) fn run_install_ignore_rules(
+    project_root: &Path,
+    json: bool,
+    privacy_mode: PrivacyMode,
+    target: IgnoreInstallTarget,
+) -> Result<()> {
+    let report = install_ignore_rules(project_root, target)?;
+    if json {
+        let mut value = serde_json::to_value(&report)?;
+        sanitize_value_for_privacy(privacy_mode, &mut value);
+        print_json(serde_json::to_string_pretty(&value))?;
+    } else {
+        print_line(format!(
+            "target={}, path={}, created={}, updated={}",
+            report.target.as_str(),
+            sanitize_path_text(privacy_mode, &report.path),
+            report.created,
+            report.updated
+        ));
+    }
+
+    Ok(())
 }
 
 pub(crate) fn run_delete_index(

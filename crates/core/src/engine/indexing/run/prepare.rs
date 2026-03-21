@@ -37,11 +37,17 @@ pub(super) fn prepare_index_run(
     } else {
         storage::load_existing_file_state(tx, semantic_model)?
     };
+    let existing_quality = if full_reindex {
+        HashMap::new()
+    } else {
+        storage::load_existing_quality_state(tx)?
+    };
     let ignore_matcher = ProjectIgnoreMatcher::new(&engine.project_root)?;
     let selector =
         selector::resolve_run_selector(engine, options, scope, &existing_files, &ignore_matcher)?;
     Ok(PreparedIndexRun {
         existing_files,
+        existing_quality,
         selector,
         ignore_matcher,
     })

@@ -5,8 +5,8 @@ use crate::error::{CODE_CONFIRM_REQUIRED, cli_error};
 use crate::validation::{require_max, require_min};
 
 use super::modes::{
-    parse_changed_since, parse_changed_since_commit, parse_context_mode, parse_index_profile,
-    parse_semantic_fail_mode,
+    parse_changed_since, parse_changed_since_commit, parse_context_mode,
+    parse_ignore_install_target, parse_index_profile, parse_semantic_fail_mode,
 };
 
 pub(super) fn preflight_validate(command: &Command) -> Result<()> {
@@ -161,6 +161,9 @@ pub(super) fn preflight_validate(command: &Command) -> Result<()> {
             if index_args.changed_since.is_some() && index_args.changed_since_commit.is_some() {
                 bail!("`changed_since` and `changed_since_commit` are mutually exclusive");
             }
+        }
+        Command::InstallIgnoreRules { target } => {
+            let _ = parse_ignore_install_target(target)?;
         }
         Command::Status | Command::Brief | Command::DbMaintenance { .. } => {}
     }

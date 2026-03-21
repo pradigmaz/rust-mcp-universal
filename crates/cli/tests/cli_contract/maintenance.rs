@@ -48,3 +48,52 @@ fn db_maintenance_json_reports_size_and_prune_fields() {
     assert!(payload["prune"]["removed_sidecars"].is_number());
     assert!(payload["prune"]["removed_bytes"].is_number());
 }
+
+#[test]
+fn install_ignore_rules_defaults_to_git_info_exclude_without_initializing_db() {
+    let project = tempdir().expect("temp dir");
+    std::fs::create_dir_all(project.path().join(".git/info")).expect("create git info");
+    let project_path = project.path().to_str().expect("utf-8 path");
+
+    let assert = cargo_bin_cmd!("rmu-cli")
+        .args([
+            "--project-path",
+            project_path,
+            "--json",
+            "install-ignore-rules",
+        ])
+        .assert()
+        .success();
+
+    let stdout =
+        String::from_utf8(assert.get_output().stdout.clone()).expect("stdout should be utf-8");
+    let payload: serde_json::Value =
+        serde_json::from_str(&stdout).expect("stdout should be valid JSON");
+
+    assert_eq!(payload["target"], serde_json::json!("git-info-exclude"));
+    assert_eq!(payload["created"], serde_json::json!(true));
+    assert_eq!(payload["updated"], serde_json::json!(true));
+    assert!(
+        payload["path"]
+            .as_str()
+            .unwrap_or_default()
+            .ends_with(".git/info/exclude")
+    );
+    assert!(
+        project.path().join(".git/info/exclude").exists(),
+        "exclude file should be created"
+    );
+    assert!(
+        !project.path().join(".gitignore").exists(),
+        "root .gitignore should remain untouched by default"
+    );
+    assert!(
+        !project.path().join(".rmu").exists(),
+        "install-ignore-rules should not initialize the default DB directory"
+    );
+
+    let exclude =
+        std::fs::read_to_string(project.path().join(".git/info/exclude")).expect("read exclude");
+    assert!(exclude.contains(".rmu/"));
+    assert!(exclude.contains(".codex/"));
+}

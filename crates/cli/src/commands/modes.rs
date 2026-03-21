@@ -1,6 +1,7 @@
 use anyhow::Result;
 use rmu_core::{
-    ContextMode, IndexProfile, MigrationMode, PrivacyMode, RolloutPhase, SemanticFailMode,
+    ContextMode, IgnoreInstallTarget, IndexProfile, MigrationMode, PrivacyMode, RolloutPhase,
+    SemanticFailMode,
 };
 use time::{OffsetDateTime, UtcOffset, format_description::well_known::Rfc3339};
 
@@ -50,6 +51,15 @@ pub(super) fn parse_index_profile(raw: &str) -> Result<IndexProfile> {
     IndexProfile::parse(raw).ok_or_else(|| {
         anyhow::anyhow!(
             "`profile` must be one of: rust-monorepo, mixed, docs-heavy (got `{}`)",
+            raw
+        )
+    })
+}
+
+pub(super) fn parse_ignore_install_target(raw: &str) -> Result<IgnoreInstallTarget> {
+    IgnoreInstallTarget::parse(raw).ok_or_else(|| {
+        anyhow::anyhow!(
+            "`target` must be one of: git-info-exclude, root-gitignore (got `{}`)",
             raw
         )
     })

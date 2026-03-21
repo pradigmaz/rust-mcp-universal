@@ -190,15 +190,16 @@ fn tools_call_set_project_path_accepts_unicode_path_values() {
     );
     assert_eq!(
         result["structuredContent"]["gitignore_created"],
-        json!(true)
+        json!(false)
     );
     assert_eq!(
         result["structuredContent"]["gitignore_updated"],
-        json!(true)
+        json!(false)
     );
-    let gitignore = fs::read_to_string(project_dir.join(".gitignore")).expect("read gitignore");
-    assert!(gitignore.contains(".rmu/"));
-    assert!(gitignore.contains(".codex/"));
+    assert!(
+        !project_dir.join(".gitignore").exists(),
+        "set_project_path should not create .gitignore"
+    );
 
     let search = json!({
         "jsonrpc": "2.0",
@@ -226,6 +227,169 @@ fn tools_call_set_project_path_accepts_unicode_path_values() {
             .filter_map(|hit| hit["path"].as_str())
             .any(|path| path == "src/main.rs" || path.ends_with("src/main.rs"))
     );
+
+    let _ = fs::remove_dir_all(project_dir);
+}
+
+#[test]
+fn tools_call_install_ignore_rules_defaults_to_git_info_exclude_and_is_idempotent() {
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("clock should be monotonic enough for tests")
+        .as_nanos();
+    let project_dir =
+        std::env::temp_dir().join(format!("rmu-mcp-tests-install-ignore-default-{unique}"));
+    fs::create_dir_all(project_dir.join(".git/info")).expect("create git info dir");
+
+    let mut state = ServerState::new(PathBuf::from("."), Some(project_dir.join(".rmu/index.db")));
+    let _ = handle_request(
+        RpcRequest {
+            jsonrpc: Some("2.0".to_string()),
+            id: Some(json!(1)),
+            method: "initialize".to_string(),
+            params: Some(initialize_params()),
+        },
+        &mut state,
+    );
+    let _ = handle_request(
+        RpcRequest {
+            jsonrpc: Some("2.0".to_string()),
+            id: None,
+            method: "notifications/initialized".to_string(),
+            params: None,
+        },
+        &mut state,
+    );
+    let _ = expect_single_response(
+        &json!({
+            "jsonrpc": "2.0",
+            "id": 700,
+            "method": "tools/call",
+            "params": {
+                "name": "set_project_path",
+                "arguments": {
+                    "project_path": project_dir.display().to_string()
+                }
+            }
+        })
+        .to_string(),
+        &mut state,
+    );
+
+    let install = json!({
+        "jsonrpc": "2.0",
+        "id": 701,
+        "method": "tools/call",
+        "params": {
+            "name": "install_ignore_rules",
+            "arguments": {}
+        }
+    })
+    .to_string();
+    let response = expect_single_response(&install, &mut state);
+    assert!(response.error.is_none());
+    let result = response.result.expect("result expected");
+    assert_eq!(
+        result["structuredContent"]["target"],
+        json!("git-info-exclude")
+    );
+    assert_eq!(result["structuredContent"]["created"], json!(true));
+    assert_eq!(result["structuredContent"]["updated"], json!(true));
+    assert!(
+        result["structuredContent"]["path"]
+            .as_str()
+            .unwrap_or_default()
+            .ends_with(".git/info/exclude")
+    );
+    assert!(
+        !project_dir.join(".gitignore").exists(),
+        "default install should not create root .gitignore"
+    );
+
+    let exclude = fs::read_to_string(project_dir.join(".git/info/exclude")).expect("read exclude");
+    assert!(exclude.contains(".rmu/"));
+    assert!(exclude.contains(".codex/"));
+
+    let second = expect_single_response(&install, &mut state);
+    assert!(second.error.is_none());
+    let second_result = second.result.expect("second result expected");
+    assert_eq!(second_result["structuredContent"]["created"], json!(false));
+    assert_eq!(second_result["structuredContent"]["updated"], json!(false));
+
+    let _ = fs::remove_dir_all(project_dir);
+}
+
+#[test]
+fn tools_call_install_ignore_rules_supports_root_gitignore_target() {
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("clock should be monotonic enough for tests")
+        .as_nanos();
+    let project_dir =
+        std::env::temp_dir().join(format!("rmu-mcp-tests-install-ignore-root-{unique}"));
+    fs::create_dir_all(&project_dir).expect("create temp dir");
+
+    let mut state = ServerState::new(PathBuf::from("."), Some(project_dir.join(".rmu/index.db")));
+    let _ = handle_request(
+        RpcRequest {
+            jsonrpc: Some("2.0".to_string()),
+            id: Some(json!(1)),
+            method: "initialize".to_string(),
+            params: Some(initialize_params()),
+        },
+        &mut state,
+    );
+    let _ = handle_request(
+        RpcRequest {
+            jsonrpc: Some("2.0".to_string()),
+            id: None,
+            method: "notifications/initialized".to_string(),
+            params: None,
+        },
+        &mut state,
+    );
+    let _ = expect_single_response(
+        &json!({
+            "jsonrpc": "2.0",
+            "id": 710,
+            "method": "tools/call",
+            "params": {
+                "name": "set_project_path",
+                "arguments": {
+                    "project_path": project_dir.display().to_string()
+                }
+            }
+        })
+        .to_string(),
+        &mut state,
+    );
+
+    let install = json!({
+        "jsonrpc": "2.0",
+        "id": 711,
+        "method": "tools/call",
+        "params": {
+            "name": "install_ignore_rules",
+            "arguments": {
+                "target": "root-gitignore"
+            }
+        }
+    })
+    .to_string();
+    let response = expect_single_response(&install, &mut state);
+    assert!(response.error.is_none());
+    let result = response.result.expect("result expected");
+    assert_eq!(
+        result["structuredContent"]["target"],
+        json!("root-gitignore")
+    );
+    assert_eq!(result["structuredContent"]["created"], json!(true));
+    assert_eq!(result["structuredContent"]["updated"], json!(true));
+
+    let gitignore =
+        fs::read_to_string(project_dir.join(".gitignore")).expect("read root gitignore");
+    assert!(gitignore.contains(".rmu/"));
+    assert!(gitignore.contains(".vscode/"));
 
     let _ = fs::remove_dir_all(project_dir);
 }

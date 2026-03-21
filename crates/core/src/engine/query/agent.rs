@@ -1,6 +1,7 @@
 use anyhow::Result;
 
 use crate::engine_brief::index_not_ready_error;
+use crate::engine_quality::load_quality_summary;
 use crate::model::{
     AgentBootstrap, AgentQueryBundle, IndexTelemetry, PrivacyMode, QueryOptions, SemanticFailMode,
     WorkspaceBrief,
@@ -110,6 +111,7 @@ impl Engine {
                 index_status: status.clone(),
                 languages: super::brief::load_top_languages_for_brief(self)?,
                 top_symbols: super::brief::load_top_symbols_for_brief(self)?,
+                quality_summary: load_quality_summary(self)?,
                 recommendations: super::brief::make_brief_recommendations(&status),
             }
         };

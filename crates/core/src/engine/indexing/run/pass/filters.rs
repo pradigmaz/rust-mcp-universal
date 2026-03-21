@@ -7,6 +7,7 @@ use crate::artifact_fingerprint::CURRENT_ARTIFACT_FINGERPRINT_VERSION;
 use crate::engine::storage;
 use crate::graph::{CURRENT_GRAPH_EDGE_FINGERPRINT_VERSION, CURRENT_GRAPH_FINGERPRINT_VERSION};
 use crate::index_scope::IndexScope;
+use crate::quality::CURRENT_QUALITY_RULESET_VERSION;
 use crate::utils::{ProjectIgnoreMatcher, is_probably_ignored, normalize_path};
 
 pub(super) fn resolve_scoped_path(
@@ -68,6 +69,13 @@ pub(crate) fn is_state_complete(state: &storage::ExistingFileState) -> bool {
         && graph_counts_match(state)
         && graph_fingerprint_matches(state)
         && graph_edge_fingerprint_matches(state)
+        && quality_fingerprint_matches(state)
+}
+
+pub(crate) fn is_quality_state_complete(state: &storage::ExistingQualityState) -> bool {
+    state.quality_ruleset_version == CURRENT_QUALITY_RULESET_VERSION
+        && state.quality_violation_count == state.actual_quality_violation_count
+        && state.quality_violation_hash == state.actual_quality_violation_hash
 }
 
 fn artifact_fingerprints_match(state: &storage::ExistingFileState) -> bool {
@@ -100,6 +108,13 @@ fn graph_edge_fingerprint_matches(state: &storage::ExistingFileState) -> bool {
         && state.graph_edge_fingerprint_version == Some(CURRENT_GRAPH_EDGE_FINGERPRINT_VERSION)
 }
 
+fn quality_fingerprint_matches(state: &storage::ExistingFileState) -> bool {
+    state.quality_ruleset_version == Some(CURRENT_QUALITY_RULESET_VERSION)
+        && state.quality_violation_count == Some(state.actual_quality_violation_count)
+        && state.quality_violation_hash.as_deref()
+            == Some(state.actual_quality_violation_hash.as_str())
+}
+
 fn clamp_i128_to_i64(value: i128) -> i64 {
     if value > i128::from(i64::MAX) {
         i64::MAX
@@ -112,10 +127,11 @@ fn clamp_i128_to_i64(value: i128) -> i64 {
 
 #[cfg(test)]
 mod tests {
-    use super::is_state_complete;
+    use super::{is_quality_state_complete, is_state_complete};
     use crate::artifact_fingerprint::CURRENT_ARTIFACT_FINGERPRINT_VERSION;
-    use crate::engine::storage::ExistingFileState;
+    use crate::engine::storage::{ExistingFileState, ExistingQualityState};
     use crate::graph::{CURRENT_GRAPH_EDGE_FINGERPRINT_VERSION, CURRENT_GRAPH_FINGERPRINT_VERSION};
+    use crate::quality::{CURRENT_QUALITY_RULESET_VERSION, violations_hash};
 
     fn complete_state() -> ExistingFileState {
         ExistingFileState {
@@ -139,6 +155,9 @@ mod tests {
             graph_edge_in_count: Some(0),
             graph_edge_hash: Some("graph-edge-hash".to_string()),
             graph_edge_fingerprint_version: Some(CURRENT_GRAPH_EDGE_FINGERPRINT_VERSION),
+            quality_ruleset_version: Some(CURRENT_QUALITY_RULESET_VERSION),
+            quality_violation_count: Some(0),
+            quality_violation_hash: Some(violations_hash(&[])),
             actual_fts_sample_hash: Some("fts".to_string()),
             actual_chunk_manifest_count: 1,
             actual_chunk_manifest_hash: "chunk-manifest".to_string(),
@@ -154,6 +173,19 @@ mod tests {
             actual_graph_edge_out_count: 0,
             actual_graph_edge_in_count: 0,
             actual_graph_edge_hash: "graph-edge-hash".to_string(),
+            actual_quality_violation_count: 0,
+            actual_quality_violation_hash: violations_hash(&[]),
+        }
+    }
+
+    fn complete_quality_state() -> ExistingQualityState {
+        ExistingQualityState {
+            source_mtime_unix_ms: Some(1),
+            quality_ruleset_version: CURRENT_QUALITY_RULESET_VERSION,
+            quality_violation_count: 0,
+            quality_violation_hash: violations_hash(&[]),
+            actual_quality_violation_count: 0,
+            actual_quality_violation_hash: violations_hash(&[]),
         }
     }
 
@@ -237,5 +269,24 @@ mod tests {
         let mut state = complete_state();
         state.graph_edge_fingerprint_version = Some(CURRENT_GRAPH_EDGE_FINGERPRINT_VERSION - 1);
         assert!(!is_state_complete(&state));
+    }
+
+    #[test]
+    fn state_complete_rejects_missing_quality_backfill_metadata() {
+        let mut state = complete_state();
+        state.quality_violation_hash = None;
+        assert!(!is_state_complete(&state));
+    }
+
+    #[test]
+    fn quality_state_complete_accepts_matching_quality_snapshot() {
+        assert!(is_quality_state_complete(&complete_quality_state()));
+    }
+
+    #[test]
+    fn quality_state_complete_rejects_ruleset_version_mismatch() {
+        let mut state = complete_quality_state();
+        state.quality_ruleset_version = CURRENT_QUALITY_RULESET_VERSION - 1;
+        assert!(!is_quality_state_complete(&state));
     }
 }

@@ -23,6 +23,8 @@ mod modes;
 mod query_report;
 #[path = "handlers/related_files.rs"]
 mod related_files;
+#[path = "handlers/rule_violations.rs"]
+mod rule_violations;
 #[path = "handlers/search_candidates.rs"]
 mod search_candidates;
 #[path = "handlers/semantic_search.rs"]
@@ -87,6 +89,10 @@ pub(super) fn related_files(args: &Value, state: &mut ServerState) -> Result<Val
 
 pub(super) fn related_files_v2(args: &Value, state: &mut ServerState) -> Result<Value> {
     related_files::related_files_v2(args, state)
+}
+
+pub(super) fn rule_violations(args: &Value, state: &mut ServerState) -> Result<Value> {
+    rule_violations::rule_violations(args, state)
 }
 
 pub(super) fn call_path(args: &Value, state: &mut ServerState) -> Result<Value> {

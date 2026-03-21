@@ -1,7 +1,7 @@
-use std::process::Command;
-
 #[cfg(target_os = "linux")]
 use std::fs;
+#[cfg(any(windows, all(unix, not(target_os = "linux"))))]
+use std::process::Command;
 
 use super::ProcessLiveness;
 
@@ -90,6 +90,7 @@ pub(super) fn process_liveness_unix_fallback(pid: u32) -> ProcessLiveness {
     }
 }
 
+#[cfg(any(windows, test))]
 pub(super) fn parse_process_probe_output(stdout: &[u8]) -> ProcessLiveness {
     let raw = String::from_utf8_lossy(stdout);
     let token = raw.trim().to_ascii_lowercase();

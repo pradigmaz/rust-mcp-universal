@@ -25,11 +25,21 @@ pub(super) fn cases() -> Vec<RuntimeConstraintCase> {
             "does not allow argument `extra`",
         ),
         (
+            "rule_violations",
+            json!({"extra": 1}),
+            "does not allow argument `extra`",
+        ),
+        (
             "search_candidates",
             json!({"query": ""}),
             "non-empty `query`",
         ),
         ("symbol_lookup", json!({"name": ""}), "non-empty `name`"),
         ("related_files", json!({"path": ""}), "non-empty `path`"),
+        (
+            "rule_violations",
+            json!({"sort_by": "wrong"}),
+            "`sort_by` must be one of: violation_count, size_bytes, non_empty_lines",
+        ),
     ]
 }

@@ -1,0 +1,7 @@
+.rmu/
+.codex/
+.qodo/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

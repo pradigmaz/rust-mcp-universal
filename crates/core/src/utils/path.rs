@@ -8,7 +8,7 @@ pub fn normalize_path(path: &Path) -> String {
     {
         use std::os::unix::ffi::OsStrExt;
 
-        return percent_encode_bytes(path.as_os_str().as_bytes());
+        percent_encode_bytes(path.as_os_str().as_bytes())
     }
 
     #[cfg(windows)]

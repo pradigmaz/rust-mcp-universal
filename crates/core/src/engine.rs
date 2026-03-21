@@ -128,3 +128,7 @@ impl Engine {
 #[cfg(test)]
 #[path = "engine/tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "engine/tests_quality.rs"]
+mod quality_tests;

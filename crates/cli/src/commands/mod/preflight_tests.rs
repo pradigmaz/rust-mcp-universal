@@ -174,3 +174,15 @@ fn index_rejects_changed_since_and_changed_since_commit_together() {
             .contains("`changed_since` and `changed_since_commit` are mutually exclusive")
     );
 }
+
+#[test]
+fn install_ignore_rules_rejects_unknown_target_in_preflight() {
+    let err = preflight_validate(&Command::InstallIgnoreRules {
+        target: "unknown".to_string(),
+    })
+    .expect_err("unknown target must be rejected");
+    assert!(
+        err.to_string()
+            .contains("`target` must be one of: git-info-exclude, root-gitignore")
+    );
+}

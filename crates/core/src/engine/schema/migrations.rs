@@ -7,7 +7,7 @@ use time::OffsetDateTime;
 
 use super::backup::create_pre_migration_backup;
 use super::table_ensure::{
-    ensure_file_chunks_excerpt_column, ensure_file_graph_edges_table,
+    ensure_file_chunks_excerpt_column, ensure_file_graph_edges_table, ensure_file_quality_tables,
     ensure_files_artifact_fingerprint_columns, ensure_files_graph_count_columns,
     ensure_files_graph_edge_columns, ensure_files_graph_fingerprint_columns,
     ensure_files_source_mtime_column, ensure_refs_position_columns, ensure_schema_migrations_table,
@@ -21,7 +21,7 @@ pub(super) struct SchemaMigration {
     pub(super) apply: fn(&Transaction<'_>) -> Result<()>,
 }
 
-pub(super) const MIGRATIONS: [SchemaMigration; 9] = [
+pub(super) const MIGRATIONS: [SchemaMigration; 10] = [
     SchemaMigration {
         id: 1,
         name: "file_chunks_excerpt_column",
@@ -66,6 +66,11 @@ pub(super) const MIGRATIONS: [SchemaMigration; 9] = [
         id: 9,
         name: "files_graph_edge_columns",
         apply: migration_files_graph_edge_columns,
+    },
+    SchemaMigration {
+        id: 10,
+        name: "file_quality_tables",
+        apply: migration_file_quality_tables,
     },
 ];
 
@@ -214,4 +219,8 @@ fn migration_file_graph_edges_table(tx: &Transaction<'_>) -> Result<()> {
 
 fn migration_files_graph_edge_columns(tx: &Transaction<'_>) -> Result<()> {
     ensure_files_graph_edge_columns(tx)
+}
+
+fn migration_file_quality_tables(tx: &Transaction<'_>) -> Result<()> {
+    ensure_file_quality_tables(tx)
 }

@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::index::IndexStatus;
+use super::quality::WorkspaceQualitySummary;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WorkspaceLanguageStat {
@@ -20,5 +21,6 @@ pub struct WorkspaceBrief {
     pub index_status: IndexStatus,
     pub languages: Vec<WorkspaceLanguageStat>,
     pub top_symbols: Vec<WorkspaceTopSymbol>,
+    pub quality_summary: WorkspaceQualitySummary,
     pub recommendations: Vec<String>,
 }

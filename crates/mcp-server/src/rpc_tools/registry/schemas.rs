@@ -50,6 +50,22 @@ pub(super) fn index_schema() -> Value {
     )
 }
 
+pub(super) fn install_ignore_rules_schema() -> Value {
+    json_schema_object(
+        &[(
+            "target",
+            json!({
+                "type": "string",
+                "oneOf": [
+                    {"const": "git-info-exclude"},
+                    {"const": "root-gitignore"}
+                ]
+            }),
+        )],
+        &[],
+    )
+}
+
 pub(super) fn scope_preview_schema() -> Value {
     json_schema_object(
         &[
@@ -92,6 +108,38 @@ pub(super) fn scope_preview_schema() -> Value {
                 }),
             ),
             ("reindex", json!({"type": "boolean"})),
+            ("privacy_mode", privacy_mode_schema()),
+            ("migration_mode", migration_mode_schema()),
+        ],
+        &[],
+    )
+}
+
+pub(super) fn rule_violations_schema() -> Value {
+    json_schema_object(
+        &[
+            ("limit", json!({"type": "integer", "minimum": 1})),
+            ("path_prefix", json!({"type": "string", "minLength": 1})),
+            ("language", json!({"type": "string", "minLength": 1})),
+            (
+                "rule_ids",
+                json!({
+                    "type": "array",
+                    "items": {"type": "string"}
+                }),
+            ),
+            (
+                "sort_by",
+                json!({
+                    "type": "string",
+                    "oneOf": [
+                        {"const": "violation_count"},
+                        {"const": "size_bytes"},
+                        {"const": "non_empty_lines"}
+                    ]
+                }),
+            ),
+            ("auto_index", json!({"type": "boolean"})),
             ("privacy_mode", privacy_mode_schema()),
             ("migration_mode", migration_mode_schema()),
         ],

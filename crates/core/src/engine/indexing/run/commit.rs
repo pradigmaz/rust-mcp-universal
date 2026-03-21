@@ -4,6 +4,7 @@ use anyhow::Result;
 
 use super::super::post::{
     FinalizeMetrics, PruneDeletedPathsInput, finalize_index_metadata, prune_deleted_paths,
+    prune_deleted_quality_paths,
 };
 use super::types::{PassResult, RunSelector};
 use crate::engine::{Engine, IndexSummary, storage};
@@ -16,6 +17,7 @@ pub(super) struct FinalizeCommitInput<'a> {
     pub(super) options: &'a IndexingOptions,
     pub(super) scope: &'a IndexScope,
     pub(super) existing_files: &'a HashMap<String, storage::ExistingFileState>,
+    pub(super) existing_quality: &'a HashMap<String, storage::ExistingQualityState>,
     pub(super) selector: &'a RunSelector,
     pub(super) semantic_model: &'a str,
     pub(super) semantic_dim: i64,
@@ -33,6 +35,7 @@ pub(super) fn finalize_and_commit(
         options,
         scope,
         existing_files,
+        existing_quality,
         selector,
         semantic_model,
         semantic_dim,
@@ -52,6 +55,17 @@ pub(super) fn finalize_and_commit(
         authoritative_deleted_paths: &pass_result.authoritative_deleted_paths,
         failed_walk_prefixes: &pass_result.failed_walk_prefixes,
     })?;
+    prune_deleted_quality_paths(
+        &tx,
+        existing_quality,
+        options,
+        scope,
+        selector,
+        &pass_result.present_paths,
+        &pass_result.failed_paths,
+        &pass_result.authoritative_deleted_paths,
+        &pass_result.failed_walk_prefixes,
+    )?;
     storage::rebuild_file_graph_edges(&tx)?;
 
     let finalize_metrics = FinalizeMetrics {

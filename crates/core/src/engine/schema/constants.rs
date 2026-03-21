@@ -121,6 +121,35 @@ pub(super) const INIT_DB_SCHEMA_SQL: &str = r#"
                 dim INTEGER NOT NULL,
                 updated_at_utc TEXT NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS file_quality (
+                path TEXT PRIMARY KEY,
+                language TEXT NOT NULL,
+                size_bytes INTEGER NOT NULL,
+                total_lines INTEGER,
+                non_empty_lines INTEGER,
+                import_count INTEGER,
+                quality_mode TEXT NOT NULL,
+                source_mtime_unix_ms INTEGER,
+                quality_ruleset_version INTEGER NOT NULL,
+                quality_violation_count INTEGER NOT NULL,
+                quality_violation_hash TEXT NOT NULL,
+                quality_indexed_at_utc TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_file_quality_language ON file_quality(language);
+            CREATE INDEX IF NOT EXISTS idx_file_quality_violation_count
+                ON file_quality(quality_violation_count);
+
+            CREATE TABLE IF NOT EXISTS file_rule_violations (
+                path TEXT NOT NULL,
+                rule_id TEXT NOT NULL,
+                actual_value INTEGER NOT NULL,
+                threshold_value INTEGER NOT NULL,
+                message TEXT NOT NULL,
+                PRIMARY KEY(path, rule_id)
+            );
+            CREATE INDEX IF NOT EXISTS idx_file_rule_violations_rule
+                ON file_rule_violations(rule_id);
             "#;
 
 pub(super) const OPEN_DB_PRAGMAS_SQL: &str = r#"
@@ -130,7 +159,7 @@ pub(super) const OPEN_DB_PRAGMAS_SQL: &str = r#"
             PRAGMA busy_timeout = 5000;
             "#;
 
-pub(super) const REQUIRED_SCHEMA_TABLES: [&str; 11] = [
+pub(super) const REQUIRED_SCHEMA_TABLES: [&str; 13] = [
     "meta",
     "files",
     "files_fts",
@@ -142,4 +171,6 @@ pub(super) const REQUIRED_SCHEMA_TABLES: [&str; 11] = [
     "file_chunks",
     "chunk_embeddings",
     "model_metadata",
+    "file_quality",
+    "file_rule_violations",
 ];

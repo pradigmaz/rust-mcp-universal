@@ -4,9 +4,9 @@ use anyhow::Result;
 use walkdir::WalkDir;
 
 use super::super::types::PassResult;
-use super::{PassConfig, files, filters, graph, source, stats, walk};
+use super::{PassConfig, files, filters, graph, quality, source, stats, walk};
 use crate::engine::storage;
-use crate::utils::INDEX_FILE_LIMIT;
+use crate::utils::{INDEX_FILE_LIMIT, infer_language};
 
 pub(super) fn run_walking_pass(
     tx: &rusqlite::Transaction<'_>,
@@ -54,6 +54,7 @@ pub(super) fn index_candidate_path(
     changed_since_unix_ms: Option<i64>,
     pass_result: &mut PassResult,
 ) -> Result<()> {
+    let existing_quality = config.existing_quality.get(rel_text);
     let metadata = match source::read_source_metadata(path) {
         Ok(metadata) => metadata,
         Err(err) => {
@@ -62,12 +63,28 @@ pub(super) fn index_candidate_path(
         }
     };
     if metadata.size_bytes > INDEX_FILE_LIMIT {
-        stats::mark_authoritative_removed_path_as_skipped(
+        if !should_refresh_quality_candidate(
+            changed_since_unix_ms,
+            existing_quality,
+            metadata.current_mtime_unix_ms,
+        ) {
+            stats::mark_skipped_before_changed_since(&mut pass_result.stats);
+            return Ok(());
+        }
+
+        let indexed_at = source::now_indexed_at()?;
+        quality::persist_oversize_quality(
             tx,
-            config.existing_files,
             rel_text,
-            &mut pass_result.stats,
+            &infer_language(path),
+            &metadata,
+            &indexed_at,
         )?;
+        if config.existing_files.contains_key(rel_text) {
+            storage::remove_path_index(tx, rel_text)?;
+            pass_result.stats.changed += 1;
+        }
+        pass_result.stats.skipped += 1;
         return Ok(());
     }
 
@@ -88,6 +105,9 @@ pub(super) fn index_candidate_path(
         }
     };
     if source_snapshot.is_binary {
+        if existing_quality.is_some() {
+            storage::remove_path_quality(tx, rel_text)?;
+        }
         stats::mark_authoritative_removed_path_as_skipped(
             tx,
             config.existing_files,
@@ -101,6 +121,7 @@ pub(super) fn index_candidate_path(
         && filters::is_unchanged(config.existing_files, rel_text, &source_snapshot.sha256)
     {
         storage::update_path_source_mtime(tx, rel_text, metadata.current_mtime_unix_ms)?;
+        storage::update_path_quality_mtime(tx, rel_text, metadata.current_mtime_unix_ms)?;
         stats::mark_unchanged(&mut pass_result.stats);
         return Ok(());
     }
@@ -123,9 +144,29 @@ pub(super) fn index_candidate_path(
         },
         &mut pass_result.stats,
     )?;
+    quality::persist_indexed_quality(tx, rel_text, &source_snapshot, &metadata, &indexed_at)?;
 
     stats::mark_indexed(&mut pass_result.stats, existed_before);
     Ok(())
+}
+
+fn should_refresh_quality_candidate(
+    changed_since_unix_ms: Option<i64>,
+    existing_quality: Option<&storage::ExistingQualityState>,
+    current_mtime_unix_ms: Option<i64>,
+) -> bool {
+    let Some(changed_since_unix_ms) = changed_since_unix_ms else {
+        return true;
+    };
+    let Some(existing_quality) = existing_quality else {
+        return true;
+    };
+    if existing_quality.source_mtime_unix_ms.is_none()
+        || !filters::is_quality_state_complete(existing_quality)
+    {
+        return true;
+    }
+    current_mtime_unix_ms.is_none_or(|value| value >= changed_since_unix_ms)
 }
 
 fn handle_source_io_failure(
@@ -137,6 +178,9 @@ fn handle_source_io_failure(
 ) -> Result<()> {
     match stats::classify_io_failure(err) {
         stats::IoFailurePolicy::AuthoritativeRemoval => {
+            if config.existing_quality.contains_key(rel_text) {
+                storage::remove_path_quality(tx, rel_text)?;
+            }
             stats::mark_authoritative_removed_path_as_skipped(
                 tx,
                 config.existing_files,

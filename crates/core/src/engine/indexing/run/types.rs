@@ -28,6 +28,7 @@ pub(super) struct PassResult {
 
 pub(super) struct PreparedIndexRun {
     pub(super) existing_files: HashMap<String, storage::ExistingFileState>,
+    pub(super) existing_quality: HashMap<String, storage::ExistingQualityState>,
     pub(super) selector: RunSelector,
     pub(super) ignore_matcher: ProjectIgnoreMatcher,
 }

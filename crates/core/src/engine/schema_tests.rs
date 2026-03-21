@@ -73,7 +73,7 @@ fn migration_runner_applies_n_to_n_plus_one() -> anyhow::Result<()> {
         conn.query_row("SELECT MAX(id) FROM schema_migrations", [], |row| {
             row.get(0)
         })?;
-    assert_eq!(max_id, Some(9));
+    assert_eq!(max_id, Some(MIGRATIONS.len() as i64));
 
     let _ = fs::remove_dir_all(root);
     Ok(())
