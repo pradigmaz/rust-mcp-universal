@@ -2,8 +2,8 @@ use anyhow::Result;
 use serde_json::Value;
 
 use rmu_core::{
-    Engine, MigrationMode, PrivacyMode, QueryOptions, RolloutPhase, SemanticFailMode,
-    decide_semantic_rollout, sanitize_value_for_privacy,
+    Engine, IndexProfile, IndexingOptions, MigrationMode, PrivacyMode, QueryOptions, RolloutPhase,
+    SemanticFailMode, decide_semantic_rollout, sanitize_value_for_privacy,
 };
 
 use crate::ServerState;
@@ -65,7 +65,18 @@ pub(super) fn context_pack(args: &Value, state: &mut ServerState) -> Result<Valu
         state.db_path.clone(),
         migration_mode,
     )?;
-    ensure_query_index_ready(&engine, auto_index)?;
+    if auto_index
+        && matches!(mode, rmu_core::ContextMode::Design)
+        && engine.index_status()?.files == 0
+    {
+        let _ = engine.index_path_with_options(&IndexingOptions {
+            profile: Some(IndexProfile::DocsHeavy),
+            reindex: true,
+            ..IndexingOptions::default()
+        })?;
+    } else {
+        ensure_query_index_ready(&engine, auto_index)?;
+    }
     let result = engine.build_context_pack(
         &QueryOptions {
             query,

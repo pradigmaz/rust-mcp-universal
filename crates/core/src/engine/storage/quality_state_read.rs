@@ -102,12 +102,22 @@ fn load_actual_quality_state_conn(
             .push(crate::quality::QualityMetricEntry {
                 metric_id,
                 metric_value,
+                location: None,
             });
     }
 
     let mut stmt = conn.prepare(
         r#"
-        SELECT path, rule_id, actual_value, threshold_value, message
+        SELECT
+            path,
+            rule_id,
+            actual_value,
+            threshold_value,
+            message,
+            start_line,
+            start_column,
+            end_line,
+            end_column
         FROM file_rule_violations
         ORDER BY path ASC, rule_id ASC
         "#,
@@ -120,12 +130,27 @@ fn load_actual_quality_state_conn(
                 row.get::<_, i64>(2)?,
                 row.get::<_, i64>(3)?,
                 row.get::<_, String>(4)?,
+                row.get::<_, Option<i64>>(5)?,
+                row.get::<_, Option<i64>>(6)?,
+                row.get::<_, Option<i64>>(7)?,
+                row.get::<_, Option<i64>>(8)?,
             ))
         })?
         .collect::<rusqlite::Result<Vec<_>>>()?;
 
     let mut grouped = HashMap::<String, Vec<crate::model::QualityViolationEntry>>::new();
-    for (path, rule_id, actual_value, threshold_value, message) in rows {
+    for (
+        path,
+        rule_id,
+        actual_value,
+        threshold_value,
+        message,
+        start_line,
+        start_column,
+        end_line,
+        end_column,
+    ) in rows
+    {
         grouped
             .entry(path)
             .or_default()
@@ -134,6 +159,7 @@ fn load_actual_quality_state_conn(
                 actual_value,
                 threshold_value,
                 message,
+                location: build_location(start_line, start_column, end_line, end_column),
             });
     }
 
@@ -155,4 +181,18 @@ fn load_actual_quality_state_conn(
         );
     }
     Ok(out)
+}
+
+fn build_location(
+    start_line: Option<i64>,
+    start_column: Option<i64>,
+    end_line: Option<i64>,
+    end_column: Option<i64>,
+) -> Option<crate::model::QualityLocation> {
+    Some(crate::model::QualityLocation {
+        start_line: usize::try_from(start_line?).ok()?,
+        start_column: usize::try_from(start_column?).ok()?,
+        end_line: usize::try_from(end_line?).ok()?,
+        end_column: usize::try_from(end_column?).ok()?,
+    })
 }

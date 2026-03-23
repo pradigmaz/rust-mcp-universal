@@ -1,5 +1,7 @@
-use super::{IndexedQualityMetrics, QualityCandidateFacts, QualityEvaluation, QualitySnapshot};
 use super::rules::evaluate_rules;
+use super::{
+    IndexedQualityMetrics, QualityCandidateFacts, QualityEvaluation, QualityPolicy, QualitySnapshot,
+};
 
 pub(crate) fn build_indexed_quality_facts(
     rel_path: &str,
@@ -34,8 +36,9 @@ pub(crate) fn build_oversize_quality_facts(
 pub(crate) fn evaluate_quality(
     facts: &QualityCandidateFacts,
     indexed_metrics: &IndexedQualityMetrics,
+    policy: &QualityPolicy,
 ) -> QualityEvaluation {
-    let evaluation = evaluate_rules(facts, indexed_metrics);
+    let evaluation = evaluate_rules(facts, indexed_metrics, policy);
     QualityEvaluation {
         snapshot: QualitySnapshot {
             size_bytes: facts.size_bytes,

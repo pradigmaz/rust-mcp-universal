@@ -186,7 +186,6 @@ mod tests {
 
         assert_ne!(first_norm, second_norm);
     }
-
     #[test]
     fn is_probably_ignored_matches_common_language_artifact_directories() {
         for path in [

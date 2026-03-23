@@ -3,15 +3,20 @@ use std::fs;
 
 use anyhow::Result;
 
-use super::status::{write_quality_status_degraded, write_quality_status_ready, write_quality_status_unavailable};
 use super::scope::{QualityRefreshPlan, build_full_quality_refresh_plan};
+use super::status::{
+    write_quality_status_degraded, write_quality_status_ready, write_quality_status_unavailable,
+};
 use crate::engine::Engine;
-use crate::engine::storage::{UpsertQualitySnapshotInput, remove_path_quality, upsert_quality_snapshot};
+use crate::engine::storage::{
+    UpsertQualitySnapshotInput, remove_path_quality, upsert_quality_snapshot,
+};
 use crate::quality::{
     IndexedQualityMetrics, build_indexed_quality_facts, build_oversize_quality_facts,
-    evaluate_quality, quality_metrics_hash, violations_hash,
+    default_quality_policy, evaluate_quality, load_quality_policy, quality_metrics_hash,
+    violations_hash,
 };
-use crate::utils::{INDEX_FILE_LIMIT, infer_language};
+use crate::utils::{INDEX_FILE_LIMIT, infer_language, normalized_path_to_fs_path};
 
 #[derive(Debug)]
 struct QualityRefreshRecord {
@@ -60,9 +65,17 @@ fn apply_quality_refresh(engine: &Engine, plan: QualityRefreshPlan) -> Result<()
     let mut last_error_rule_id = None::<String>;
     let mut records = Vec::new();
     let mut deleted_paths = plan.deleted_paths;
+    let policy = match load_quality_policy(&engine.project_root) {
+        Ok(policy) => policy,
+        Err(_) => {
+            degraded = true;
+            last_error_rule_id = Some("quality_policy".to_string());
+            default_quality_policy()
+        }
+    };
 
     for path in sorted_paths(&plan.refresh_paths) {
-        match build_refresh_record(&conn, engine, &path) {
+        match build_refresh_record(&conn, engine, &path, &policy) {
             Ok(Some(record)) => {
                 if record.had_rule_errors {
                     degraded = true;
@@ -81,47 +94,51 @@ fn apply_quality_refresh(engine: &Engine, plan: QualityRefreshPlan) -> Result<()
         }
     }
 
-    match conn.unchecked_transaction() {
+    let tx_result = match conn.unchecked_transaction() {
         Ok(tx) => {
-            for path in sorted_paths(&deleted_paths) {
-                if remove_path_quality(&tx, &path).is_err() {
-                    let _ = write_quality_status_unavailable(&conn);
-                    return Ok(());
+            let result: Result<()> = (|| {
+                for path in sorted_paths(&deleted_paths) {
+                    remove_path_quality(&tx, &path)?;
                 }
-            }
 
-            for record in &records {
-                upsert_quality_snapshot(
-                    &tx,
-                    UpsertQualitySnapshotInput {
-                        path: &record.path,
-                        language: &record.language,
-                        size_bytes: record.size_bytes,
-                        total_lines: record.total_lines,
-                        non_empty_lines: record.non_empty_lines,
-                        import_count: record.import_count,
-                        quality_mode: record.quality_mode,
-                        source_mtime_unix_ms: record.source_mtime_unix_ms,
-                        quality_ruleset_version: crate::quality::CURRENT_QUALITY_RULESET_VERSION,
-                        quality_metric_hash: &record.quality_metric_hash,
-                        quality_violation_hash: &record.quality_violation_hash,
-                        quality_indexed_at_utc: &now_rfc3339()?,
-                        metrics: &record.metrics,
-                        violations: &record.violations,
-                    },
-                )?;
-            }
+                for record in &records {
+                    upsert_quality_snapshot(
+                        &tx,
+                        UpsertQualitySnapshotInput {
+                            path: &record.path,
+                            language: &record.language,
+                            size_bytes: record.size_bytes,
+                            total_lines: record.total_lines,
+                            non_empty_lines: record.non_empty_lines,
+                            import_count: record.import_count,
+                            quality_mode: record.quality_mode,
+                            source_mtime_unix_ms: record.source_mtime_unix_ms,
+                            quality_ruleset_version:
+                                crate::quality::CURRENT_QUALITY_RULESET_VERSION,
+                            quality_metric_hash: &record.quality_metric_hash,
+                            quality_violation_hash: &record.quality_violation_hash,
+                            quality_indexed_at_utc: &now_rfc3339()?,
+                            metrics: &record.metrics,
+                            violations: &record.violations,
+                        },
+                    )?;
+                }
 
-            if degraded {
-                write_quality_status_degraded(&tx, last_error_rule_id.as_deref())?;
-            } else {
-                write_quality_status_ready(&tx)?;
-            }
-            tx.commit()?;
+                if degraded {
+                    write_quality_status_degraded(&tx, last_error_rule_id.as_deref())?;
+                } else {
+                    write_quality_status_ready(&tx)?;
+                }
+                tx.commit()?;
+                Ok(())
+            })();
+            result
         }
-        Err(_) => {
-            let _ = write_quality_status_unavailable(&conn);
-        }
+        Err(err) => Err(err.into()),
+    };
+
+    if tx_result.is_err() {
+        let _ = write_quality_status_unavailable(&conn);
     }
 
     Ok(())
@@ -131,8 +148,9 @@ fn build_refresh_record(
     conn: &rusqlite::Connection,
     engine: &Engine,
     path: &str,
+    policy: &crate::quality::QualityPolicy,
 ) -> Result<Option<QualityRefreshRecord>> {
-    let abs_path = engine.project_root.join(path);
+    let abs_path = engine.project_root.join(normalized_path_to_fs_path(path));
     let metadata = match fs::metadata(&abs_path) {
         Ok(metadata) => metadata,
         Err(_) => return Ok(None),
@@ -143,6 +161,7 @@ fn build_refresh_record(
         evaluate_quality(
             &build_oversize_quality_facts(path, &language, metadata.len(), source_mtime_unix_ms),
             &IndexedQualityMetrics::default(),
+            policy,
         )
     } else {
         let bytes = match fs::read(&abs_path) {
@@ -161,7 +180,7 @@ fn build_refresh_record(
             &full_text,
         );
         let indexed_metrics = load_indexed_quality_metrics(conn, path)?;
-        evaluate_quality(&facts, &indexed_metrics)
+        evaluate_quality(&facts, &indexed_metrics, policy)
     };
 
     Ok(Some(QualityRefreshRecord {

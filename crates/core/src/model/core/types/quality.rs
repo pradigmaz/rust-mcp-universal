@@ -31,6 +31,14 @@ impl QualityStatus {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct QualityLocation {
+    pub start_line: usize,
+    pub start_column: usize,
+    pub end_line: usize,
+    pub end_column: usize,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum QualityMode {
@@ -63,6 +71,13 @@ pub struct WorkspaceQualityTopRule {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WorkspaceQualityTopMetric {
+    pub metric_id: String,
+    pub files: usize,
+    pub max_value: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WorkspaceQualitySummary {
     pub ruleset_id: String,
     pub status: QualityStatus,
@@ -70,6 +85,7 @@ pub struct WorkspaceQualitySummary {
     pub violating_files: usize,
     pub total_violations: usize,
     pub top_rules: Vec<WorkspaceQualityTopRule>,
+    pub top_metrics: Vec<WorkspaceQualityTopMetric>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -78,6 +94,14 @@ pub struct QualityViolationEntry {
     pub actual_value: i64,
     pub threshold_value: i64,
     pub message: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub location: Option<QualityLocation>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct QualityMetricValue {
+    pub metric_id: String,
+    pub metric_value: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -90,6 +114,8 @@ pub struct RuleViolationFileHit {
     pub import_count: Option<i64>,
     pub quality_mode: QualityMode,
     pub violations: Vec<QualityViolationEntry>,
+    #[serde(default)]
+    pub metrics: Vec<QualityMetricValue>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -108,6 +134,7 @@ pub enum RuleViolationsSortBy {
     ViolationCount,
     SizeBytes,
     NonEmptyLines,
+    MetricValue,
 }
 
 impl RuleViolationsSortBy {
@@ -116,6 +143,7 @@ impl RuleViolationsSortBy {
             "violation_count" => Some(Self::ViolationCount),
             "size_bytes" => Some(Self::SizeBytes),
             "non_empty_lines" => Some(Self::NonEmptyLines),
+            "metric_value" => Some(Self::MetricValue),
             _ => None,
         }
     }
@@ -131,6 +159,10 @@ pub struct RuleViolationsOptions {
     #[serde(default)]
     pub rule_ids: Vec<String>,
     #[serde(default)]
+    pub metric_ids: Vec<String>,
+    #[serde(default)]
+    pub sort_metric_id: Option<String>,
+    #[serde(default)]
     pub sort_by: RuleViolationsSortBy,
 }
 
@@ -141,6 +173,8 @@ impl Default for RuleViolationsOptions {
             path_prefix: None,
             language: None,
             rule_ids: Vec::new(),
+            metric_ids: Vec::new(),
+            sort_metric_id: None,
             sort_by: RuleViolationsSortBy::ViolationCount,
         }
     }

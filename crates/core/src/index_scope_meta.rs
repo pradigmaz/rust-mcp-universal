@@ -94,9 +94,11 @@ fn parse_scope_values(raw: &str) -> Option<Vec<String>> {
 }
 
 fn read_meta(conn: &Connection, key: &str) -> Result<Option<String>> {
-    conn.query_row("SELECT value FROM meta WHERE key = ?1", [key], |row| row.get(0))
-        .optional()
-        .map_err(Into::into)
+    conn.query_row("SELECT value FROM meta WHERE key = ?1", [key], |row| {
+        row.get(0)
+    })
+    .optional()
+    .map_err(Into::into)
 }
 
 fn upsert_meta(tx: &Transaction<'_>, key: &str, value: &str) -> Result<()> {

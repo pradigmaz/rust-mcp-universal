@@ -63,8 +63,11 @@ pub(super) fn index_candidate_path(
             return Ok(());
         }
     };
-    let core_needs_refresh =
-        filters::should_refresh_candidate(changed_since_unix_ms, existing_file, metadata.current_mtime_unix_ms);
+    let core_needs_refresh = filters::should_refresh_candidate(
+        changed_since_unix_ms,
+        existing_file,
+        metadata.current_mtime_unix_ms,
+    );
     let quality_needs_refresh = should_refresh_quality_candidate(
         changed_since_unix_ms,
         existing_quality,

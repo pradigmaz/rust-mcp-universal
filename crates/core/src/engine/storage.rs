@@ -18,10 +18,14 @@ mod quality_state_read;
 pub(super) use cache::{
     CachedChunkEmbeddingLookup, delete_cached_chunk_embedding, load_cached_chunk_embedding,
 };
-pub(super) use existing_state::{ExistingFileState, load_existing_file_state, state_completeness_report};
 #[cfg(test)]
 pub(super) use existing_state::FileStateSection;
-pub(super) use graph_edges::{GraphRefreshSeed, capture_graph_refresh_seed, refresh_file_graph_edges};
+pub(super) use existing_state::{
+    ExistingFileState, load_existing_file_state, state_completeness_report,
+};
+pub(super) use graph_edges::{
+    GraphRefreshSeed, capture_graph_refresh_seed, refresh_file_graph_edges,
+};
 pub(crate) use ops::{
     UpsertQualitySnapshotInput, clear_index_tables, remove_path_index, remove_path_quality,
     update_path_source_mtime, upsert_meta, upsert_quality_snapshot,

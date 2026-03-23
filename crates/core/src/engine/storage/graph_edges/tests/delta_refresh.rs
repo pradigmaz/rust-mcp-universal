@@ -8,8 +8,7 @@ use super::support::{
 fn refresh_file_graph_edges_matches_full_rebuild_for_dirty_neighborhood() -> anyhow::Result<()> {
     let mut delta_conn = Connection::open_in_memory()?;
     let mut full_conn = Connection::open_in_memory()?;
-    let (dirty_paths, pre_refresh) =
-        prepare_dirty_delta_fixture(&mut delta_conn, &mut full_conn)?;
+    let (dirty_paths, pre_refresh) = prepare_dirty_delta_fixture(&mut delta_conn, &mut full_conn)?;
 
     run_delta_refresh(&mut delta_conn, &dirty_paths, &pre_refresh)?;
     run_full_rebuild(&mut full_conn)?;

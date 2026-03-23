@@ -113,6 +113,7 @@ impl Engine {
                 top_symbols: super::brief::load_top_symbols_for_brief(self)?,
                 quality_summary: load_quality_summary(self)?,
                 recommendations: super::brief::make_brief_recommendations(&status),
+                repair_hint: None,
             }
         };
 

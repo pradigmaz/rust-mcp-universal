@@ -109,6 +109,55 @@ fn rule_violations_returns_filtered_hits_and_masks_paths() {
         result["structuredContent"]["hits"][0]["violations"][0]["rule_id"],
         json!("max_non_empty_lines_config")
     );
+    assert!(
+        result["structuredContent"]["hits"][0]["metrics"]
+            .as_array()
+            .expect("metrics array")
+            .iter()
+            .any(|metric| metric["metric_id"] == json!("non_empty_lines"))
+    );
+
+    let _ = fs::remove_dir_all(project_dir);
+}
+
+#[test]
+fn workspace_brief_returns_repair_hint_for_incompatible_index() {
+    let project_dir = temp_dir("rmu-mcp-tests-brief-repair-hint");
+    fs::create_dir_all(project_dir.join("src")).expect("create temp dir");
+    fs::write(project_dir.join("src/lib.rs"), "pub fn broken_meta() {}\n").expect("write file");
+
+    let mut state = state_for(project_dir.clone(), Some(project_dir.join(".rmu/index.db")));
+    handle_tool_call(
+        Some(json!({
+            "name": "index",
+            "arguments": { "reindex": true }
+        })),
+        &mut state,
+    )
+    .expect("index should succeed");
+
+    let conn = rusqlite::Connection::open(project_dir.join(".rmu/index.db")).expect("open db");
+    conn.execute("DELETE FROM meta WHERE key = 'index_format_version'", [])
+        .expect("delete compatibility meta");
+
+    let result = handle_tool_call(
+        Some(json!({
+            "name": "workspace_brief",
+            "arguments": {}
+        })),
+        &mut state,
+    )
+    .expect("workspace_brief should return a repair hint instead of failing");
+
+    assert_eq!(result["isError"], json!(false));
+    assert_eq!(
+        result["structuredContent"]["repair_hint"]["action"],
+        json!("reindex")
+    );
+    assert_eq!(
+        result["structuredContent"]["quality_summary"]["status"],
+        json!("unavailable")
+    );
 
     let _ = fs::remove_dir_all(project_dir);
 }

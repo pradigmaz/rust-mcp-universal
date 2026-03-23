@@ -1,6 +1,7 @@
 use super::{
     CURRENT_QUALITY_RULESET_VERSION, IndexedQualityMetrics, QUALITY_RULESET_ID,
-    build_indexed_quality_facts, build_oversize_quality_facts, evaluate_quality,
+    build_indexed_quality_facts, build_oversize_quality_facts, default_quality_policy,
+    evaluate_quality,
 };
 
 #[test]
@@ -24,6 +25,7 @@ fn indexed_quality_collects_text_and_indexed_rules() {
             symbol_count: Some(81),
             ..IndexedQualityMetrics::default()
         },
+        &default_quality_policy(),
     );
 
     assert_eq!(evaluation.snapshot.total_lines, Some(2));
@@ -41,7 +43,11 @@ fn indexed_quality_collects_text_and_indexed_rules() {
 #[test]
 fn oversize_quality_stays_quality_only() {
     let facts = build_oversize_quality_facts("src/big.rs", "rust", 300_000, Some(1));
-    let evaluation = evaluate_quality(&facts, &IndexedQualityMetrics::default());
+    let evaluation = evaluate_quality(
+        &facts,
+        &IndexedQualityMetrics::default(),
+        &default_quality_policy(),
+    );
     assert!(evaluation.snapshot.total_lines.is_none());
     assert!(evaluation.snapshot.non_empty_lines.is_none());
     assert!(evaluation.snapshot.import_count.is_none());

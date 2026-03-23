@@ -194,6 +194,10 @@ pub(super) fn ensure_file_quality_tables(conn: &Connection) -> Result<()> {
             actual_value INTEGER NOT NULL,
             threshold_value INTEGER NOT NULL,
             message TEXT NOT NULL,
+            start_line INTEGER,
+            start_column INTEGER,
+            end_line INTEGER,
+            end_column INTEGER,
             PRIMARY KEY(path, rule_id)
         );
         CREATE INDEX IF NOT EXISTS idx_file_rule_violations_rule
@@ -206,6 +210,16 @@ pub(super) fn ensure_file_quality_tables(conn: &Connection) -> Result<()> {
         &[
             ("quality_metric_count", "INTEGER NOT NULL DEFAULT 0"),
             ("quality_metric_hash", "TEXT NOT NULL DEFAULT ''"),
+        ],
+    )?;
+    ensure_table_columns(
+        conn,
+        "file_rule_violations",
+        &[
+            ("start_line", "INTEGER"),
+            ("start_column", "INTEGER"),
+            ("end_line", "INTEGER"),
+            ("end_column", "INTEGER"),
         ],
     )?;
     Ok(())

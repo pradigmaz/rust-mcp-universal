@@ -172,9 +172,7 @@ fn effective_indexing_options(
     reindex: bool,
 ) -> IndexingOptions {
     engine.resolve_indexing_options(&IndexingOptions {
-        profile: requested_profile
-            .or_else(|| engine.resolve_default_index_profile(None))
-            .or(Some(IndexProfile::Mixed)),
+        profile: requested_profile.or_else(|| engine.resolve_default_index_profile(None)),
         changed_since,
         changed_since_commit,
         include_paths,

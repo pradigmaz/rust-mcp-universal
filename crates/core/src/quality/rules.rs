@@ -1,12 +1,11 @@
 use anyhow::Result;
 
-use super::metrics::{
-    FileKind, MAX_GRAPH_EDGE_OUT_COUNT, MAX_IMPORT_COUNT, MAX_LINE_LENGTH,
-    MAX_MODULE_DEP_COUNT_PER_FILE, MAX_NON_EMPTY_LINES_CONFIG, MAX_NON_EMPTY_LINES_DEFAULT,
-    MAX_NON_EMPTY_LINES_TEST, MAX_REF_COUNT_PER_FILE, MAX_SIZE_BYTES, MAX_SYMBOL_COUNT_PER_FILE,
+use super::metrics::FileKind;
+use super::{
+    IndexedQualityMetrics, QualityCandidateFacts, QualityMetricEntry, QualityPolicy,
+    QualityThresholds,
 };
-use super::{IndexedQualityMetrics, QualityCandidateFacts, QualityMetricEntry};
-use crate::model::QualityViolationEntry;
+use crate::model::{QualityLocation, QualityViolationEntry};
 
 #[derive(Debug, Clone)]
 pub(crate) struct RuleEvaluationResult {
@@ -19,10 +18,12 @@ pub(crate) struct RuleEvaluationResult {
 pub(crate) fn evaluate_rules(
     facts: &QualityCandidateFacts,
     indexed_metrics: &IndexedQualityMetrics,
+    policy: &QualityPolicy,
 ) -> RuleEvaluationResult {
     let ctx = RuleContext {
         facts,
         indexed_metrics,
+        thresholds: &policy.thresholds,
     };
     let mut out = RuleEvaluationResult {
         metrics: Vec::new(),
@@ -45,7 +46,8 @@ pub(crate) fn evaluate_rules(
         }
     }
 
-    out.metrics.sort_by(|left, right| left.metric_id.cmp(&right.metric_id));
+    out.metrics
+        .sort_by(|left, right| left.metric_id.cmp(&right.metric_id));
     out.violations
         .sort_by(|left, right| left.rule_id.cmp(&right.rule_id));
     out
@@ -54,6 +56,7 @@ pub(crate) fn evaluate_rules(
 struct RuleContext<'a> {
     facts: &'a QualityCandidateFacts,
     indexed_metrics: &'a IndexedQualityMetrics,
+    thresholds: &'a QualityThresholds,
 }
 
 trait QualityRule {
@@ -90,15 +93,16 @@ impl QualityRule for SizeBytesRule {
     }
 
     fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
-        Some(metric("size_bytes", ctx.facts.size_bytes))
+        Some(metric("size_bytes", ctx.facts.size_bytes, None))
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
         Ok(threshold_violation(
             self.name(),
             ctx.facts.size_bytes,
-            MAX_SIZE_BYTES,
+            ctx.thresholds.max_size_bytes,
             "file size exceeds the allowed threshold",
+            None,
         ))
     }
 }
@@ -111,7 +115,7 @@ impl QualityRule for NonEmptyLinesRule {
     fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
         ctx.facts
             .non_empty_lines
-            .map(|value| metric("non_empty_lines", value))
+            .map(|value| metric("non_empty_lines", value, None))
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
@@ -119,15 +123,25 @@ impl QualityRule for NonEmptyLinesRule {
             return Ok(None);
         };
         let (rule_id, threshold) = match ctx.facts.file_kind {
-            FileKind::Default => ("max_non_empty_lines_default", MAX_NON_EMPTY_LINES_DEFAULT),
-            FileKind::Test => ("max_non_empty_lines_test", MAX_NON_EMPTY_LINES_TEST),
-            FileKind::Config => ("max_non_empty_lines_config", MAX_NON_EMPTY_LINES_CONFIG),
+            FileKind::Default => (
+                "max_non_empty_lines_default",
+                ctx.thresholds.max_non_empty_lines_default,
+            ),
+            FileKind::Test => (
+                "max_non_empty_lines_test",
+                ctx.thresholds.max_non_empty_lines_test,
+            ),
+            FileKind::Config => (
+                "max_non_empty_lines_config",
+                ctx.thresholds.max_non_empty_lines_config,
+            ),
         };
         Ok(threshold_violation(
             rule_id,
             actual,
             threshold,
             "non-empty line count exceeds the allowed threshold",
+            None,
         ))
     }
 }
@@ -138,7 +152,9 @@ impl QualityRule for ImportCountRule {
     }
 
     fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
-        ctx.facts.import_count.map(|value| metric("import_count", value))
+        ctx.facts
+            .import_count
+            .map(|value| metric("import_count", value, ctx.facts.import_region.clone()))
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
@@ -148,8 +164,9 @@ impl QualityRule for ImportCountRule {
         Ok(threshold_violation(
             self.name(),
             actual,
-            MAX_IMPORT_COUNT,
+            ctx.thresholds.max_import_count,
             "import count exceeds the allowed threshold",
+            ctx.facts.import_region.clone(),
         ))
     }
 }
@@ -160,9 +177,13 @@ impl QualityRule for MaxLineLengthRule {
     }
 
     fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
-        ctx.facts
-            .max_line_length
-            .map(|value| metric("max_line_length", value))
+        ctx.facts.max_line_length.map(|value| {
+            metric(
+                "max_line_length",
+                value,
+                ctx.facts.max_line_length_location.clone(),
+            )
+        })
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
@@ -172,8 +193,9 @@ impl QualityRule for MaxLineLengthRule {
         Ok(threshold_violation(
             self.name(),
             actual,
-            MAX_LINE_LENGTH,
+            ctx.thresholds.max_line_length,
             "maximum line length exceeds the allowed threshold",
+            ctx.facts.max_line_length_location.clone(),
         ))
     }
 }
@@ -186,7 +208,7 @@ impl QualityRule for SymbolCountRule {
     fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
         ctx.indexed_metrics
             .symbol_count
-            .map(|value| metric("symbol_count", value))
+            .map(|value| metric("symbol_count", value, None))
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
@@ -196,8 +218,9 @@ impl QualityRule for SymbolCountRule {
         Ok(threshold_violation(
             self.name(),
             actual,
-            MAX_SYMBOL_COUNT_PER_FILE,
+            ctx.thresholds.max_symbol_count_per_file,
             "symbol count exceeds the allowed threshold",
+            None,
         ))
     }
 }
@@ -210,7 +233,7 @@ impl QualityRule for RefCountRule {
     fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
         ctx.indexed_metrics
             .ref_count
-            .map(|value| metric("ref_count", value))
+            .map(|value| metric("ref_count", value, None))
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
@@ -220,8 +243,9 @@ impl QualityRule for RefCountRule {
         Ok(threshold_violation(
             self.name(),
             actual,
-            MAX_REF_COUNT_PER_FILE,
+            ctx.thresholds.max_ref_count_per_file,
             "reference count exceeds the allowed threshold",
+            None,
         ))
     }
 }
@@ -234,7 +258,7 @@ impl QualityRule for ModuleDepCountRule {
     fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
         ctx.indexed_metrics
             .module_dep_count
-            .map(|value| metric("module_dep_count", value))
+            .map(|value| metric("module_dep_count", value, None))
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
@@ -244,8 +268,9 @@ impl QualityRule for ModuleDepCountRule {
         Ok(threshold_violation(
             self.name(),
             actual,
-            MAX_MODULE_DEP_COUNT_PER_FILE,
+            ctx.thresholds.max_module_dep_count_per_file,
             "module dependency count exceeds the allowed threshold",
+            None,
         ))
     }
 }
@@ -258,7 +283,7 @@ impl QualityRule for GraphEdgeOutCountRule {
     fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
         ctx.indexed_metrics
             .graph_edge_out_count
-            .map(|value| metric("graph_edge_out_count", value))
+            .map(|value| metric("graph_edge_out_count", value, None))
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
@@ -268,16 +293,22 @@ impl QualityRule for GraphEdgeOutCountRule {
         Ok(threshold_violation(
             self.name(),
             actual,
-            MAX_GRAPH_EDGE_OUT_COUNT,
+            ctx.thresholds.max_graph_edge_out_count,
             "graph outgoing edge count exceeds the allowed threshold",
+            None,
         ))
     }
 }
 
-fn metric(metric_id: &str, metric_value: i64) -> QualityMetricEntry {
+fn metric(
+    metric_id: &str,
+    metric_value: i64,
+    location: Option<QualityLocation>,
+) -> QualityMetricEntry {
     QualityMetricEntry {
         metric_id: metric_id.to_string(),
         metric_value,
+        location,
     }
 }
 
@@ -286,11 +317,13 @@ fn threshold_violation(
     actual_value: i64,
     threshold_value: i64,
     message: &str,
+    location: Option<QualityLocation>,
 ) -> Option<QualityViolationEntry> {
     (actual_value > threshold_value).then(|| QualityViolationEntry {
         rule_id: rule_id.to_string(),
         actual_value,
         threshold_value,
         message: message.to_string(),
+        location,
     })
 }

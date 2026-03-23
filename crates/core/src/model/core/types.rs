@@ -19,13 +19,16 @@ pub use navigation::{
     SymbolReferenceHit,
 };
 pub use quality::{
-    QualityMode, QualityStatus, QualityViolationEntry, RuleViolationFileHit,
-    RuleViolationsOptions, RuleViolationsResult, RuleViolationsSortBy, RuleViolationsSummary,
-    WorkspaceQualitySummary, WorkspaceQualityTopRule,
+    QualityLocation, QualityMetricValue, QualityMode, QualityStatus, QualityViolationEntry,
+    RuleViolationFileHit, RuleViolationsOptions, RuleViolationsResult, RuleViolationsSortBy,
+    RuleViolationsSummary, WorkspaceQualitySummary, WorkspaceQualityTopMetric,
+    WorkspaceQualityTopRule,
 };
 pub use query::{QueryOptions, SearchHit};
 pub use report::{
     BudgetInfo, ConfidenceInfo, ConfidenceSignals, IndexTelemetry, QueryReport,
     RankExplainBreakdown, RetrievalStage, SelectedContextItem,
 };
-pub use workspace::{WorkspaceBrief, WorkspaceLanguageStat, WorkspaceTopSymbol};
+pub use workspace::{
+    WorkspaceBrief, WorkspaceLanguageStat, WorkspaceRepairHint, WorkspaceTopSymbol,
+};

@@ -49,8 +49,12 @@ pub(in crate::engine) fn refresh_file_graph_edges(
         [],
     )?;
 
-    let rebuilt_edges =
-        materialize_impacted_edges(&impacted_paths, &symbol_destinations, &ref_rows, &dep_groups);
+    let rebuilt_edges = materialize_impacted_edges(
+        &impacted_paths,
+        &symbol_destinations,
+        &ref_rows,
+        &dep_groups,
+    );
     tx.execute_batch(
         r#"
         DROP TABLE IF EXISTS temp.file_graph_edges_delta_rebuild;

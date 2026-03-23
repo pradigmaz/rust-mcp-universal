@@ -34,12 +34,20 @@ pub(crate) fn compute_quality_status(engine: &Engine) -> Result<QualityStatus> {
         return Ok(QualityStatus::Unavailable);
     }
 
-    if stored_quality_status(&conn)? == QualityStatus::Degraded {
-        return Ok(QualityStatus::Degraded);
+    match stored_quality_status(&conn) {
+        Ok(QualityStatus::Degraded) => return Ok(QualityStatus::Degraded),
+        Err(_) => return Ok(QualityStatus::Degraded),
+        _ => {}
     }
 
-    let plan = build_full_quality_refresh_plan(engine, &conn)?;
-    if quality_refresh_needed_conn(&conn, &plan)? {
+    let plan = match build_full_quality_refresh_plan(engine, &conn) {
+        Ok(plan) => plan,
+        Err(_) => return Ok(QualityStatus::Degraded),
+    };
+    if match quality_refresh_needed_conn(&conn, &plan) {
+        Ok(needs_refresh) => needs_refresh,
+        Err(_) => return Ok(QualityStatus::Degraded),
+    } {
         return Ok(QualityStatus::Stale);
     }
     Ok(QualityStatus::Ready)
@@ -124,7 +132,11 @@ fn write_quality_meta(
     if let Some(version) = ruleset_version {
         upsert_meta(tx, META_QUALITY_RULESET_VERSION, &version.to_string())?;
     }
-    upsert_meta(tx, META_QUALITY_LAST_ERROR_UTC, last_error_utc.unwrap_or(""))?;
+    upsert_meta(
+        tx,
+        META_QUALITY_LAST_ERROR_UTC,
+        last_error_utc.unwrap_or(""),
+    )?;
     upsert_meta(
         tx,
         META_QUALITY_LAST_ERROR_RULE_ID,

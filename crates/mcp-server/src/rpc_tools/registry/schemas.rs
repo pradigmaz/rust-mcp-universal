@@ -129,13 +129,22 @@ pub(super) fn rule_violations_schema() -> Value {
                 }),
             ),
             (
+                "metric_ids",
+                json!({
+                    "type": "array",
+                    "items": {"type": "string"}
+                }),
+            ),
+            ("sort_metric_id", json!({"type": "string", "minLength": 1})),
+            (
                 "sort_by",
                 json!({
                     "type": "string",
                     "oneOf": [
                         {"const": "violation_count"},
                         {"const": "size_bytes"},
-                        {"const": "non_empty_lines"}
+                        {"const": "non_empty_lines"},
+                        {"const": "metric_value"}
                     ]
                 }),
             ),
