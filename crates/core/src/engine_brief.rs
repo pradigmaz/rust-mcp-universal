@@ -9,6 +9,9 @@ use crate::model::IndexProfile;
 use crate::model::IndexingOptions;
 use crate::model::{WorkspaceBrief, WorkspaceLanguageStat, WorkspaceTopSymbol};
 
+#[path = "engine_brief/repair.rs"]
+mod repair;
+
 impl Engine {
     pub fn ensure_index_ready(&self) -> Result<bool> {
         self.ensure_index_ready_with_policy(true)
@@ -32,7 +35,7 @@ impl Engine {
             let files = count_files(&conn)?;
             let compatibility = compatibility::evaluate_index_compatibility(&conn)?;
             let legacy_default_scope = if auto_index {
-                uses_legacy_default_rust_scope(&conn, self)?
+                uses_legacy_default_scope(&conn, self)?
             } else {
                 false
             };
@@ -71,6 +74,12 @@ impl Engine {
     }
 
     pub fn workspace_brief_with_policy(&self, auto_index: bool) -> Result<WorkspaceBrief> {
+        if !auto_index {
+            if let Some(repair_hint) = repair::read_only_repair_hint(self)? {
+                return repair::build_repair_brief(self, repair_hint);
+            }
+        }
+
         let auto_indexed = self.ensure_index_ready_with_policy(auto_index)?;
         if auto_index {
             let _ = self.refresh_quality_if_needed();
@@ -87,6 +96,7 @@ impl Engine {
             top_symbols,
             quality_summary,
             recommendations: make_recommendations(&status),
+            repair_hint: None,
         })
     }
 }
@@ -114,17 +124,37 @@ fn count_files(conn: &Connection) -> Result<usize> {
     Ok(usize::try_from(count).unwrap_or(usize::MAX))
 }
 
-fn uses_legacy_default_rust_scope(conn: &Connection, engine: &Engine) -> Result<bool> {
-    if engine.resolve_default_index_profile(None) != Some(IndexProfile::RustMonorepo) {
+fn uses_legacy_default_scope(conn: &Connection, engine: &Engine) -> Result<bool> {
+    let Some(default_profile) = engine.resolve_default_index_profile(None) else {
+        return Ok(false);
+    };
+
+    let is_legacy_scope = match load_effective_index_scope_from_meta(conn)? {
+        Some(options) => {
+            options.profile.is_none()
+                && options.include_paths.is_empty()
+                && options.exclude_paths.is_empty()
+        }
+        None => true,
+    };
+    if !is_legacy_scope {
         return Ok(false);
     }
 
-    match load_effective_index_scope_from_meta(conn)? {
-        Some(options) => Ok(options.profile.is_none()
-            && options.include_paths.is_empty()
-            && options.exclude_paths.is_empty()),
-        None => Ok(true),
+    match default_profile {
+        IndexProfile::RustMonorepo => Ok(true),
+        IndexProfile::Mixed => legacy_index_contains_doc_languages(conn),
+        IndexProfile::DocsHeavy => Ok(false),
     }
+}
+
+fn legacy_index_contains_doc_languages(conn: &Connection) -> Result<bool> {
+    let count: i64 = conn.query_row(
+        "SELECT COUNT(1) FROM files WHERE language IN ('markdown', 'text')",
+        [],
+        |row| row.get(0),
+    )?;
+    Ok(count > 0)
 }
 
 pub(crate) fn load_top_languages_for_brief(
@@ -217,4 +247,62 @@ pub(crate) fn make_recommendations(status: &crate::model::IndexStatus) -> Vec<St
         out.push("chunk embedding cache is empty; the next full refresh will warm it".to_string());
     }
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+    use std::path::PathBuf;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    use super::Engine;
+    use crate::engine::test_index_path_with_options_impl;
+    use crate::model::IndexingOptions;
+
+    fn temp_project_dir(prefix: &str) -> PathBuf {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system clock must be monotonic")
+            .as_nanos();
+        std::env::temp_dir().join(format!("{prefix}-{nanos}"))
+    }
+
+    #[test]
+    fn ensure_index_ready_repairs_legacy_unscoped_non_rust_index_with_docs() -> anyhow::Result<()> {
+        let project_dir = temp_project_dir("rmu-engine-brief-legacy-non-rust-scope");
+        fs::create_dir_all(project_dir.join("src"))?;
+        fs::create_dir_all(project_dir.join("docs"))?;
+        fs::write(
+            project_dir.join("src/main.ts"),
+            "export const legacyMixedRepair = 1;\n",
+        )?;
+        fs::write(
+            project_dir.join("docs/guide.md"),
+            "legacy_unscoped_docs_marker\n",
+        )?;
+
+        let engine = Engine::new(project_dir.clone(), Some(project_dir.join(".rmu/index.db")))?;
+        let _ = test_index_path_with_options_impl(&engine, &IndexingOptions::default())?;
+
+        let before = engine.index_status()?;
+        assert_eq!(before.files, 2, "legacy unscoped index should include docs");
+
+        assert!(engine.ensure_index_ready_with_policy(true)?);
+
+        let after = engine.index_status()?;
+        assert_eq!(after.files, 1, "mixed-scope repair should prune docs");
+        let conn = engine.open_db_read_only()?;
+        let remaining_docs: i64 = conn.query_row(
+            "SELECT COUNT(1) FROM files WHERE language IN ('markdown', 'text')",
+            [],
+            |row| row.get(0),
+        )?;
+        assert_eq!(
+            remaining_docs, 0,
+            "repaired index should not retain docs/text files"
+        );
+
+        let _ = fs::remove_dir_all(project_dir);
+        Ok(())
+    }
 }

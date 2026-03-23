@@ -35,6 +35,8 @@ pub(crate) fn build_indexed_quality_facts(
         non_empty_lines: Some(non_empty_lines(full_text)),
         import_count: Some(import_count(language, full_text)),
         max_line_length: Some(max_line_length(full_text)),
+        import_region: import_region(language, full_text),
+        max_line_length_location: max_line_length_location(full_text),
         quality_mode: QualityMode::Indexed,
         file_kind: classify_file_kind(rel_path),
     }
@@ -52,6 +54,8 @@ pub(crate) fn build_oversize_quality_facts(
         non_empty_lines: None,
         import_count: None,
         max_line_length: None,
+        import_region: None,
+        max_line_length_location: None,
         quality_mode: QualityMode::QualityOnlyOversize,
         file_kind: classify_file_kind(rel_path),
     }
@@ -100,6 +104,40 @@ fn max_line_length(full_text: &str) -> i64 {
         .map(|line| i64::try_from(line.chars().count()).unwrap_or(i64::MAX))
         .max()
         .unwrap_or(0)
+}
+
+fn max_line_length_location(full_text: &str) -> Option<crate::model::QualityLocation> {
+    let mut best = None::<(usize, usize)>;
+    for (idx, line) in full_text.lines().enumerate() {
+        let len = line.chars().count();
+        match best {
+            Some((_, best_len)) if best_len >= len => {}
+            _ => best = Some((idx + 1, len)),
+        }
+    }
+    best.map(|(line, len)| super::location::line_location(line, len))
+}
+
+fn import_region(language: &str, full_text: &str) -> Option<crate::model::QualityLocation> {
+    let mut first = None::<(usize, usize)>;
+    let mut last = None::<(usize, usize)>;
+    for (idx, line) in full_text.lines().enumerate() {
+        if !is_import_like_line(language, line.trim_start()) {
+            continue;
+        }
+        let line_no = idx + 1;
+        let line_len = line.chars().count();
+        if first.is_none() {
+            first = Some((line_no, line_len));
+        }
+        last = Some((line_no, line_len));
+    }
+    match (first, last) {
+        (Some((start_line, start_len)), Some((end_line, end_len))) => Some(
+            super::location::region_location(start_line, start_len, end_line, end_len),
+        ),
+        _ => None,
+    }
 }
 
 fn is_import_like_line(language: &str, trimmed: &str) -> bool {

@@ -67,6 +67,87 @@ fn indexing_persists_quality_snapshot_and_workspace_summary() -> anyhow::Result<
             .iter()
             .any(|rule| rule.rule_id == "max_non_empty_lines_default")
     );
+    assert!(
+        brief
+            .quality_summary
+            .top_metrics
+            .iter()
+            .any(|metric| metric.metric_id == "non_empty_lines")
+    );
+
+    let _ = fs::remove_dir_all(root);
+    Ok(())
+}
+
+#[test]
+fn quality_policy_overrides_default_thresholds() -> anyhow::Result<()> {
+    let root = temp_dir("rmu-quality-policy");
+    fs::create_dir_all(&root)?;
+    write_project_file(&root, "src/lib.rs", &repeated_lines("line", 301))?;
+    write_project_file(
+        &root,
+        "rmu-quality-policy.json",
+        r#"{"thresholds":{"max_non_empty_lines_default":400}}"#,
+    )?;
+
+    let engine = Engine::new(root.clone(), Some(root.join(".rmu/index.db")))?;
+    engine.index_path()?;
+
+    let result = engine.rule_violations(&RuleViolationsOptions::default())?;
+    assert!(
+        result.hits.iter().all(|hit| hit
+            .violations
+            .iter()
+            .all(|violation| { violation.rule_id != "max_non_empty_lines_default" })),
+        "policy override should suppress the default non-empty-line violation"
+    );
+
+    let _ = fs::remove_dir_all(root);
+    Ok(())
+}
+
+#[test]
+fn rule_violations_expose_metrics_and_locations() -> anyhow::Result<()> {
+    let root = temp_dir("rmu-quality-metrics-locations");
+    fs::create_dir_all(&root)?;
+    write_project_file(
+        &root,
+        "src/lib.rs",
+        "use std::fmt;\nfn short() {}\nfn wide() { let value = \"this line is intentionally very very very very very very very very very very very very very very very very very very very long and should cross the configured threshold\"; }\n",
+    )?;
+
+    let engine = Engine::new(root.clone(), Some(root.join(".rmu/index.db")))?;
+    engine.index_path()?;
+
+    let result = engine.rule_violations(&RuleViolationsOptions {
+        metric_ids: vec!["max_line_length".to_string()],
+        sort_metric_id: Some("max_line_length".to_string()),
+        sort_by: crate::model::RuleViolationsSortBy::MetricValue,
+        ..RuleViolationsOptions::default()
+    })?;
+
+    let hit = result
+        .hits
+        .iter()
+        .find(|hit| hit.path == "src/lib.rs")
+        .expect("src/lib.rs should be present");
+    assert!(
+        hit.metrics
+            .iter()
+            .any(|metric| metric.metric_id == "max_line_length")
+    );
+    let violation = hit
+        .violations
+        .iter()
+        .find(|violation| violation.rule_id == "max_line_length")
+        .expect("max_line_length violation should be present");
+    assert_eq!(
+        violation
+            .location
+            .as_ref()
+            .map(|location| location.start_line),
+        Some(3)
+    );
 
     let _ = fs::remove_dir_all(root);
     Ok(())

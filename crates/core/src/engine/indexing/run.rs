@@ -20,7 +20,7 @@ pub(crate) mod types;
 
 pub(crate) use pass::filters;
 
-pub(super) fn index_path_with_options_impl(
+pub(crate) fn index_path_with_options_impl(
     engine: &Engine,
     options: &IndexingOptions,
 ) -> Result<IndexSummary> {

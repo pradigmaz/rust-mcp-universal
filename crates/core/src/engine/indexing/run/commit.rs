@@ -8,10 +8,10 @@ use super::super::post::{
 };
 use super::types::{PassResult, RunSelector};
 use crate::engine::{Engine, IndexSummary, storage};
+use crate::engine_quality;
 use crate::index_scope::IndexScope;
 use crate::model::IndexingOptions;
 use crate::rebuild_lock::RebuildLockGuard;
-use crate::engine_quality;
 
 pub(super) struct FinalizeCommitInput<'a> {
     pub(super) engine: &'a Engine,
@@ -72,7 +72,9 @@ pub(super) fn finalize_and_commit(
         &authoritative_deleted_paths,
         &failed_walk_prefixes,
     );
-    pass_result.quality_deleted_paths.extend(deleted_quality_paths);
+    pass_result
+        .quality_deleted_paths
+        .extend(deleted_quality_paths);
     storage::refresh_file_graph_edges(
         &tx,
         &pass_result.graph_dirty_paths,

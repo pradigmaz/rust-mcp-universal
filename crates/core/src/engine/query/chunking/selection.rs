@@ -41,12 +41,14 @@ pub(super) fn select_best_chunk_for_hit(
         let lexical = chunk_lexical_signal(params.query_lc, params.query_tokens, &raw_excerpt);
         let (semantic, source) = if params.has_query_vec {
             if let Some(raw_vector) = row.semantic_vector_json {
-                match parse_vector_with_dim(&raw_vector, params.query_vec.len()).with_context(|| {
-                    format!(
-                        "invalid chunk embedding for path `{}` chunk `{}`",
-                        hit.path, row.chunk_idx
-                    )
-                }) {
+                match parse_vector_with_dim(&raw_vector, params.query_vec.len()).with_context(
+                    || {
+                        format!(
+                            "invalid chunk embedding for path `{}` chunk `{}`",
+                            hit.path, row.chunk_idx
+                        )
+                    },
+                ) {
                     Ok(chunk_vec) => (
                         cosine_similarity(params.query_vec, &chunk_vec).max(0.0),
                         "chunk_embedding_index".to_string(),

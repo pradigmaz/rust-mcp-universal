@@ -5,6 +5,8 @@ use crate::model::{
     QualityStatus, RuleViolationsOptions, RuleViolationsResult, WorkspaceQualitySummary,
 };
 
+#[path = "engine_quality/metrics.rs"]
+mod metrics;
 #[path = "engine_quality/query.rs"]
 mod query;
 #[path = "engine_quality/refresh.rs"]

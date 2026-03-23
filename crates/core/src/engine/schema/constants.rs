@@ -157,6 +157,10 @@ pub(super) const INIT_DB_SCHEMA_SQL: &str = r#"
                 actual_value INTEGER NOT NULL,
                 threshold_value INTEGER NOT NULL,
                 message TEXT NOT NULL,
+                start_line INTEGER,
+                start_column INTEGER,
+                end_line INTEGER,
+                end_column INTEGER,
                 PRIMARY KEY(path, rule_id)
             );
             CREATE INDEX IF NOT EXISTS idx_file_rule_violations_rule

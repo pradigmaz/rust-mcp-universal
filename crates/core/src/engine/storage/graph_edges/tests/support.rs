@@ -3,7 +3,9 @@ use std::collections::{HashMap, HashSet};
 use crate::graph::{CURRENT_GRAPH_EDGE_FINGERPRINT_VERSION, empty_graph_edge_content_hash};
 use rusqlite::{Connection, params};
 
-use super::super::{capture_graph_refresh_seed, rebuild_file_graph_edges, refresh_file_graph_edges};
+use super::super::{
+    capture_graph_refresh_seed, rebuild_file_graph_edges, refresh_file_graph_edges,
+};
 
 pub(super) type EdgeRow = (String, String, String, i64, f64);
 pub(super) type MetadataRow = (String, i64, i64, String, i64);
@@ -158,7 +160,10 @@ pub(super) fn mutate_delta_equivalence_fixture(conn: &Connection) -> anyhow::Res
 pub(super) fn prepare_dirty_delta_fixture(
     delta_conn: &mut Connection,
     full_conn: &mut Connection,
-) -> anyhow::Result<(HashSet<String>, HashMap<String, super::super::GraphRefreshSeed>)> {
+) -> anyhow::Result<(
+    HashSet<String>,
+    HashMap<String, super::super::GraphRefreshSeed>,
+)> {
     setup_graph_edge_schema(delta_conn)?;
     setup_graph_edge_schema(full_conn)?;
     seed_delta_equivalence_fixture(delta_conn)?;
@@ -212,10 +217,7 @@ pub(super) fn assert_edge_weight(actual: f64, expected: f64) {
     );
 }
 
-pub(super) fn assert_reset_metadata(
-    conn: &Connection,
-    expected_len: usize,
-) -> anyhow::Result<()> {
+pub(super) fn assert_reset_metadata(conn: &Connection, expected_len: usize) -> anyhow::Result<()> {
     let empty_hash = empty_graph_edge_content_hash();
     let mut stmt = conn.prepare(
         "SELECT path, graph_edge_out_count, graph_edge_in_count, graph_edge_hash, graph_edge_fingerprint_version

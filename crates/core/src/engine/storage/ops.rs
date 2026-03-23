@@ -27,11 +27,7 @@ pub(crate) fn clear_index_tables(tx: &rusqlite::Transaction<'_>) -> Result<()> {
     Ok(())
 }
 
-pub(crate) fn upsert_meta(
-    tx: &rusqlite::Transaction<'_>,
-    key: &str,
-    value: &str,
-) -> Result<()> {
+pub(crate) fn upsert_meta(tx: &rusqlite::Transaction<'_>, key: &str, value: &str) -> Result<()> {
     tx.execute(
         "INSERT INTO meta(key, value) VALUES (?1, ?2)
          ON CONFLICT(key) DO UPDATE SET value = excluded.value",
@@ -40,10 +36,7 @@ pub(crate) fn upsert_meta(
     Ok(())
 }
 
-pub(crate) fn remove_path_index(
-    tx: &rusqlite::Transaction<'_>,
-    path: &str,
-) -> Result<()> {
+pub(crate) fn remove_path_index(tx: &rusqlite::Transaction<'_>, path: &str) -> Result<()> {
     tx.execute("DELETE FROM files_fts WHERE path = ?1", [path])?;
     tx.execute("DELETE FROM symbols WHERE path = ?1", [path])?;
     tx.execute("DELETE FROM module_deps WHERE path = ?1", [path])?;
@@ -59,10 +52,7 @@ pub(crate) fn remove_path_index(
     Ok(())
 }
 
-pub(crate) fn remove_path_quality(
-    tx: &rusqlite::Transaction<'_>,
-    path: &str,
-) -> Result<()> {
+pub(crate) fn remove_path_quality(tx: &rusqlite::Transaction<'_>, path: &str) -> Result<()> {
     tx.execute("DELETE FROM file_rule_violations WHERE path = ?1", [path])?;
     tx.execute("DELETE FROM file_quality_metrics WHERE path = ?1", [path])?;
     tx.execute("DELETE FROM file_quality WHERE path = ?1", [path])?;
@@ -109,14 +99,40 @@ pub(crate) fn upsert_quality_snapshot(
 
     for violation in input.violations {
         tx.execute(
-            "INSERT INTO file_rule_violations(path, rule_id, actual_value, threshold_value, message)
-             VALUES (?1, ?2, ?3, ?4, ?5)",
+            "INSERT INTO file_rule_violations(
+                path,
+                rule_id,
+                actual_value,
+                threshold_value,
+                message,
+                start_line,
+                start_column,
+                end_line,
+                end_column
+             )
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
             params![
                 input.path,
                 &violation.rule_id,
                 violation.actual_value,
                 violation.threshold_value,
-                &violation.message
+                &violation.message,
+                violation
+                    .location
+                    .as_ref()
+                    .map(|location| location.start_line as i64),
+                violation
+                    .location
+                    .as_ref()
+                    .map(|location| location.start_column as i64),
+                violation
+                    .location
+                    .as_ref()
+                    .map(|location| location.end_line as i64),
+                violation
+                    .location
+                    .as_ref()
+                    .map(|location| location.end_column as i64),
             ],
         )?;
     }

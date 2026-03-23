@@ -132,3 +132,6 @@ mod tests;
 #[cfg(test)]
 #[path = "engine/tests_quality.rs"]
 mod quality_tests;
+
+#[cfg(test)]
+pub(crate) use indexing::run::index_path_with_options_impl as test_index_path_with_options_impl;

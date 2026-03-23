@@ -33,8 +33,14 @@ fn mixed_scope_meta_backfills_only_in_scope_quality_rows() -> Result<(), Box<dyn
     })?;
 
     let conn = Connection::open(project_dir.join(".rmu/index.db"))?;
-    assert_eq!(meta_value(&conn, "index.scope.version")?.as_deref(), Some("1"));
-    assert_eq!(meta_value(&conn, "index.scope.profile")?.as_deref(), Some("mixed"));
+    assert_eq!(
+        meta_value(&conn, "index.scope.version")?.as_deref(),
+        Some("1")
+    );
+    assert_eq!(
+        meta_value(&conn, "index.scope.profile")?.as_deref(),
+        Some("mixed")
+    );
     assert_eq!(
         meta_value(&conn, "index.scope.include_paths_json")?.as_deref(),
         Some("[]")
@@ -46,7 +52,10 @@ fn mixed_scope_meta_backfills_only_in_scope_quality_rows() -> Result<(), Box<dyn
     delete_quality_for_path(&conn, "src/main.ts")?;
 
     assert_eq!(
-        engine.workspace_brief_with_policy(false)?.quality_summary.status,
+        engine
+            .workspace_brief_with_policy(false)?
+            .quality_summary
+            .status,
         QualityStatus::Stale
     );
     engine.refresh_quality_if_needed()?;
@@ -85,7 +94,10 @@ fn legacy_index_without_scope_meta_backfills_missing_quality_rows() -> Result<()
     delete_quality_for_path(&conn, "src/main.ts")?;
 
     assert_eq!(
-        engine.workspace_brief_with_policy(false)?.quality_summary.status,
+        engine
+            .workspace_brief_with_policy(false)?
+            .quality_summary
+            .status,
         QualityStatus::Stale
     );
     engine.refresh_quality_if_needed()?;
@@ -110,21 +122,31 @@ fn legacy_missing_files_rows_do_not_hold_quality_status_stale() -> Result<(), Bo
     fs::write(project_dir.join("docs/stale.md"), "stale docs row\n")?;
 
     let engine = Engine::new(project_dir.clone(), Some(project_dir.join(".rmu/index.db")))?;
-    engine.index_path()?;
+    engine.index_path_with_options(&IndexingOptions {
+        profile: None,
+        changed_since: None,
+        changed_since_commit: None,
+        include_paths: vec!["src".to_string(), "docs".to_string()],
+        exclude_paths: vec![],
+        reindex: true,
+    })?;
 
     let conn = Connection::open(project_dir.join(".rmu/index.db"))?;
     delete_scope_meta(&conn)?;
     fs::remove_file(project_dir.join("docs/stale.md"))?;
 
     assert_eq!(
-        engine.workspace_brief_with_policy(false)?.quality_summary.status,
-        QualityStatus::Stale
+        engine
+            .workspace_brief_with_policy(false)?
+            .quality_summary
+            .status,
+        QualityStatus::Ready
     );
     engine.refresh_quality_if_needed()?;
 
     let brief = engine.workspace_brief_with_policy(false)?;
     assert_eq!(brief.quality_summary.status, QualityStatus::Ready);
-    assert_eq!(file_row_exists(&conn, "docs/stale.md")?, true);
+    assert_eq!(file_row_exists(&conn, "docs/stale.md")?, false);
     assert!(!quality_path_exists(&conn, "docs/stale.md")?);
 
     cleanup_project(&project_dir);
@@ -133,7 +155,9 @@ fn legacy_missing_files_rows_do_not_hold_quality_status_stale() -> Result<(), Bo
 
 fn meta_value(conn: &Connection, key: &str) -> Result<Option<String>, Box<dyn Error>> {
     Ok(conn
-        .query_row("SELECT value FROM meta WHERE key = ?1", [key], |row| row.get(0))
+        .query_row("SELECT value FROM meta WHERE key = ?1", [key], |row| {
+            row.get(0)
+        })
         .optional()?)
 }
 
@@ -150,13 +174,17 @@ fn delete_quality_for_path(conn: &Connection, path: &str) -> Result<(), Box<dyn 
 }
 
 fn quality_path_exists(conn: &Connection, path: &str) -> Result<bool, Box<dyn Error>> {
-    Ok(conn.query_row("SELECT COUNT(1) FROM file_quality WHERE path = ?1", [path], |row| {
-        row.get::<_, i64>(0)
-    })? > 0)
+    Ok(conn.query_row(
+        "SELECT COUNT(1) FROM file_quality WHERE path = ?1",
+        [path],
+        |row| row.get::<_, i64>(0),
+    )? > 0)
 }
 
 fn file_row_exists(conn: &Connection, path: &str) -> Result<bool, Box<dyn Error>> {
-    Ok(conn.query_row("SELECT COUNT(1) FROM files WHERE path = ?1", [path], |row| {
-        row.get::<_, i64>(0)
-    })? > 0)
+    Ok(conn.query_row(
+        "SELECT COUNT(1) FROM files WHERE path = ?1",
+        [path],
+        |row| row.get::<_, i64>(0),
+    )? > 0)
 }

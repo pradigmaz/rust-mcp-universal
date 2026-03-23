@@ -75,7 +75,9 @@ fn parse_cached_chunk_embedding(
 
 #[cfg(test)]
 mod tests {
-    use super::{CachedChunkEmbeddingLookup, delete_cached_chunk_embedding, load_cached_chunk_embedding};
+    use super::{
+        CachedChunkEmbeddingLookup, delete_cached_chunk_embedding, load_cached_chunk_embedding,
+    };
     use rusqlite::{Connection, params};
 
     fn setup_chunk_embeddings(conn: &Connection) -> anyhow::Result<()> {

@@ -77,6 +77,9 @@ fn migration_runner_adds_quality_tables() -> anyhow::Result<()> {
             .iter()
             .any(|name| name == "quality_violation_hash")
     );
+    let violation_columns = table_columns(&conn, "file_rule_violations")?;
+    assert!(violation_columns.iter().any(|name| name == "start_line"));
+    assert!(violation_columns.iter().any(|name| name == "end_column"));
 
     let _ = fs::remove_dir_all(root);
     Ok(())

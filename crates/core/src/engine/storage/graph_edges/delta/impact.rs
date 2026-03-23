@@ -2,11 +2,11 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 
 use crate::text_utils::symbol_tail;
 
-use super::seed::GraphRefreshSeed;
 use super::super::{
     REF_EXACT_EDGE_WEIGHT, REF_TAIL_UNIQUE_EDGE_WEIGHT, SHARED_DEP_EDGE_WEIGHT,
     add_materialized_edge,
 };
+use super::seed::GraphRefreshSeed;
 
 pub(super) fn determine_impacted_paths(
     dirty_paths: &HashSet<String>,
@@ -123,11 +123,10 @@ fn ref_symbol_matches_candidates(
     ref_symbol: &str,
     candidate_symbol_names: &HashSet<String>,
 ) -> bool {
-    candidate_symbol_names.contains(ref_symbol)
-        || {
-            let tail = symbol_tail(ref_symbol);
-            tail != ref_symbol && candidate_symbol_names.contains(tail)
-        }
+    candidate_symbol_names.contains(ref_symbol) || {
+        let tail = symbol_tail(ref_symbol);
+        tail != ref_symbol && candidate_symbol_names.contains(tail)
+    }
 }
 
 fn for_each_resolved_destination(

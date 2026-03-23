@@ -200,7 +200,11 @@ impl SearchIntent {
         requested_limit.saturating_mul(2).min(200)
     }
 
-    pub(super) fn pre_rerank_candidate_limit(&self, requested_limit: usize, semantic_enabled: bool) -> usize {
+    pub(super) fn pre_rerank_candidate_limit(
+        &self,
+        requested_limit: usize,
+        semantic_enabled: bool,
+    ) -> usize {
         let requested_limit = requested_limit.max(1);
         if semantic_enabled {
             return requested_limit.saturating_mul(3).min(240);

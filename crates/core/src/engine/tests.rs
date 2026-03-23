@@ -479,7 +479,10 @@ fn changed_since_does_not_false_positive_on_legitimate_zero_graph_output() -> an
     )?;
 
     let engine = Engine::new(root.clone(), Some(root.join(".rmu/index.db")))?;
-    let first = engine.index_path()?;
+    let first = engine.index_path_with_options(&IndexingOptions {
+        profile: Some(crate::model::IndexProfile::DocsHeavy),
+        ..IndexingOptions::default()
+    })?;
     assert_eq!(first.indexed, 1);
     assert_eq!(
         file_graph_counts(&engine, "notes.txt")?,
@@ -487,6 +490,7 @@ fn changed_since_does_not_false_positive_on_legitimate_zero_graph_output() -> an
     );
 
     let second = engine.index_path_with_options(&IndexingOptions {
+        profile: Some(crate::model::IndexProfile::DocsHeavy),
         changed_since: Some(OffsetDateTime::now_utc() + Duration::days(1)),
         ..IndexingOptions::default()
     })?;

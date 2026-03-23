@@ -11,9 +11,9 @@ use super::graph_state::{load_actual_graph_edge_state, load_actual_graph_state};
 #[path = "existing_state/completeness.rs"]
 mod completeness;
 
-pub(in crate::engine) use completeness::state_completeness_report;
 #[cfg(test)]
 pub(in crate::engine) use completeness::FileStateSection;
+pub(in crate::engine) use completeness::state_completeness_report;
 
 #[derive(Debug, Clone)]
 pub(in crate::engine) struct ExistingFileState {

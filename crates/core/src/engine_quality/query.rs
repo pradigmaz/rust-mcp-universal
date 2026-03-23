@@ -5,11 +5,12 @@ use anyhow::Result;
 use rusqlite::params;
 
 use super::compute_quality_status;
+use super::metrics::{load_metrics_by_path, load_top_metrics};
 use crate::engine::Engine;
 use crate::model::{
-    QualityMode, QualityStatus, QualityViolationEntry, RuleViolationFileHit, RuleViolationsOptions,
-    RuleViolationsResult, RuleViolationsSortBy, RuleViolationsSummary, WorkspaceQualitySummary,
-    WorkspaceQualityTopRule,
+    QualityLocation, QualityMode, QualityStatus, QualityViolationEntry, RuleViolationFileHit,
+    RuleViolationsOptions, RuleViolationsResult, RuleViolationsSortBy, RuleViolationsSummary,
+    WorkspaceQualitySummary, WorkspaceQualityTopRule,
 };
 use crate::quality::QUALITY_RULESET_ID;
 
@@ -23,7 +24,8 @@ pub(super) fn load_quality_summary(engine: &Engine) -> Result<WorkspaceQualitySu
     }
     let conn = engine.open_db_read_only()?;
 
-    let summary = try_load_quality_summary(&conn).unwrap_or_else(|_| empty_quality_summary(QualityStatus::Degraded));
+    let summary = try_load_quality_summary(&conn)
+        .unwrap_or_else(|_| empty_quality_summary(QualityStatus::Degraded));
     Ok(WorkspaceQualitySummary { status, ..summary })
 }
 
@@ -47,8 +49,8 @@ pub(super) fn load_rule_violations(
     }
     let conn = engine.open_db_read_only()?;
 
-    let result = try_load_rule_violations(&conn, options)
-        .unwrap_or_else(|_| RuleViolationsResult {
+    let result =
+        try_load_rule_violations(&conn, options).unwrap_or_else(|_| RuleViolationsResult {
             summary: empty_rule_violations_summary(QualityStatus::Degraded),
             hits: Vec::new(),
         });
@@ -93,6 +95,7 @@ fn try_load_quality_summary(conn: &rusqlite::Connection) -> Result<WorkspaceQual
             })
         })?
         .collect::<rusqlite::Result<Vec<_>>>()?;
+    let top_metrics = load_top_metrics(conn)?;
 
     Ok(WorkspaceQualitySummary {
         ruleset_id: QUALITY_RULESET_ID.to_string(),
@@ -101,6 +104,7 @@ fn try_load_quality_summary(conn: &rusqlite::Connection) -> Result<WorkspaceQual
         violating_files: usize::try_from(violating_files).unwrap_or(usize::MAX),
         total_violations: usize::try_from(total_violations).unwrap_or(usize::MAX),
         top_rules,
+        top_metrics,
     })
 }
 
@@ -111,8 +115,13 @@ fn try_load_rule_violations(
     let candidates = load_quality_candidates(conn, options)?;
     let evaluated_files = candidates.len();
     let filtered = attach_and_filter_violations(conn, candidates, options)?;
-    let mut hits = filtered;
-    hits.sort_by(|left, right| compare_hits(left, right, options.sort_by));
+    let metrics_by_path = load_metrics_by_path(conn, options)?;
+    let mut hits = attach_metrics(filtered, metrics_by_path);
+    let sort_metric_id = options
+        .sort_metric_id
+        .as_deref()
+        .or_else(|| options.metric_ids.first().map(String::as_str));
+    hits.sort_by(|left, right| compare_hits(left, right, options.sort_by, sort_metric_id));
     hits.truncate(options.limit);
 
     Ok(RuleViolationsResult {
@@ -120,7 +129,7 @@ fn try_load_rule_violations(
             ruleset_id: QUALITY_RULESET_ID.to_string(),
             status: QualityStatus::Ready,
             evaluated_files,
-            violating_files: hits.len(),
+            violating_files: hits.iter().filter(|hit| !hit.violations.is_empty()).count(),
             total_violations: hits.iter().map(|hit| hit.violations.len()).sum(),
         },
         hits,
@@ -131,7 +140,10 @@ fn load_quality_candidates(
     conn: &rusqlite::Connection,
     options: &RuleViolationsOptions,
 ) -> Result<Vec<RuleViolationFileHit>> {
-    let path_like = options.path_prefix.as_ref().map(|prefix| format!("{prefix}%"));
+    let path_like = options
+        .path_prefix
+        .as_ref()
+        .map(|prefix| format!("{prefix}%"));
     let mut stmt = conn.prepare(
         r#"
         SELECT path, language, size_bytes, total_lines, non_empty_lines, import_count, quality_mode
@@ -152,6 +164,7 @@ fn load_quality_candidates(
                 import_count: row.get(5)?,
                 quality_mode: QualityMode::parse(&quality_mode_raw).unwrap_or(QualityMode::Indexed),
                 violations: Vec::new(),
+                metrics: Vec::new(),
             })
         })?
         .collect::<rusqlite::Result<Vec<_>>>()?)
@@ -162,11 +175,27 @@ fn attach_and_filter_violations(
     candidates: Vec<RuleViolationFileHit>,
     options: &RuleViolationsOptions,
 ) -> Result<Vec<RuleViolationFileHit>> {
-    let path_like = options.path_prefix.as_ref().map(|prefix| format!("{prefix}%"));
-    let rule_filter = options.rule_ids.iter().map(String::as_str).collect::<Vec<_>>();
+    let path_like = options
+        .path_prefix
+        .as_ref()
+        .map(|prefix| format!("{prefix}%"));
+    let rule_filter = options
+        .rule_ids
+        .iter()
+        .map(String::as_str)
+        .collect::<Vec<_>>();
     let mut stmt = conn.prepare(
         r#"
-        SELECT q.path, v.rule_id, v.actual_value, v.threshold_value, v.message
+        SELECT
+            q.path,
+            v.rule_id,
+            v.actual_value,
+            v.threshold_value,
+            v.message,
+            v.start_line,
+            v.start_column,
+            v.end_line,
+            v.end_column
         FROM file_quality q
         JOIN file_rule_violations v ON v.path = q.path
         WHERE (?1 IS NULL OR q.path LIKE ?1)
@@ -183,6 +212,12 @@ fn attach_and_filter_violations(
                     actual_value: row.get(2)?,
                     threshold_value: row.get(3)?,
                     message: row.get(4)?,
+                    location: violation_location(
+                        row.get::<_, Option<i64>>(5)?,
+                        row.get::<_, Option<i64>>(6)?,
+                        row.get::<_, Option<i64>>(7)?,
+                        row.get::<_, Option<i64>>(8)?,
+                    ),
                 },
             ))
         })?
@@ -201,17 +236,28 @@ fn attach_and_filter_violations(
         if let Some(violations) = violations_by_path.remove(&candidate.path) {
             candidate.violations = violations;
             filtered.push(candidate);
-        } else if rule_filter.is_empty() {
+        } else if rule_filter.is_empty() && options.metric_ids.is_empty() {
             continue;
         }
     }
     Ok(filtered)
 }
 
+fn attach_metrics(
+    mut candidates: Vec<RuleViolationFileHit>,
+    mut metrics_by_path: HashMap<String, Vec<crate::model::QualityMetricValue>>,
+) -> Vec<RuleViolationFileHit> {
+    for candidate in &mut candidates {
+        candidate.metrics = metrics_by_path.remove(&candidate.path).unwrap_or_default();
+    }
+    candidates
+}
+
 fn compare_hits(
     left: &RuleViolationFileHit,
     right: &RuleViolationFileHit,
     sort_by: RuleViolationsSortBy,
+    sort_metric_id: Option<&str>,
 ) -> Ordering {
     let primary = match sort_by {
         RuleViolationsSortBy::ViolationCount => right.violations.len().cmp(&left.violations.len()),
@@ -220,10 +266,44 @@ fn compare_hits(
             .non_empty_lines
             .unwrap_or(i64::MIN)
             .cmp(&left.non_empty_lines.unwrap_or(i64::MIN)),
+        RuleViolationsSortBy::MetricValue => {
+            metric_value_for(right, sort_metric_id).cmp(&metric_value_for(left, sort_metric_id))
+        }
     };
     primary
         .then_with(|| right.size_bytes.cmp(&left.size_bytes))
         .then_with(|| left.path.cmp(&right.path))
+}
+
+fn metric_value_for(hit: &RuleViolationFileHit, metric_id: Option<&str>) -> i64 {
+    if let Some(metric_id) = metric_id {
+        return hit
+            .metrics
+            .iter()
+            .find(|metric| metric.metric_id == metric_id)
+            .map(|metric| metric.metric_value)
+            .unwrap_or(i64::MIN);
+    }
+
+    hit.metrics
+        .iter()
+        .map(|metric| metric.metric_value)
+        .max()
+        .unwrap_or(i64::MIN)
+}
+
+fn violation_location(
+    start_line: Option<i64>,
+    start_column: Option<i64>,
+    end_line: Option<i64>,
+    end_column: Option<i64>,
+) -> Option<QualityLocation> {
+    Some(QualityLocation {
+        start_line: usize::try_from(start_line?).ok()?,
+        start_column: usize::try_from(start_column?).ok()?,
+        end_line: usize::try_from(end_line?).ok()?,
+        end_column: usize::try_from(end_column?).ok()?,
+    })
 }
 
 fn empty_quality_summary(status: QualityStatus) -> WorkspaceQualitySummary {
@@ -234,6 +314,7 @@ fn empty_quality_summary(status: QualityStatus) -> WorkspaceQualitySummary {
         violating_files: 0,
         total_violations: 0,
         top_rules: Vec::new(),
+        top_metrics: Vec::new(),
     }
 }
 

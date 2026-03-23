@@ -6,6 +6,8 @@ mod core_behaviors;
 mod default_store_cleanup;
 #[path = "engine_contracts/ignore_regressions.rs"]
 mod ignore_regressions;
+#[path = "engine_contracts/quality_resilience_regressions.rs"]
+mod quality_resilience_regressions;
 #[path = "engine_contracts/quality_scope_regressions.rs"]
 mod quality_scope_regressions;
 #[path = "engine_contracts/scope_and_storage.rs"]

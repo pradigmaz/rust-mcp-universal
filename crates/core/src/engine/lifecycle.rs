@@ -112,8 +112,8 @@ pub(super) fn touch_access(engine: &Engine) -> Result<()> {
 }
 
 fn open_db_path(db_path: &Path) -> Result<Connection> {
-    let conn =
-        Connection::open(db_path).with_context(|| format!("failed to open db {}", db_path.display()))?;
+    let conn = Connection::open(db_path)
+        .with_context(|| format!("failed to open db {}", db_path.display()))?;
     conn.execute_batch(schema::OPEN_DB_PRAGMAS_SQL)
         .context("failed to apply sqlite pragmas")?;
     Ok(conn)
@@ -130,11 +130,9 @@ fn touch_existing_access(engine: &Engine) -> Result<()> {
     let Some(_touch_lock) = RebuildLockGuard::try_acquire(&engine.db_path)? else {
         return Ok(());
     };
-    let conn = Connection::open_with_flags(
-        &engine.db_path,
-        rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE,
-    )
-    .with_context(|| format!("failed to open db {}", engine.db_path.display()))?;
+    let conn =
+        Connection::open_with_flags(&engine.db_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE)
+            .with_context(|| format!("failed to open db {}", engine.db_path.display()))?;
     conn.execute_batch(schema::OPEN_DB_PRAGMAS_SQL)
         .context("failed to apply sqlite pragmas")?;
     touch_database_metadata(&conn, &engine.project_root)

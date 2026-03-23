@@ -1,4 +1,5 @@
 use super::*;
+use rmu_core::{IndexProfile, IndexingOptions};
 
 #[test]
 fn empty_query_returns_no_hits() -> Result<(), Box<dyn Error>> {
@@ -59,7 +60,14 @@ fn context_pack_design_mode_returns_docs_first() -> Result<(), Box<dyn Error>> {
     )?;
 
     let engine = Engine::new(project_dir.clone(), Some(project_dir.join(".rmu/index.db")))?;
-    engine.index_path()?;
+    engine.index_path_with_options(&IndexingOptions {
+        profile: Some(IndexProfile::DocsHeavy),
+        changed_since: None,
+        changed_since_commit: None,
+        include_paths: vec![],
+        exclude_paths: vec![],
+        reindex: true,
+    })?;
 
     let pack = engine.build_context_pack(
         &QueryOptions {
