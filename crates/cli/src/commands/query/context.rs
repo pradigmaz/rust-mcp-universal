@@ -64,7 +64,7 @@ pub(crate) fn run_context_pack(engine: &Engine, json: bool, args: ContextPackArg
     let limit = require_min("limit", limit, 1)?;
     let max_chars = require_min("max_chars", max_chars, 256)?;
     let max_tokens = require_min("max_tokens", max_tokens, 64)?;
-    ensure_query_index_ready(engine, auto_index)?;
+    ensure_context_pack_index_ready(engine, mode, auto_index)?;
     let rollout_decision =
         decide_semantic_rollout(semantic, vector_layer_enabled, rollout_phase, &query);
     let pack = engine.build_context_pack(

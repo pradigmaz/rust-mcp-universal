@@ -1,7 +1,7 @@
 use anyhow::Result;
 use serde_json::Value;
 
-use rmu_core::{Engine, IndexProfile, IndexingOptions};
+use rmu_core::Engine;
 
 use crate::ServerState;
 
@@ -104,42 +104,6 @@ pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<V
 }
 
 fn ensure_query_index_ready(engine: &Engine, auto_index: bool) -> Result<()> {
-    if !auto_index {
-        let _ = engine.ensure_index_ready_with_policy(false)?;
-        return Ok(());
-    }
-
-    if engine.resolve_default_index_profile(None).is_some() {
-        let _ = engine.ensure_index_ready_with_policy(true)?;
-        return Ok(());
-    }
-
-    match engine.ensure_index_ready_with_policy(false) {
-        Ok(_) => {
-            if index_contains_non_code_languages(engine)? {
-                reindex_with_mixed_profile(engine)?;
-            }
-        }
-        Err(_) => reindex_with_mixed_profile(engine)?,
-    }
+    let _ = engine.ensure_index_ready_with_policy(auto_index)?;
     Ok(())
-}
-
-fn reindex_with_mixed_profile(engine: &Engine) -> Result<()> {
-    let _ = engine.index_path_with_options(&IndexingOptions {
-        profile: Some(IndexProfile::Mixed),
-        reindex: true,
-        ..IndexingOptions::default()
-    })?;
-    Ok(())
-}
-
-fn index_contains_non_code_languages(engine: &Engine) -> Result<bool> {
-    let brief = engine.workspace_brief_with_policy(false)?;
-    Ok(brief.languages.iter().any(|stat| {
-        matches!(
-            stat.language.as_str(),
-            "markdown" | "json" | "toml" | "text"
-        )
-    }))
 }

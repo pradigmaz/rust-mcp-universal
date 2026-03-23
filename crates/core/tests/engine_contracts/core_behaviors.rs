@@ -26,6 +26,8 @@ mod navigation;
 mod report;
 #[path = "core_behaviors/search.rs"]
 mod search;
+#[path = "core_behaviors/search_mixed.rs"]
+mod search_mixed;
 #[path = "core_behaviors/status.rs"]
 mod status;
 

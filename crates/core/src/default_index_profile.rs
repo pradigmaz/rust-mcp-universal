@@ -9,8 +9,13 @@ pub(crate) fn resolve_default_index_profile(
     project_root: &Path,
     requested_profile: Option<IndexProfile>,
 ) -> Option<IndexProfile> {
-    requested_profile
-        .or_else(|| is_rust_workspace(project_root).then_some(IndexProfile::RustMonorepo))
+    requested_profile.or_else(|| {
+        if is_rust_workspace(project_root) {
+            Some(IndexProfile::RustMonorepo)
+        } else {
+            Some(IndexProfile::Mixed)
+        }
+    })
 }
 
 pub(crate) fn resolve_indexing_options(
@@ -36,6 +41,7 @@ fn is_rust_workspace(project_root: &Path) -> bool {
 mod tests {
     use super::{resolve_default_index_profile, resolve_indexing_options};
     use crate::Engine;
+    use crate::engine::test_index_path_with_options_impl;
     use crate::model::{IndexProfile, IndexingOptions};
     use rusqlite::Connection;
     use std::fs;
@@ -104,12 +110,15 @@ mod tests {
     }
 
     #[test]
-    fn resolver_leaves_non_rust_repo_unscoped() -> anyhow::Result<()> {
+    fn resolver_defaults_non_rust_repo_to_mixed() -> anyhow::Result<()> {
         let root = temp_dir("rmu-non-rust-default-profile");
         fs::create_dir_all(root.join("src"))?;
         fs::write(root.join("package.json"), "{ \"name\": \"demo\" }\n")?;
 
-        assert_eq!(resolve_default_index_profile(&root, None), None);
+        assert_eq!(
+            resolve_default_index_profile(&root, None),
+            Some(IndexProfile::Mixed)
+        );
 
         let _ = fs::remove_dir_all(root);
         Ok(())
@@ -253,7 +262,7 @@ mod tests {
         write_project_file(&root, "docs/guide.md", "legacy docs should be pruned\n")?;
 
         let engine = Engine::new(root.clone(), Some(root.join(".rmu/index.db")))?;
-        engine.index_path()?;
+        let _ = test_index_path_with_options_impl(&engine, &IndexingOptions::default())?;
         assert_eq!(
             indexed_paths(&engine)?,
             vec!["docs/guide.md".to_string(), "src/lib.rs".to_string()]

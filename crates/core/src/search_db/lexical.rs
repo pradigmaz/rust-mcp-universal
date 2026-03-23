@@ -39,8 +39,19 @@ pub fn search_fts(conn: &Connection, query: &str, limit: i64) -> Result<Vec<Sear
 
     let mut raw = run_fts_query(conn, &primary_fts_query, limit)?;
     let fallback_fts_query = prepare_fts_query(&query_tokens, query_profile, false);
-    if raw.is_empty() && fallback_fts_query != primary_fts_query {
-        raw = run_fts_query(conn, &fallback_fts_query, limit)?;
+    if fallback_fts_query != primary_fts_query && raw.len() < limit as usize {
+        let mut seen_paths = raw
+            .iter()
+            .map(|row| row.path.clone())
+            .collect::<HashSet<_>>();
+        for row in run_fts_query(conn, &fallback_fts_query, limit)? {
+            if seen_paths.insert(row.path.clone()) {
+                raw.push(row);
+            }
+            if raw.len() >= limit as usize {
+                break;
+            }
+        }
     }
 
     let mut hits = Vec::with_capacity(raw.len());
@@ -207,7 +218,7 @@ fn prepare_fts_query(
         return String::new();
     }
 
-    if prefer_strict && matches!(query_profile, QueryProfile::Precise) && tokens.len() > 1 {
+    if prefer_strict && should_require_all_tokens(query_profile, tokens.len()) {
         return tokens
             .iter()
             .map(|token| format!("{}*", token))
@@ -220,4 +231,12 @@ fn prepare_fts_query(
         .map(|token| format!("{}*", token))
         .collect::<Vec<_>>()
         .join(" OR ")
+}
+
+fn should_require_all_tokens(query_profile: QueryProfile, token_count: usize) -> bool {
+    token_count > 1
+        && matches!(
+            query_profile,
+            QueryProfile::Precise | QueryProfile::Balanced | QueryProfile::Bugfix
+        )
 }

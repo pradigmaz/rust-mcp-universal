@@ -1,8 +1,8 @@
 use anyhow::{Result, anyhow};
 use rmu_core::{
-    Engine, MigrationMode, PrivacyMode, QueryBenchmarkOptions, QueryOptions, RolloutPhase,
-    SemanticFailMode, decide_semantic_rollout, sanitize_path_text, sanitize_query_text,
-    sanitize_value_for_privacy,
+    ContextMode, Engine, IndexProfile, IndexingOptions, MigrationMode, PrivacyMode,
+    QueryBenchmarkOptions, QueryOptions, RolloutPhase, SemanticFailMode, decide_semantic_rollout,
+    sanitize_path_text, sanitize_query_text, sanitize_value_for_privacy,
 };
 use std::path::PathBuf;
 
@@ -143,6 +143,23 @@ fn ensure_query_index_ready(engine: &Engine, auto_index: bool) -> Result<()> {
     }
     let _ = engine.ensure_index_ready_with_policy(false)?;
     Ok(())
+}
+
+fn ensure_context_pack_index_ready(
+    engine: &Engine,
+    mode: ContextMode,
+    auto_index: bool,
+) -> Result<()> {
+    if auto_index && matches!(mode, ContextMode::Design) && engine.index_status()?.files == 0 {
+        let _ = engine.index_path_with_options(&IndexingOptions {
+            profile: Some(IndexProfile::DocsHeavy),
+            reindex: true,
+            ..IndexingOptions::default()
+        })?;
+        return Ok(());
+    }
+
+    ensure_query_index_ready(engine, auto_index)
 }
 
 #[cfg(test)]

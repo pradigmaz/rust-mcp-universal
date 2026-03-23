@@ -8,6 +8,7 @@ mod cli_contract {
     mod json_and_runtime;
     mod maintenance;
     mod navigation;
+    mod navigation_python;
 
     fn write_query_benchmark_fixture(project_root: &Path) -> (PathBuf, PathBuf) {
         std::fs::create_dir_all(project_root.join("src")).expect("create src");

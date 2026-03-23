@@ -16,6 +16,7 @@ use shortlist::{build_pre_chunk_hits, compute_chunk_seed_limit, sort_hits_desc};
 use super::chunking::chunk_pool_for_hits;
 use super::fusion::{FusionInputs, fuse_candidate_pools};
 use super::graph_stage::graph_candidate_pool;
+use super::intent::SearchIntent;
 use super::semantic_candidates::semantic_file_candidates;
 use super::support::{
     db_limit_for, derive_fusion_profile, is_low_signal_query, seed_fusion_profile,
@@ -29,8 +30,9 @@ use crate::vector_rank::embed_for_index;
 
 pub(super) fn search_with_meta(engine: &Engine, options: &QueryOptions) -> Result<SearchExecution> {
     let conn = engine.open_db()?;
+    let search_intent = SearchIntent::from_query(&options.query);
     let requested_limit = options.limit.max(1);
-    let lexical_candidate_limit = requested_limit.saturating_mul(2).min(200);
+    let lexical_candidate_limit = search_intent.lexical_candidate_limit(requested_limit);
     let lexical_db_limit = db_limit_for(lexical_candidate_limit)?;
 
     let mut lexical_hits = search_fts(&conn, &options.query, lexical_db_limit)?;
@@ -48,11 +50,8 @@ pub(super) fn search_with_meta(engine: &Engine, options: &QueryOptions) -> Resul
     let profile = derive_fusion_profile(&options.query, options.context_mode);
     let low_signal_semantic = options.semantic && is_low_signal_query(&options.query);
     let semantic_enabled = options.semantic && !low_signal_semantic;
-    let candidate_limit = if semantic_enabled {
-        requested_limit.saturating_mul(3).min(240)
-    } else {
-        requested_limit
-    };
+    let candidate_limit =
+        search_intent.pre_rerank_candidate_limit(requested_limit, semantic_enabled);
     let query_vec = if semantic_enabled {
         Some(embed_for_index(&options.query))
     } else {
@@ -146,6 +145,9 @@ pub(super) fn search_with_meta(engine: &Engine, options: &QueryOptions) -> Resul
     } else {
         lexical_hits.clone()
     };
+    if !semantic_enabled {
+        search_intent.apply_to_hits(&mut pre_graph_hits, options.context_mode);
+    }
     sort_hits_desc(&mut pre_graph_hits);
     pre_graph_hits.truncate(candidate_limit);
     let fused_candidates = pre_graph_hits.len();
@@ -170,6 +172,9 @@ pub(super) fn search_with_meta(engine: &Engine, options: &QueryOptions) -> Resul
     } else {
         lexical_hits.clone()
     };
+    if !semantic_enabled && graph_pool.is_empty() {
+        search_intent.apply_to_hits(&mut hits, options.context_mode);
+    }
 
     let lexical_rank_by_path = lexical_hits
         .iter()

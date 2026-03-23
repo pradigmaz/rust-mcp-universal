@@ -12,6 +12,8 @@ mod chunking;
 mod fusion;
 #[path = "query/graph_stage.rs"]
 mod graph_stage;
+#[path = "query/intent.rs"]
+mod intent;
 #[path = "query/pipeline.rs"]
 mod pipeline;
 #[path = "query/semantic_candidates.rs"]
