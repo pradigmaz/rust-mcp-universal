@@ -50,6 +50,12 @@ def traced(fn):
 @traced
 async def decorated_worker():
     return await alpha(beta(helper()))
+
+
+class VisibilityResolver:
+    @traced
+    async def resolve_acceptance_context(self):
+        return await alpha(beta(helper()))
 "#,
     )?;
 
@@ -72,11 +78,18 @@ async def decorated_worker():
 
     let worker_symbols = engine.symbol_lookup("decorated_worker", 10)?;
     assert!(
-        worker_symbols.is_empty()
-            || worker_symbols
-                .iter()
-                .any(|hit| hit.path == "src/advanced.py"),
-        "unsupported async/decorated defs must degrade gracefully"
+        worker_symbols
+            .iter()
+            .any(|hit| hit.path == "src/advanced.py"),
+        "async decorated defs must be discoverable via symbol lookup"
+    );
+
+    let resolver_symbols = engine.symbol_lookup("resolve_acceptance_context", 10)?;
+    assert!(
+        resolver_symbols
+            .iter()
+            .any(|hit| hit.path == "src/advanced.py"),
+        "decorated async methods must be discoverable via symbol lookup"
     );
 
     let helper_refs = engine.symbol_references("helper", 10)?;

@@ -21,7 +21,9 @@ pub(super) fn extract_python_heuristic(source: &str) -> GraphExtraction {
             continue;
         }
 
-        if let Some(rest) = trimmed.strip_prefix("def ")
+        if let Some(rest) = trimmed
+            .strip_prefix("def ")
+            .or_else(|| trimmed.strip_prefix("async def "))
             && let Some(name) = read_identifier(rest)
         {
             symbols.insert(GraphSymbol {

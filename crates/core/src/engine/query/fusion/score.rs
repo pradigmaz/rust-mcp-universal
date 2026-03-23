@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::model::{ContextMode, SearchHit};
 
 use super::types::{CandidateState, FusedExplainMeta};
+use crate::engine::query::intent::SearchIntent;
 use crate::engine::query::support::{FusionProfile, path_role_prior};
 
 const RRF_K: f32 = 60.0;
@@ -11,6 +12,7 @@ pub(super) fn score_candidates(
     states: HashMap<String, CandidateState>,
     profile: FusionProfile,
     context_mode: Option<ContextMode>,
+    search_intent: &SearchIntent,
     lexical_anchor_paths: &std::collections::HashSet<String>,
 ) -> Vec<(SearchHit, FusedExplainMeta)> {
     let mut scored = Vec::with_capacity(states.len());
@@ -34,6 +36,7 @@ pub(super) fn score_candidates(
             + (0.028 * state.chunk_score)
             + (0.012 * state.lexical_score)
             + lexical_anchor_bonus
+            + search_intent.score_hit(&state.path, &state.preview, &state.language, context_mode)
             + path_role_prior(&state.path, &state.language, context_mode);
         let semantic_score = state.file_score.max(state.chunk_score);
         let semantic_source = match (state.semantic_indexed, state.semantic_fallback) {
