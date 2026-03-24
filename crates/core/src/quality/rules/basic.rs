@@ -1,69 +1,8 @@
 use anyhow::Result;
 
-use super::metrics::FileKind;
-use super::{
-    IndexedQualityMetrics, QualityCandidateFacts, QualityMetricEntry, QualityPolicy,
-    QualityThresholds,
-};
-use crate::model::{QualityLocation, QualityViolationEntry};
-
-#[derive(Debug, Clone)]
-pub(crate) struct RuleEvaluationResult {
-    pub(crate) metrics: Vec<QualityMetricEntry>,
-    pub(crate) violations: Vec<QualityViolationEntry>,
-    pub(crate) had_rule_errors: bool,
-    pub(crate) last_error_rule_id: Option<String>,
-}
-
-pub(crate) fn evaluate_rules(
-    facts: &QualityCandidateFacts,
-    indexed_metrics: &IndexedQualityMetrics,
-    policy: &QualityPolicy,
-) -> RuleEvaluationResult {
-    let ctx = RuleContext {
-        facts,
-        indexed_metrics,
-        thresholds: &policy.thresholds,
-    };
-    let mut out = RuleEvaluationResult {
-        metrics: Vec::new(),
-        violations: Vec::new(),
-        had_rule_errors: false,
-        last_error_rule_id: None,
-    };
-
-    for rule in default_rules() {
-        if let Some(metric) = rule.metric(&ctx) {
-            out.metrics.push(metric);
-        }
-        match rule.evaluate(&ctx) {
-            Ok(Some(violation)) => out.violations.push(violation),
-            Ok(None) => {}
-            Err(_) => {
-                out.had_rule_errors = true;
-                out.last_error_rule_id = Some(rule.name().to_string());
-            }
-        }
-    }
-
-    out.metrics
-        .sort_by(|left, right| left.metric_id.cmp(&right.metric_id));
-    out.violations
-        .sort_by(|left, right| left.rule_id.cmp(&right.rule_id));
-    out
-}
-
-struct RuleContext<'a> {
-    facts: &'a QualityCandidateFacts,
-    indexed_metrics: &'a IndexedQualityMetrics,
-    thresholds: &'a QualityThresholds,
-}
-
-trait QualityRule {
-    fn name(&self) -> &'static str;
-    fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry>;
-    fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>>;
-}
+use super::{QualityRule, RuleContext, metric, threshold_violation};
+use crate::model::QualityViolationEntry;
+use crate::quality::metrics::FileKind;
 
 struct SizeBytesRule;
 struct NonEmptyLinesRule;
@@ -74,7 +13,7 @@ struct RefCountRule;
 struct ModuleDepCountRule;
 struct GraphEdgeOutCountRule;
 
-fn default_rules() -> Vec<Box<dyn QualityRule>> {
+pub(super) fn rules() -> Vec<Box<dyn QualityRule>> {
     vec![
         Box::new(SizeBytesRule),
         Box::new(NonEmptyLinesRule),
@@ -92,12 +31,13 @@ impl QualityRule for SizeBytesRule {
         "max_size_bytes"
     }
 
-    fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
+    fn metric(&self, ctx: &RuleContext<'_>) -> Option<crate::quality::QualityMetricEntry> {
         Some(metric("size_bytes", ctx.facts.size_bytes, None))
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
         Ok(threshold_violation(
+            ctx,
             self.name(),
             ctx.facts.size_bytes,
             ctx.thresholds.max_size_bytes,
@@ -112,7 +52,7 @@ impl QualityRule for NonEmptyLinesRule {
         "max_non_empty_lines"
     }
 
-    fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
+    fn metric(&self, ctx: &RuleContext<'_>) -> Option<crate::quality::QualityMetricEntry> {
         ctx.facts
             .non_empty_lines
             .map(|value| metric("non_empty_lines", value, None))
@@ -122,7 +62,7 @@ impl QualityRule for NonEmptyLinesRule {
         let Some(actual) = ctx.facts.non_empty_lines else {
             return Ok(None);
         };
-        let (rule_id, threshold) = match ctx.facts.file_kind {
+        let (rule_id, threshold) = match ctx.file_kind {
             FileKind::Default => (
                 "max_non_empty_lines_default",
                 ctx.thresholds.max_non_empty_lines_default,
@@ -137,6 +77,7 @@ impl QualityRule for NonEmptyLinesRule {
             ),
         };
         Ok(threshold_violation(
+            ctx,
             rule_id,
             actual,
             threshold,
@@ -151,7 +92,7 @@ impl QualityRule for ImportCountRule {
         "max_import_count"
     }
 
-    fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
+    fn metric(&self, ctx: &RuleContext<'_>) -> Option<crate::quality::QualityMetricEntry> {
         ctx.facts
             .import_count
             .map(|value| metric("import_count", value, ctx.facts.import_region.clone()))
@@ -162,6 +103,7 @@ impl QualityRule for ImportCountRule {
             return Ok(None);
         };
         Ok(threshold_violation(
+            ctx,
             self.name(),
             actual,
             ctx.thresholds.max_import_count,
@@ -176,7 +118,7 @@ impl QualityRule for MaxLineLengthRule {
         "max_line_length"
     }
 
-    fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
+    fn metric(&self, ctx: &RuleContext<'_>) -> Option<crate::quality::QualityMetricEntry> {
         ctx.facts.max_line_length.map(|value| {
             metric(
                 "max_line_length",
@@ -191,6 +133,7 @@ impl QualityRule for MaxLineLengthRule {
             return Ok(None);
         };
         Ok(threshold_violation(
+            ctx,
             self.name(),
             actual,
             ctx.thresholds.max_line_length,
@@ -205,7 +148,7 @@ impl QualityRule for SymbolCountRule {
         "max_symbol_count_per_file"
     }
 
-    fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
+    fn metric(&self, ctx: &RuleContext<'_>) -> Option<crate::quality::QualityMetricEntry> {
         ctx.indexed_metrics
             .symbol_count
             .map(|value| metric("symbol_count", value, None))
@@ -216,6 +159,7 @@ impl QualityRule for SymbolCountRule {
             return Ok(None);
         };
         Ok(threshold_violation(
+            ctx,
             self.name(),
             actual,
             ctx.thresholds.max_symbol_count_per_file,
@@ -230,7 +174,7 @@ impl QualityRule for RefCountRule {
         "max_ref_count_per_file"
     }
 
-    fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
+    fn metric(&self, ctx: &RuleContext<'_>) -> Option<crate::quality::QualityMetricEntry> {
         ctx.indexed_metrics
             .ref_count
             .map(|value| metric("ref_count", value, None))
@@ -241,6 +185,7 @@ impl QualityRule for RefCountRule {
             return Ok(None);
         };
         Ok(threshold_violation(
+            ctx,
             self.name(),
             actual,
             ctx.thresholds.max_ref_count_per_file,
@@ -255,7 +200,7 @@ impl QualityRule for ModuleDepCountRule {
         "max_module_dep_count_per_file"
     }
 
-    fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
+    fn metric(&self, ctx: &RuleContext<'_>) -> Option<crate::quality::QualityMetricEntry> {
         ctx.indexed_metrics
             .module_dep_count
             .map(|value| metric("module_dep_count", value, None))
@@ -266,6 +211,7 @@ impl QualityRule for ModuleDepCountRule {
             return Ok(None);
         };
         Ok(threshold_violation(
+            ctx,
             self.name(),
             actual,
             ctx.thresholds.max_module_dep_count_per_file,
@@ -280,7 +226,7 @@ impl QualityRule for GraphEdgeOutCountRule {
         "max_graph_edge_out_count"
     }
 
-    fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry> {
+    fn metric(&self, ctx: &RuleContext<'_>) -> Option<crate::quality::QualityMetricEntry> {
         ctx.indexed_metrics
             .graph_edge_out_count
             .map(|value| metric("graph_edge_out_count", value, None))
@@ -291,6 +237,7 @@ impl QualityRule for GraphEdgeOutCountRule {
             return Ok(None);
         };
         Ok(threshold_violation(
+            ctx,
             self.name(),
             actual,
             ctx.thresholds.max_graph_edge_out_count,
@@ -298,32 +245,4 @@ impl QualityRule for GraphEdgeOutCountRule {
             None,
         ))
     }
-}
-
-fn metric(
-    metric_id: &str,
-    metric_value: i64,
-    location: Option<QualityLocation>,
-) -> QualityMetricEntry {
-    QualityMetricEntry {
-        metric_id: metric_id.to_string(),
-        metric_value,
-        location,
-    }
-}
-
-fn threshold_violation(
-    rule_id: &str,
-    actual_value: i64,
-    threshold_value: i64,
-    message: &str,
-    location: Option<QualityLocation>,
-) -> Option<QualityViolationEntry> {
-    (actual_value > threshold_value).then(|| QualityViolationEntry {
-        rule_id: rule_id.to_string(),
-        actual_value,
-        threshold_value,
-        message: message.to_string(),
-        location,
-    })
 }

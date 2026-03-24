@@ -397,11 +397,12 @@ fn semantic_index_reports_changed_since_and_skip_count() {
     )
     .expect("semantic_index should succeed");
 
+    std::thread::sleep(std::time::Duration::from_millis(1200));
     let cutoff = OffsetDateTime::now_utc()
         .to_offset(UtcOffset::UTC)
         .format(&Rfc3339)
         .expect("format cutoff");
-    std::thread::sleep(std::time::Duration::from_millis(25));
+    std::thread::sleep(std::time::Duration::from_millis(1200));
     fs::write(
         project_dir.join("src/fresh.rs"),
         "pub fn fresh_mcp_symbol() { println!(\"updated\"); }\n",

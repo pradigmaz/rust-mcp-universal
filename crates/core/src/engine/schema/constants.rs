@@ -136,6 +136,9 @@ pub(super) const INIT_DB_SCHEMA_SQL: &str = r#"
                 quality_metric_hash TEXT NOT NULL,
                 quality_violation_count INTEGER NOT NULL,
                 quality_violation_hash TEXT NOT NULL,
+                quality_suppressed_violation_count INTEGER NOT NULL DEFAULT 0,
+                quality_suppressed_violation_hash TEXT NOT NULL DEFAULT '',
+                suppressed_violations_json TEXT NOT NULL DEFAULT '[]',
                 quality_indexed_at_utc TEXT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS idx_file_quality_language ON file_quality(language);
@@ -146,6 +149,11 @@ pub(super) const INIT_DB_SCHEMA_SQL: &str = r#"
                 path TEXT NOT NULL,
                 metric_id TEXT NOT NULL,
                 metric_value INTEGER NOT NULL,
+                source TEXT,
+                start_line INTEGER,
+                start_column INTEGER,
+                end_line INTEGER,
+                end_column INTEGER,
                 PRIMARY KEY(path, metric_id)
             );
             CREATE INDEX IF NOT EXISTS idx_file_quality_metrics_metric
@@ -157,6 +165,9 @@ pub(super) const INIT_DB_SCHEMA_SQL: &str = r#"
                 actual_value INTEGER NOT NULL,
                 threshold_value INTEGER NOT NULL,
                 message TEXT NOT NULL,
+                severity TEXT NOT NULL DEFAULT 'medium',
+                category TEXT NOT NULL DEFAULT 'maintainability',
+                source TEXT,
                 start_line INTEGER,
                 start_column INTEGER,
                 end_line INTEGER,

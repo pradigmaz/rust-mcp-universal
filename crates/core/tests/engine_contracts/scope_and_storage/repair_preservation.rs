@@ -1,4 +1,15 @@
-use super::*;
+#[cfg(unix)]
+use std::error::Error;
+#[cfg(unix)]
+use std::fs;
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
+
+#[cfg(unix)]
+use rmu_core::{Engine, IndexingOptions};
+
+#[cfg(unix)]
+use super::{cleanup_project, file_row_count, search_hit_count, temp_project_dir};
 
 #[cfg(unix)]
 #[test]

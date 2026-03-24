@@ -3,10 +3,11 @@ use std::fs;
 
 use anyhow::Result;
 
-use super::scope::{QualityRefreshPlan, build_full_quality_refresh_plan};
+use super::scope::{QualityRefreshPlan, apply_quality_scope_policy, build_full_quality_refresh_plan};
 use super::status::{
     write_quality_status_degraded, write_quality_status_ready, write_quality_status_unavailable,
 };
+use super::structural::load_structural_facts;
 use crate::engine::Engine;
 use crate::engine::storage::{
     UpsertQualitySnapshotInput, remove_path_quality, upsert_quality_snapshot,
@@ -14,7 +15,7 @@ use crate::engine::storage::{
 use crate::quality::{
     IndexedQualityMetrics, build_indexed_quality_facts, build_oversize_quality_facts,
     default_quality_policy, evaluate_quality, load_quality_policy, quality_metrics_hash,
-    violations_hash,
+    suppressed_violations_hash, violations_hash,
 };
 use crate::utils::{INDEX_FILE_LIMIT, infer_language, normalized_path_to_fs_path};
 
@@ -30,8 +31,10 @@ struct QualityRefreshRecord {
     source_mtime_unix_ms: Option<i64>,
     quality_metric_hash: String,
     quality_violation_hash: String,
+    quality_suppressed_violation_hash: String,
     metrics: Vec<crate::quality::QualityMetricEntry>,
     violations: Vec<crate::model::QualityViolationEntry>,
+    suppressed_violations: Vec<crate::model::SuppressedQualityViolationEntry>,
     had_rule_errors: bool,
     last_error_rule_id: Option<String>,
 }
@@ -64,7 +67,6 @@ fn apply_quality_refresh(engine: &Engine, plan: QualityRefreshPlan) -> Result<()
     let mut degraded = false;
     let mut last_error_rule_id = None::<String>;
     let mut records = Vec::new();
-    let mut deleted_paths = plan.deleted_paths;
     let policy = match load_quality_policy(&engine.project_root) {
         Ok(policy) => policy,
         Err(_) => {
@@ -73,9 +75,31 @@ fn apply_quality_refresh(engine: &Engine, plan: QualityRefreshPlan) -> Result<()
             default_quality_policy()
         }
     };
+    let plan = match apply_quality_scope_policy(&conn, plan, &policy) {
+        Ok(plan) => plan,
+        Err(_) => {
+            degraded = true;
+            if last_error_rule_id.is_none() {
+                last_error_rule_id = Some("quality_scope".to_string());
+            }
+            QualityRefreshPlan::default()
+        }
+    };
+    let mut deleted_paths = plan.deleted_paths.clone();
+    let structural_facts = match load_structural_facts(&conn, &plan.refresh_paths, &policy) {
+        Ok(facts) => facts,
+        Err(_) => {
+            degraded = true;
+            if last_error_rule_id.is_none() {
+                last_error_rule_id = Some("structural_policy".to_string());
+            }
+            std::collections::HashMap::new()
+        }
+    };
 
     for path in sorted_paths(&plan.refresh_paths) {
-        match build_refresh_record(&conn, engine, &path, &policy) {
+        let structural = structural_facts.get(&path).cloned().unwrap_or_default();
+        match build_refresh_record(&conn, engine, &path, &policy, structural) {
             Ok(Some(record)) => {
                 if record.had_rule_errors {
                     degraded = true;
@@ -117,9 +141,11 @@ fn apply_quality_refresh(engine: &Engine, plan: QualityRefreshPlan) -> Result<()
                                 crate::quality::CURRENT_QUALITY_RULESET_VERSION,
                             quality_metric_hash: &record.quality_metric_hash,
                             quality_violation_hash: &record.quality_violation_hash,
+                            quality_suppressed_violation_hash: &record.quality_suppressed_violation_hash,
                             quality_indexed_at_utc: &now_rfc3339()?,
                             metrics: &record.metrics,
                             violations: &record.violations,
+                            suppressed_violations: &record.suppressed_violations,
                         },
                     )?;
                 }
@@ -149,6 +175,7 @@ fn build_refresh_record(
     engine: &Engine,
     path: &str,
     policy: &crate::quality::QualityPolicy,
+    structural: crate::quality::StructuralFacts,
 ) -> Result<Option<QualityRefreshRecord>> {
     let abs_path = engine.project_root.join(normalized_path_to_fs_path(path));
     let metadata = match fs::metadata(&abs_path) {
@@ -158,11 +185,10 @@ fn build_refresh_record(
     let source_mtime_unix_ms = metadata.modified().ok().map(system_time_to_unix_ms);
     let language = infer_language(&abs_path);
     let evaluation = if metadata.len() > INDEX_FILE_LIMIT {
-        evaluate_quality(
-            &build_oversize_quality_facts(path, &language, metadata.len(), source_mtime_unix_ms),
-            &IndexedQualityMetrics::default(),
-            policy,
-        )
+        let mut facts =
+            build_oversize_quality_facts(path, &language, metadata.len(), source_mtime_unix_ms);
+        facts.structural = structural;
+        evaluate_quality(&facts, &IndexedQualityMetrics::default(), policy)
     } else {
         let bytes = match fs::read(&abs_path) {
             Ok(bytes) => bytes,
@@ -172,13 +198,14 @@ fn build_refresh_record(
             return Ok(None);
         }
         let full_text = String::from_utf8_lossy(&bytes).to_string();
-        let facts = build_indexed_quality_facts(
+        let mut facts = build_indexed_quality_facts(
             path,
             &language,
             metadata.len(),
             source_mtime_unix_ms,
             &full_text,
         );
+        facts.structural = structural.clone();
         let indexed_metrics = load_indexed_quality_metrics(conn, path)?;
         evaluate_quality(&facts, &indexed_metrics, policy)
     };
@@ -194,8 +221,12 @@ fn build_refresh_record(
         source_mtime_unix_ms,
         quality_metric_hash: quality_metrics_hash(&evaluation.snapshot.metrics),
         quality_violation_hash: violations_hash(&evaluation.snapshot.violations),
+        quality_suppressed_violation_hash: suppressed_violations_hash(
+            &evaluation.snapshot.suppressed_violations,
+        ),
         metrics: evaluation.snapshot.metrics,
         violations: evaluation.snapshot.violations,
+        suppressed_violations: evaluation.snapshot.suppressed_violations,
         had_rule_errors: evaluation.had_rule_errors,
         last_error_rule_id: evaluation.last_error_rule_id,
     }))

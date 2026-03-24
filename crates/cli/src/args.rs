@@ -186,6 +186,32 @@ pub(crate) enum Command {
         #[arg(long, default_value_t = false)]
         enforce_gates: bool,
     },
+    QualityMatrix {
+        #[arg(long)]
+        manifest: PathBuf,
+        #[arg(long = "override")]
+        override_path: Option<PathBuf>,
+        #[arg(long)]
+        output_root: Option<PathBuf>,
+        #[arg(long = "repo")]
+        repo_ids: Vec<String>,
+    },
+    QualityHotspots {
+        #[arg(long, default_value = "file")]
+        aggregation: String,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+        #[arg(long)]
+        path_prefix: Option<String>,
+        #[arg(long)]
+        language: Option<String>,
+        #[arg(long = "rule-id")]
+        rule_ids: Vec<String>,
+        #[arg(long, default_value = "hotspot_score")]
+        sort_by: String,
+        #[arg(long, default_value_t = false)]
+        auto_index: bool,
+    },
     Brief,
     Agent {
         #[arg(long)]

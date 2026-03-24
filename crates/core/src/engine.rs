@@ -130,7 +130,7 @@ impl Engine {
 mod tests;
 
 #[cfg(test)]
-#[path = "engine/tests_quality.rs"]
+#[path = "engine/tests_quality/mod.rs"]
 mod quality_tests;
 
 #[cfg(test)]

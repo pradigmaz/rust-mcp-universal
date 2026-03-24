@@ -1,8 +1,8 @@
 use anyhow::Result;
 use rusqlite::params;
 
-use crate::model::{QualityMode, QualityViolationEntry};
-use crate::quality::QualityMetricEntry;
+use crate::model::{QualityMode, QualityViolationEntry, SuppressedQualityViolationEntry};
+use crate::quality::{QualityMetricEntry, suppressed_violations_hash};
 
 pub(crate) fn clear_index_tables(tx: &rusqlite::Transaction<'_>) -> Result<()> {
     tx.execute_batch(
@@ -86,9 +86,11 @@ pub(crate) struct UpsertQualitySnapshotInput<'a> {
     pub(crate) quality_ruleset_version: i64,
     pub(crate) quality_metric_hash: &'a str,
     pub(crate) quality_violation_hash: &'a str,
+    pub(crate) quality_suppressed_violation_hash: &'a str,
     pub(crate) quality_indexed_at_utc: &'a str,
     pub(crate) metrics: &'a [QualityMetricEntry],
     pub(crate) violations: &'a [QualityViolationEntry],
+    pub(crate) suppressed_violations: &'a [SuppressedQualityViolationEntry],
 }
 
 pub(crate) fn upsert_quality_snapshot(
@@ -105,18 +107,24 @@ pub(crate) fn upsert_quality_snapshot(
                 actual_value,
                 threshold_value,
                 message,
+                severity,
+                category,
+                source,
                 start_line,
                 start_column,
                 end_line,
                 end_column
              )
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
             params![
                 input.path,
                 &violation.rule_id,
                 violation.actual_value,
                 violation.threshold_value,
                 &violation.message,
+                violation.severity.as_str(),
+                violation.category.as_str(),
+                violation.source.map(|source| source.as_str()),
                 violation
                     .location
                     .as_ref()
@@ -139,9 +147,39 @@ pub(crate) fn upsert_quality_snapshot(
 
     for metric in input.metrics {
         tx.execute(
-            "INSERT INTO file_quality_metrics(path, metric_id, metric_value)
-             VALUES (?1, ?2, ?3)",
-            params![input.path, &metric.metric_id, metric.metric_value],
+            "INSERT INTO file_quality_metrics(
+                path,
+                metric_id,
+                metric_value,
+                source,
+                start_line,
+                start_column,
+                end_line,
+                end_column
+             )
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+            params![
+                input.path,
+                &metric.metric_id,
+                metric.metric_value,
+                metric.source.map(|source| source.as_str()),
+                metric
+                    .location
+                    .as_ref()
+                    .map(|location| location.start_line as i64),
+                metric
+                    .location
+                    .as_ref()
+                    .map(|location| location.start_column as i64),
+                metric
+                    .location
+                    .as_ref()
+                    .map(|location| location.end_line as i64),
+                metric
+                    .location
+                    .as_ref()
+                    .map(|location| location.end_column as i64),
+            ],
         )?;
     }
 
@@ -160,9 +198,12 @@ pub(crate) fn upsert_quality_snapshot(
                 quality_metric_hash,
                 quality_violation_count,
                 quality_violation_hash,
+                quality_suppressed_violation_count,
+                quality_suppressed_violation_hash,
+                suppressed_violations_json,
                 quality_indexed_at_utc
             )
-            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17)",
         params![
             input.path,
             input.language,
@@ -177,6 +218,13 @@ pub(crate) fn upsert_quality_snapshot(
             input.quality_metric_hash,
             i64::try_from(input.violations.len()).unwrap_or(i64::MAX),
             input.quality_violation_hash,
+            i64::try_from(input.suppressed_violations.len()).unwrap_or(i64::MAX),
+            if input.suppressed_violations.is_empty() {
+                input.quality_suppressed_violation_hash.to_string()
+            } else {
+                suppressed_violations_hash(input.suppressed_violations)
+            },
+            serde_json::to_string(input.suppressed_violations)?,
             input.quality_indexed_at_utc
         ],
     )?;

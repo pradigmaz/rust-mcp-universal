@@ -156,6 +156,49 @@ pub(super) fn rule_violations_schema() -> Value {
     )
 }
 
+pub(super) fn quality_hotspots_schema() -> Value {
+    json_schema_object(
+        &[
+            (
+                "aggregation",
+                json!({
+                    "type": "string",
+                    "oneOf": [
+                        {"const": "file"},
+                        {"const": "directory"},
+                        {"const": "module"}
+                    ]
+                }),
+            ),
+            ("limit", json!({"type": "integer", "minimum": 1})),
+            ("path_prefix", json!({"type": "string", "minLength": 1})),
+            ("language", json!({"type": "string", "minLength": 1})),
+            (
+                "rule_ids",
+                json!({
+                    "type": "array",
+                    "items": {"type": "string"}
+                }),
+            ),
+            (
+                "sort_by",
+                json!({
+                    "type": "string",
+                    "oneOf": [
+                        {"const": "hotspot_score"},
+                        {"const": "risk_score_delta"},
+                        {"const": "new_violations"}
+                    ]
+                }),
+            ),
+            ("auto_index", json!({"type": "boolean"})),
+            ("privacy_mode", privacy_mode_schema()),
+            ("migration_mode", migration_mode_schema()),
+        ],
+        &[],
+    )
+}
+
 pub(super) fn query_schema(include_semantic_flag: bool) -> Value {
     let mut fields = vec![
         ("query", json!({"type": "string", "minLength": 1})),

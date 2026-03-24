@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use anyhow::{Result, anyhow};
 
 use super::quality_state::{ActualQualityState, ExistingQualityState};
-use crate::quality::{quality_metrics_hash, violations_hash};
+use crate::quality::{quality_metrics_hash, suppressed_violations_hash, violations_hash};
 
 pub(crate) fn load_existing_quality_state_conn(
     conn: &rusqlite::Connection,
@@ -19,7 +19,9 @@ pub(crate) fn load_existing_quality_state_conn(
             quality_metric_count,
             quality_metric_hash,
             quality_violation_count,
-            quality_violation_hash
+            quality_violation_hash,
+            quality_suppressed_violation_count,
+            quality_suppressed_violation_hash
         FROM file_quality
         "#,
     )?;
@@ -34,6 +36,8 @@ pub(crate) fn load_existing_quality_state_conn(
                 row.get::<_, String>(5)?,
                 row.get::<_, i64>(6)?,
                 row.get::<_, String>(7)?,
+                row.get::<_, i64>(8)?,
+                row.get::<_, String>(9)?,
             ))
         })?
         .collect::<rusqlite::Result<Vec<_>>>()?;
@@ -48,6 +52,8 @@ pub(crate) fn load_existing_quality_state_conn(
         quality_metric_hash,
         quality_violation_count,
         quality_violation_hash,
+        quality_suppressed_violation_count,
+        quality_suppressed_violation_hash,
     ) in rows
     {
         if quality_mode_raw != "indexed" && quality_mode_raw != "quality-only-oversize" {
@@ -65,10 +71,14 @@ pub(crate) fn load_existing_quality_state_conn(
                 quality_metric_hash,
                 quality_violation_count,
                 quality_violation_hash,
+                quality_suppressed_violation_count,
+                quality_suppressed_violation_hash,
                 actual_quality_metric_count: actual_state.metric_count,
                 actual_quality_metric_hash: actual_state.metric_hash,
                 actual_quality_violation_count: actual_state.violation_count,
                 actual_quality_violation_hash: actual_state.violation_hash,
+                actual_quality_suppressed_violation_count: actual_state.suppressed_violation_count,
+                actual_quality_suppressed_violation_hash: actual_state.suppressed_violation_hash,
             },
         );
     }
@@ -80,7 +90,15 @@ fn load_actual_quality_state_conn(
 ) -> Result<HashMap<String, ActualQualityState>> {
     let mut metric_stmt = conn.prepare(
         r#"
-        SELECT path, metric_id, metric_value
+        SELECT
+            path,
+            metric_id,
+            metric_value,
+            source,
+            start_line,
+            start_column,
+            end_line,
+            end_column
         FROM file_quality_metrics
         ORDER BY path ASC, metric_id ASC
         "#,
@@ -91,18 +109,28 @@ fn load_actual_quality_state_conn(
                 row.get::<_, String>(0)?,
                 row.get::<_, String>(1)?,
                 row.get::<_, i64>(2)?,
+                row.get::<_, Option<String>>(3)?,
+                row.get::<_, Option<i64>>(4)?,
+                row.get::<_, Option<i64>>(5)?,
+                row.get::<_, Option<i64>>(6)?,
+                row.get::<_, Option<i64>>(7)?,
             ))
         })?
         .collect::<rusqlite::Result<Vec<_>>>()?;
     let mut metrics_grouped = HashMap::<String, Vec<crate::quality::QualityMetricEntry>>::new();
-    for (path, metric_id, metric_value) in metric_rows {
+    for (path, metric_id, metric_value, source, start_line, start_column, end_line, end_column) in
+        metric_rows
+    {
         metrics_grouped
             .entry(path)
             .or_default()
             .push(crate::quality::QualityMetricEntry {
                 metric_id,
                 metric_value,
-                location: None,
+                location: build_location(start_line, start_column, end_line, end_column),
+                source: source
+                    .as_deref()
+                    .and_then(crate::model::QualitySource::parse),
             });
     }
 
@@ -114,6 +142,9 @@ fn load_actual_quality_state_conn(
             actual_value,
             threshold_value,
             message,
+            severity,
+            category,
+            source,
             start_line,
             start_column,
             end_line,
@@ -130,10 +161,13 @@ fn load_actual_quality_state_conn(
                 row.get::<_, i64>(2)?,
                 row.get::<_, i64>(3)?,
                 row.get::<_, String>(4)?,
-                row.get::<_, Option<i64>>(5)?,
-                row.get::<_, Option<i64>>(6)?,
-                row.get::<_, Option<i64>>(7)?,
+                row.get::<_, String>(5)?,
+                row.get::<_, String>(6)?,
+                row.get::<_, Option<String>>(7)?,
                 row.get::<_, Option<i64>>(8)?,
+                row.get::<_, Option<i64>>(9)?,
+                row.get::<_, Option<i64>>(10)?,
+                row.get::<_, Option<i64>>(11)?,
             ))
         })?
         .collect::<rusqlite::Result<Vec<_>>>()?;
@@ -145,6 +179,9 @@ fn load_actual_quality_state_conn(
         actual_value,
         threshold_value,
         message,
+        severity,
+        category,
+        source,
         start_line,
         start_column,
         end_line,
@@ -159,17 +196,45 @@ fn load_actual_quality_state_conn(
                 actual_value,
                 threshold_value,
                 message,
+                severity: crate::model::QualitySeverity::parse(&severity)
+                    .unwrap_or(crate::model::QualitySeverity::Medium),
+                category: crate::model::QualityCategory::parse(&category)
+                    .unwrap_or(crate::model::QualityCategory::Maintainability),
                 location: build_location(start_line, start_column, end_line, end_column),
+                source: source
+                    .as_deref()
+                    .and_then(crate::model::QualitySource::parse),
             });
     }
 
+    let mut suppressed_grouped =
+        HashMap::<String, Vec<crate::model::SuppressedQualityViolationEntry>>::new();
+    let mut suppressed_stmt = conn.prepare(
+        r#"
+        SELECT path, suppressed_violations_json
+        FROM file_quality
+        ORDER BY path ASC
+        "#,
+    )?;
+    let suppressed_rows = suppressed_stmt
+        .query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)))?
+        .collect::<rusqlite::Result<Vec<_>>>()?;
+    for (path, payload) in suppressed_rows {
+        suppressed_grouped.insert(path, parse_suppressed_violations_json(&payload)?);
+    }
+
     let mut out = HashMap::with_capacity(grouped.len());
-    for path in metrics_grouped.keys().chain(grouped.keys()) {
+    for path in metrics_grouped
+        .keys()
+        .chain(grouped.keys())
+        .chain(suppressed_grouped.keys())
+    {
         if out.contains_key(path) {
             continue;
         }
         let metrics = metrics_grouped.get(path).cloned().unwrap_or_default();
         let violations = grouped.get(path).cloned().unwrap_or_default();
+        let suppressed = suppressed_grouped.get(path).cloned().unwrap_or_default();
         out.insert(
             path.clone(),
             ActualQualityState {
@@ -177,6 +242,8 @@ fn load_actual_quality_state_conn(
                 metric_hash: quality_metrics_hash(&metrics),
                 violation_count: i64::try_from(violations.len()).unwrap_or(i64::MAX),
                 violation_hash: violations_hash(&violations),
+                suppressed_violation_count: i64::try_from(suppressed.len()).unwrap_or(i64::MAX),
+                suppressed_violation_hash: suppressed_violations_hash(&suppressed),
             },
         );
     }
@@ -195,4 +262,13 @@ fn build_location(
         end_line: usize::try_from(end_line?).ok()?,
         end_column: usize::try_from(end_column?).ok()?,
     })
+}
+
+fn parse_suppressed_violations_json(
+    payload: &str,
+) -> Result<Vec<crate::model::SuppressedQualityViolationEntry>> {
+    if payload.trim().is_empty() {
+        return Ok(Vec::new());
+    }
+    Ok(serde_json::from_str(payload)?)
 }

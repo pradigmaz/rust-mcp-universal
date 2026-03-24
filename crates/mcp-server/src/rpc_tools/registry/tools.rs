@@ -4,8 +4,8 @@ use super::helpers::{json_schema_object, tool};
 use super::schemas::{
     budget_query_schema, call_path_schema, context_pack_schema, db_maintenance_schema,
     index_schema, install_ignore_rules_schema, migration_mode_schema, navigation_schema,
-    privacy_mode_schema, query_benchmark_schema, query_schema, rollout_phase_schema,
-    rule_violations_schema, scope_preview_schema,
+    privacy_mode_schema, quality_hotspots_schema, query_benchmark_schema, query_schema,
+    rollout_phase_schema, rule_violations_schema, scope_preview_schema,
 };
 
 pub(super) fn tools_list() -> Value {
@@ -143,6 +143,11 @@ pub(super) fn tools_list() -> Value {
                 "rule_violations",
                 "Report persisted file-level quality violations from the quality index",
                 rule_violations_schema()
+            ),
+            tool(
+                "quality_hotspots",
+                "Report aggregated quality hotspots across file, directory, or module buckets",
+                quality_hotspots_schema()
             ),
             tool(
                 "build_context_under_budget",

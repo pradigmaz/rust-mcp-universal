@@ -1,5 +1,4 @@
 use anyhow::Result;
-use rusqlite::Connection;
 
 use crate::engine::Engine;
 use crate::engine::compatibility;
@@ -60,8 +59,11 @@ fn empty_quality_summary() -> WorkspaceQualitySummary {
         evaluated_files: 0,
         violating_files: 0,
         total_violations: 0,
+        suppressed_violations: 0,
         top_rules: Vec::new(),
         top_metrics: Vec::new(),
+        severity_breakdown: Vec::new(),
+        category_breakdown: Vec::new(),
     }
 }
 
@@ -96,7 +98,7 @@ mod tests {
         conn.execute("DELETE FROM meta WHERE key = 'index_format_version'", [])?;
 
         let brief = engine.workspace_brief_with_policy(false)?;
-        assert_eq!(brief.auto_indexed, false);
+        assert!(!brief.auto_indexed);
         assert!(brief.repair_hint.is_some());
         assert_eq!(
             brief.repair_hint.as_ref().map(|hint| hint.action.as_str()),

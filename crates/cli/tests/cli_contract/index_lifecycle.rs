@@ -430,11 +430,12 @@ fn semantic_index_json_reports_changed_since_and_skip_count() {
         .assert()
         .success();
 
+    std::thread::sleep(std::time::Duration::from_millis(1200));
     let cutoff = OffsetDateTime::now_utc()
         .to_offset(UtcOffset::UTC)
         .format(&Rfc3339)
         .expect("format cutoff");
-    std::thread::sleep(std::time::Duration::from_millis(25));
+    std::thread::sleep(std::time::Duration::from_millis(1200));
     std::fs::write(
         project.path().join("src/fresh.rs"),
         "fn fresh_cli_symbol() { println!(\"updated\"); }\n",

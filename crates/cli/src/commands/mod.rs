@@ -2,6 +2,9 @@ mod indexing;
 mod maintenance;
 mod modes;
 mod preflight;
+mod quality_hotspots;
+#[path = "quality_matrix/mod.rs"]
+mod quality_matrix;
 mod query;
 
 #[path = "mod/dispatch.rs"]

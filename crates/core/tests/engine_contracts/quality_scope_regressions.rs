@@ -146,11 +146,60 @@ fn legacy_missing_files_rows_do_not_hold_quality_status_stale() -> Result<(), Bo
 
     let brief = engine.workspace_brief_with_policy(false)?;
     assert_eq!(brief.quality_summary.status, QualityStatus::Ready);
-    assert_eq!(file_row_exists(&conn, "docs/stale.md")?, false);
+    assert!(!file_row_exists(&conn, "docs/stale.md")?);
     assert!(!quality_path_exists(&conn, "docs/stale.md")?);
 
     cleanup_project(&project_dir);
     Ok(())
+}
+
+#[test]
+fn quality_scope_excludes_ai_artifacts_and_lockfiles_from_refresh() -> Result<(), Box<dyn Error>> {
+    let project_dir = temp_project_dir("rmu-core-tests-quality-scope-noise");
+    fs::create_dir_all(project_dir.join("src"))?;
+    fs::create_dir_all(project_dir.join(".ai/temp"))?;
+    fs::write(
+        project_dir.join("src/main.ts"),
+        repeated_line("export const realCode = 1;", 32),
+    )?;
+    fs::write(
+        project_dir.join(".ai/temp/report.json"),
+        repeated_line("{\"noise\":true}", 256),
+    )?;
+    fs::write(
+        project_dir.join("package-lock.json"),
+        repeated_line("{\"lock\":true}", 256),
+    )?;
+
+    let engine = Engine::new(project_dir.clone(), Some(project_dir.join(".rmu/index.db")))?;
+    engine.index_path_with_options(&IndexingOptions {
+        profile: Some(IndexProfile::Mixed),
+        changed_since: None,
+        changed_since_commit: None,
+        include_paths: vec![],
+        exclude_paths: vec![],
+        reindex: true,
+    })?;
+    engine.refresh_quality_if_needed()?;
+    assert_eq!(
+        engine
+            .workspace_brief_with_policy(false)?
+            .quality_summary
+            .status,
+        QualityStatus::Ready
+    );
+
+    let conn = Connection::open(project_dir.join(".rmu/index.db"))?;
+    assert!(quality_path_exists(&conn, "src/main.ts")?);
+    assert!(!quality_path_exists(&conn, ".ai/temp/report.json")?);
+    assert!(!quality_path_exists(&conn, "package-lock.json")?);
+
+    cleanup_project(&project_dir);
+    Ok(())
+}
+
+fn repeated_line(line: &str, count: usize) -> String {
+    (0..count).map(|_| format!("{line}\n")).collect::<String>()
 }
 
 fn meta_value(conn: &Connection, key: &str) -> Result<Option<String>, Box<dyn Error>> {

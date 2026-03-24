@@ -142,10 +142,14 @@ mod tests {
             quality_metric_hash: "metrics".to_string(),
             quality_violation_count: 0,
             quality_violation_hash: violations_hash(&[]),
+            quality_suppressed_violation_count: 0,
+            quality_suppressed_violation_hash: crate::quality::suppressed_violations_hash(&[]),
             actual_quality_metric_count: 1,
             actual_quality_metric_hash: "metrics".to_string(),
             actual_quality_violation_count: 0,
             actual_quality_violation_hash: violations_hash(&[]),
+            actual_quality_suppressed_violation_count: 0,
+            actual_quality_suppressed_violation_hash: crate::quality::suppressed_violations_hash(&[]),
         }
     }
 

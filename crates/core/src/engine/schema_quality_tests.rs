@@ -30,6 +30,7 @@ fn init_schema_contains_quality_tables() -> anyhow::Result<()> {
 
     let tables = table_names(&conn)?;
     assert!(tables.iter().any(|name| name == "file_quality"));
+    assert!(tables.iter().any(|name| name == "file_quality_metrics"));
     assert!(tables.iter().any(|name| name == "file_rule_violations"));
 
     let _ = fs::remove_dir_all(root);
@@ -77,9 +78,20 @@ fn migration_runner_adds_quality_tables() -> anyhow::Result<()> {
             .iter()
             .any(|name| name == "quality_violation_hash")
     );
+    assert!(
+        quality_columns
+            .iter()
+            .any(|name| name == "quality_suppressed_violation_hash")
+    );
     let violation_columns = table_columns(&conn, "file_rule_violations")?;
+    let metric_columns = table_columns(&conn, "file_quality_metrics")?;
+    assert!(metric_columns.iter().any(|name| name == "source"));
+    assert!(metric_columns.iter().any(|name| name == "start_line"));
     assert!(violation_columns.iter().any(|name| name == "start_line"));
     assert!(violation_columns.iter().any(|name| name == "end_column"));
+    assert!(violation_columns.iter().any(|name| name == "source"));
+    assert!(violation_columns.iter().any(|name| name == "severity"));
+    assert!(violation_columns.iter().any(|name| name == "category"));
 
     let _ = fs::remove_dir_all(root);
     Ok(())

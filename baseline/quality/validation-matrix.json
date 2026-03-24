@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "repositories": [
+    {
+      "id": "platforma_maga",
+      "role": "mixed-ts-python-monorepo",
+      "path_key": "platforma_maga_path",
+      "required": true,
+      "profile": "mixed",
+      "include_paths": [],
+      "exclude_paths": [],
+      "expected_languages": ["typescript", "python"],
+      "size_class": "xlarge",
+      "expected_pre_refresh_statuses": ["ready", "stale"],
+      "expected_post_refresh_statuses": ["ready"],
+      "allowed_degradation_reasons": [],
+      "artifact_bundle": ["default"]
+    },
+    {
+      "id": "ficbook_enhancer",
+      "role": "browser-extension-js",
+      "path_key": "ficbook_enhancer_path",
+      "required": true,
+      "profile": "mixed",
+      "include_paths": [],
+      "exclude_paths": [],
+      "expected_languages": ["javascript"],
+      "size_class": "medium",
+      "expected_pre_refresh_statuses": ["ready", "stale"],
+      "expected_post_refresh_statuses": ["ready"],
+      "allowed_degradation_reasons": [],
+      "artifact_bundle": ["default"]
+    },
+    {
+      "id": "qubeforge",
+      "role": "vite-ui-ts",
+      "path_key": "qubeforge_path",
+      "required": true,
+      "profile": "mixed",
+      "include_paths": [],
+      "exclude_paths": [],
+      "expected_languages": ["typescript", "javascript"],
+      "size_class": "medium",
+      "expected_pre_refresh_statuses": ["ready", "stale"],
+      "expected_post_refresh_statuses": ["ready"],
+      "allowed_degradation_reasons": [],
+      "artifact_bundle": ["default"]
+    },
+    {
+      "id": "qubeforge_rust",
+      "role": "rust-workspace",
+      "path_key": "qubeforge_rust_path",
+      "required": true,
+      "profile": "rust-monorepo",
+      "include_paths": [],
+      "exclude_paths": [],
+      "expected_languages": ["rust"],
+      "size_class": "medium",
+      "expected_pre_refresh_statuses": ["ready", "stale"],
+      "expected_post_refresh_statuses": ["ready"],
+      "allowed_degradation_reasons": [],
+      "artifact_bundle": ["default"]
+    },
+    {
+      "id": "kiron_client",
+      "role": "java-gradle-client",
+      "path_key": "kiron_client_path",
+      "required": true,
+      "profile": "mixed",
+      "include_paths": [],
+      "exclude_paths": [],
+      "expected_languages": ["java"],
+      "size_class": "large",
+      "expected_pre_refresh_statuses": ["ready", "stale"],
+      "expected_post_refresh_statuses": ["ready"],
+      "allowed_degradation_reasons": [],
+      "artifact_bundle": ["default"]
+    }
+  ]
+}

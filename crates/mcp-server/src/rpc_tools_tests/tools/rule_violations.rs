@@ -38,7 +38,7 @@ fn workspace_brief_includes_quality_summary() {
     assert_eq!(result["isError"], json!(false));
     assert_eq!(
         result["structuredContent"]["quality_summary"]["ruleset_id"],
-        json!("quality-core-v2")
+        json!("quality-core-v5")
     );
     assert_eq!(
         result["structuredContent"]["quality_summary"]["status"],
@@ -108,6 +108,11 @@ fn rule_violations_returns_filtered_hits_and_masks_paths() {
     assert_eq!(
         result["structuredContent"]["hits"][0]["violations"][0]["rule_id"],
         json!("max_non_empty_lines_config")
+    );
+    assert!(
+        result["structuredContent"]["hits"][0]["risk_score"]["score"]
+            .as_f64()
+            .is_some()
     );
     assert!(
         result["structuredContent"]["hits"][0]["metrics"]

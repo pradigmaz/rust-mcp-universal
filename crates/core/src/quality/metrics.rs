@@ -14,6 +14,14 @@ pub(super) const MAX_SYMBOL_COUNT_PER_FILE: i64 = 80;
 pub(super) const MAX_REF_COUNT_PER_FILE: i64 = 200;
 pub(super) const MAX_MODULE_DEP_COUNT_PER_FILE: i64 = 40;
 pub(super) const MAX_GRAPH_EDGE_OUT_COUNT: i64 = 60;
+pub(super) const MAX_FUNCTION_LINES: i64 = 80;
+pub(super) const MAX_NESTING_DEPTH: i64 = 4;
+pub(super) const MAX_PARAMETERS_PER_FUNCTION: i64 = 6;
+pub(super) const MAX_EXPORT_COUNT_PER_FILE: i64 = 24;
+pub(super) const MAX_CLASS_MEMBER_COUNT: i64 = 20;
+pub(super) const MAX_TODO_COUNT_PER_FILE: i64 = 8;
+pub(super) const MAX_FAN_IN_PER_FILE: i64 = 20;
+pub(super) const MAX_FAN_OUT_PER_FILE: i64 = 20;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum FileKind {
@@ -30,6 +38,7 @@ pub(crate) fn build_indexed_quality_facts(
     full_text: &str,
 ) -> QualityCandidateFacts {
     QualityCandidateFacts {
+        rel_path: rel_path.to_string(),
         size_bytes: i64::try_from(size_bytes).unwrap_or(i64::MAX),
         total_lines: Some(total_lines(full_text)),
         non_empty_lines: Some(non_empty_lines(full_text)),
@@ -39,6 +48,8 @@ pub(crate) fn build_indexed_quality_facts(
         max_line_length_location: max_line_length_location(full_text),
         quality_mode: QualityMode::Indexed,
         file_kind: classify_file_kind(rel_path),
+        hotspots: super::rules::analyze_hotspots(rel_path, language, full_text),
+        structural: super::StructuralFacts::default(),
     }
 }
 
@@ -49,6 +60,7 @@ pub(crate) fn build_oversize_quality_facts(
     _source_mtime_unix_ms: Option<i64>,
 ) -> QualityCandidateFacts {
     QualityCandidateFacts {
+        rel_path: rel_path.to_string(),
         size_bytes: i64::try_from(size_bytes).unwrap_or(i64::MAX),
         total_lines: None,
         non_empty_lines: None,
@@ -58,6 +70,8 @@ pub(crate) fn build_oversize_quality_facts(
         max_line_length_location: None,
         quality_mode: QualityMode::QualityOnlyOversize,
         file_kind: classify_file_kind(rel_path),
+        hotspots: super::HotspotFacts::default(),
+        structural: super::StructuralFacts::default(),
     }
 }
 
@@ -67,6 +81,20 @@ pub(crate) fn quality_metrics_hash(metrics: &[QualityMetricEntry]) -> String {
         bytes.extend_from_slice(metric.metric_id.as_bytes());
         bytes.push(0);
         bytes.extend_from_slice(metric.metric_value.to_string().as_bytes());
+        bytes.push(0);
+        if let Some(location) = &metric.location {
+            bytes.extend_from_slice(location.start_line.to_string().as_bytes());
+            bytes.push(0);
+            bytes.extend_from_slice(location.start_column.to_string().as_bytes());
+            bytes.push(0);
+            bytes.extend_from_slice(location.end_line.to_string().as_bytes());
+            bytes.push(0);
+            bytes.extend_from_slice(location.end_column.to_string().as_bytes());
+        }
+        bytes.push(0);
+        if let Some(source) = metric.source {
+            bytes.extend_from_slice(source.as_str().as_bytes());
+        }
         bytes.push(b'\n');
     }
     hash_bytes(&bytes)

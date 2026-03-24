@@ -1,4 +1,4 @@
-use super::{
+use crate::quality::{
     CURRENT_QUALITY_RULESET_VERSION, IndexedQualityMetrics, QUALITY_RULESET_ID,
     build_indexed_quality_facts, build_oversize_quality_facts, default_quality_policy,
     evaluate_quality,
@@ -6,8 +6,8 @@ use super::{
 
 #[test]
 fn quality_constants_are_stable() {
-    assert_eq!(QUALITY_RULESET_ID, "quality-core-v2");
-    assert_eq!(CURRENT_QUALITY_RULESET_VERSION, 2);
+    assert_eq!(QUALITY_RULESET_ID, "quality-core-v5");
+    assert_eq!(CURRENT_QUALITY_RULESET_VERSION, 5);
 }
 
 #[test]
@@ -58,4 +58,31 @@ fn oversize_quality_stays_quality_only() {
             .iter()
             .any(|entry| entry.rule_id == "max_size_bytes")
     );
+}
+
+#[test]
+fn basic_rule_registry_keeps_stable_rule_ids() {
+    let facts = build_indexed_quality_facts(
+        "src/lib.rs",
+        "rust",
+        64,
+        Some(1),
+        "use std::fmt;\nfn alpha() {}\n",
+    );
+    let evaluation = evaluate_quality(
+        &facts,
+        &IndexedQualityMetrics::default(),
+        &default_quality_policy(),
+    );
+    let metric_ids = evaluation
+        .snapshot
+        .metrics
+        .iter()
+        .map(|entry| entry.metric_id.as_str())
+        .collect::<Vec<_>>();
+
+    assert!(metric_ids.contains(&"size_bytes"));
+    assert!(metric_ids.contains(&"non_empty_lines"));
+    assert!(metric_ids.contains(&"import_count"));
+    assert!(metric_ids.contains(&"max_line_length"));
 }

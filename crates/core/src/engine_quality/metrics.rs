@@ -3,7 +3,9 @@ use std::collections::HashMap;
 use anyhow::Result;
 use rusqlite::params;
 
-use crate::model::{QualityMetricValue, RuleViolationsOptions, WorkspaceQualityTopMetric};
+use crate::model::{
+    QualityMetricValue, QualitySource, RuleViolationsOptions, WorkspaceQualityTopMetric,
+};
 
 pub(super) fn load_top_metrics(
     conn: &rusqlite::Connection,
@@ -43,7 +45,15 @@ pub(super) fn load_metrics_by_path(
         .collect::<Vec<_>>();
     let mut stmt = conn.prepare(
         r#"
-        SELECT q.path, m.metric_id, m.metric_value
+        SELECT
+            q.path,
+            m.metric_id,
+            m.metric_value,
+            m.source,
+            m.start_line,
+            m.start_column,
+            m.end_line,
+            m.end_column
         FROM file_quality q
         JOIN file_quality_metrics m ON m.path = q.path
         WHERE (?1 IS NULL OR q.path LIKE ?1)
@@ -58,6 +68,15 @@ pub(super) fn load_metrics_by_path(
                 QualityMetricValue {
                     metric_id: row.get(1)?,
                     metric_value: row.get(2)?,
+                    source: row
+                        .get::<_, Option<String>>(3)?
+                        .and_then(|value| QualitySource::parse(&value)),
+                    location: build_location(
+                        row.get::<_, Option<i64>>(4)?,
+                        row.get::<_, Option<i64>>(5)?,
+                        row.get::<_, Option<i64>>(6)?,
+                        row.get::<_, Option<i64>>(7)?,
+                    ),
                 },
             ))
         })?
@@ -71,4 +90,18 @@ pub(super) fn load_metrics_by_path(
         metrics_by_path.entry(path).or_default().push(metric);
     }
     Ok(metrics_by_path)
+}
+
+fn build_location(
+    start_line: Option<i64>,
+    start_column: Option<i64>,
+    end_line: Option<i64>,
+    end_column: Option<i64>,
+) -> Option<crate::model::QualityLocation> {
+    Some(crate::model::QualityLocation {
+        start_line: usize::try_from(start_line?).ok()?,
+        start_column: usize::try_from(start_column?).ok()?,
+        end_line: usize::try_from(end_line?).ok()?,
+        end_column: usize::try_from(end_column?).ok()?,
+    })
 }

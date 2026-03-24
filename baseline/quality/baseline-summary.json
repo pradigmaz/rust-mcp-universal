@@ -1,0 +1,676 @@
+{
+  "manifest_version": 1,
+  "generated_at_utc": "2026-03-23T21:54:23.0368299Z",
+  "repos": [
+    {
+      "repo_id": "ficbook_enhancer",
+      "profile": "mixed",
+      "pre_refresh_status": "ready",
+      "post_refresh_status": "ready",
+      "evaluated_files": 16,
+      "violating_files": 3,
+      "total_violations": 5,
+      "top_rules": [
+        {
+          "rule_id": "max_function_lines",
+          "files": 3,
+          "violations": 3
+        },
+        {
+          "rule_id": "max_line_length",
+          "files": 1,
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "files": 1,
+          "violations": 1
+        }
+      ],
+      "top_metrics": [
+        {
+          "metric_id": "size_bytes",
+          "files": 16,
+          "max_value": 20969
+        },
+        {
+          "metric_id": "non_empty_lines",
+          "files": 16,
+          "max_value": 383
+        },
+        {
+          "metric_id": "max_line_length",
+          "files": 16,
+          "max_value": 278
+        },
+        {
+          "metric_id": "ref_count",
+          "files": 16,
+          "max_value": 147
+        },
+        {
+          "metric_id": "graph_edge_out_count",
+          "files": 16,
+          "max_value": 6
+        }
+      ],
+      "top_hot_files": {
+        "violation_count": [
+          "src/App.jsx",
+          "src/popup/Popup.jsx",
+          "src/features/theming.js"
+        ],
+        "size_bytes": [
+          "src/App.jsx",
+          "src/popup/Popup.jsx",
+          "src/features/theming.js"
+        ],
+        "non_empty_lines": [
+          "src/App.jsx",
+          "src/popup/Popup.jsx",
+          "src/features/theming.js"
+        ],
+        "metric_graph_edge_out_count": [
+          "src/App.jsx",
+          "src/popup/Popup.jsx",
+          "src/features/theming.js"
+        ]
+      },
+      "latency_summary": {
+        "index_ms": 0,
+        "brief_before_refresh_ms": 221,
+        "refresh_ms": 77,
+        "brief_after_refresh_ms": 198,
+        "violation_count_ms": 76,
+        "size_bytes_ms": 79,
+        "non_empty_lines_ms": 66,
+        "metric_graph_edge_out_count_ms": 100
+      },
+      "resource_summary": {
+        "db_size_bytes": 1454080,
+        "wal_size_bytes": 4152,
+        "total_size_bytes": 1491000,
+        "peak_rss_bytes": null,
+        "peak_rss_note": "unsupported_on_host"
+      },
+      "noise_summary": {
+        "violating_file_ratio": 0.1875,
+        "top_rule_share": 0.6,
+        "manual_review_required": true,
+        "review_shortlist": [
+          "src/App.jsx",
+          "src/popup/Popup.jsx",
+          "src/features/theming.js"
+        ]
+      }
+    },
+    {
+      "repo_id": "kiron_client",
+      "profile": "mixed",
+      "pre_refresh_status": "stale",
+      "post_refresh_status": "ready",
+      "evaluated_files": 73,
+      "violating_files": 42,
+      "total_violations": 55,
+      "top_rules": [
+        {
+          "rule_id": "module_cycle_member",
+          "files": 41,
+          "violations": 41
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "files": 7,
+          "violations": 7
+        },
+        {
+          "rule_id": "max_line_length",
+          "files": 4,
+          "violations": 4
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "files": 2,
+          "violations": 2
+        },
+        {
+          "rule_id": "max_fan_in_per_file",
+          "files": 1,
+          "violations": 1
+        }
+      ],
+      "top_metrics": [
+        {
+          "metric_id": "size_bytes",
+          "files": 73,
+          "max_value": 18693
+        },
+        {
+          "metric_id": "non_empty_lines",
+          "files": 73,
+          "max_value": 463
+        },
+        {
+          "metric_id": "ref_count",
+          "files": 73,
+          "max_value": 261
+        },
+        {
+          "metric_id": "max_line_length",
+          "files": 73,
+          "max_value": 165
+        },
+        {
+          "metric_id": "graph_edge_out_count",
+          "files": 73,
+          "max_value": 51
+        }
+      ],
+      "top_hot_files": {
+        "violation_count": [
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiEspColors.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiMain.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleESP.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleTorchHelper.java",
+          "mods/veinmining/src/client/java/org/mine/veinmining/client/render/ParticleEffects.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/search/BlockSearchHelper.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/flow/TreeChoppingFlow.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/VeinMiningMod.java",
+          "mods/veinmining/src/client/java/org/mine/veinmining/client/render/HudRenderer.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/optimized/TaskScheduler.java"
+        ],
+        "size_bytes": [
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiEspColors.java",
+          "mods/veinmining/src/client/java/org/mine/veinmining/client/render/ParticleEffects.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiMain.java",
+          "mods/veinmining/src/client/java/org/mine/veinmining/client/render/HudRenderer.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/search/BlockSearchHelper.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleESP.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleTorchHelper.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/flow/TreeChoppingFlow.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/optimized/TaskScheduler.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/optimized/VeinMiningExecutor.java"
+        ],
+        "non_empty_lines": [
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiEspColors.java",
+          "mods/veinmining/src/client/java/org/mine/veinmining/client/render/ParticleEffects.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiMain.java",
+          "mods/veinmining/src/client/java/org/mine/veinmining/client/render/HudRenderer.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/optimized/TaskScheduler.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/search/BlockSearchHelper.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/optimized/VeinMiningExecutor.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleESP.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/optimized/BlockCache.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/optimized/PositionSet.java"
+        ],
+        "metric_graph_edge_out_count": [
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/flow/TreeChoppingFlow.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/VeinMinerLogic.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/flow/VeinMiningFlow.java",
+          "mods/veinmining/src/client/java/org/mine/veinmining/client/VeinMiningClient.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/optimized/TaskScheduler.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/search/BlockSearchHelper.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/optimized/BlockCache.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/network/packet/VeinMineResultPacket.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiMain.java",
+          "mods/veinmining/src/client/java/org/mine/veinmining/client/render/HudRenderer.java"
+        ]
+      },
+      "latency_summary": {
+        "index_ms": 0,
+        "brief_before_refresh_ms": 438,
+        "refresh_ms": 614,
+        "brief_after_refresh_ms": 407,
+        "violation_count_ms": 294,
+        "size_bytes_ms": 298,
+        "non_empty_lines_ms": 286,
+        "metric_graph_edge_out_count_ms": 293
+      },
+      "resource_summary": {
+        "db_size_bytes": 5521408,
+        "wal_size_bytes": 4152,
+        "total_size_bytes": 5558328,
+        "peak_rss_bytes": null,
+        "peak_rss_note": "unsupported_on_host"
+      },
+      "noise_summary": {
+        "violating_file_ratio": 0.5753424657534246,
+        "top_rule_share": 0.7454545454545455,
+        "manual_review_required": true,
+        "review_shortlist": [
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiEspColors.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiMain.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleESP.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleTorchHelper.java",
+          "mods/veinmining/src/client/java/org/mine/veinmining/client/render/ParticleEffects.java"
+        ]
+      }
+    },
+    {
+      "repo_id": "platforma_maga",
+      "profile": "mixed",
+      "pre_refresh_status": "stale",
+      "post_refresh_status": "ready",
+      "evaluated_files": 770,
+      "violating_files": 652,
+      "total_violations": 1034,
+      "top_rules": [
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "files": 628,
+          "violations": 628
+        },
+        {
+          "rule_id": "max_function_lines",
+          "files": 147,
+          "violations": 147
+        },
+        {
+          "rule_id": "max_line_length",
+          "files": 110,
+          "violations": 110
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "files": 87,
+          "violations": 87
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "files": 25,
+          "violations": 25
+        }
+      ],
+      "top_metrics": [
+        {
+          "metric_id": "size_bytes",
+          "files": 770,
+          "max_value": 25597
+        },
+        {
+          "metric_id": "max_line_length",
+          "files": 770,
+          "max_value": 849
+        },
+        {
+          "metric_id": "non_empty_lines",
+          "files": 770,
+          "max_value": 717
+        },
+        {
+          "metric_id": "graph_edge_out_count",
+          "files": 770,
+          "max_value": 340
+        },
+        {
+          "metric_id": "ref_count",
+          "files": 770,
+          "max_value": 195
+        }
+      ],
+      "top_hot_files": {
+        "violation_count": [
+          "frontend/src/components/ui/sidebar.tsx",
+          "frontend/src/app/admin/journal/components/JournalTable.tsx",
+          "frontend/src/app/admin/audit/components/AuditDetailDialog.tsx",
+          "frontend/src/components/labs/LabScheduleAttachment.tsx",
+          "frontend/src/app/admin/students/%u005Bid%u005D/components/StudentProfileCard.tsx",
+          "frontend/src/app/report/%u005Bcode%u005D/components/ReportStudentTable.tsx",
+          "frontend/src/components/admin/ActivityManagementSection.tsx",
+          "frontend/src/app/admin/attestation/scores/page.tsx",
+          "frontend/src/components/lectures/LectureEditor.tsx",
+          "frontend/src/components/dashboard/AceternitySidebar.tsx"
+        ],
+        "size_bytes": [
+          "deploy/install.sh",
+          "frontend/src/components/ui/sidebar.tsx",
+          "backend/app/services/reports/attendance_helpers.py",
+          "backend/app/services/lab_visibility.py",
+          "frontend/src/components/animate-ui/primitives/effects/highlight.tsx",
+          "backend/app/api/v1/endpoints/student/labs.py",
+          "backend/app/api/v1/endpoints/admin_labs.py",
+          "frontend/src/app/report/%u005Bcode%u005D/components/ReportStudentTable.tsx",
+          "backend/app/services/reports/data_collector.py",
+          "backend/app/services/security_monitor/detector.py"
+        ],
+        "non_empty_lines": [
+          "frontend/src/components/ui/sidebar.tsx",
+          "deploy/install.sh",
+          "frontend/src/components/animate-ui/primitives/effects/highlight.tsx",
+          "backend/app/services/reports/attendance_helpers.py",
+          "backend/app/api/v1/endpoints/student/labs.py",
+          "frontend/src/app/admin/audit/components/SecurityTab.tsx",
+          "frontend/src/app/admin/groups/%u005Bid%u005D/page.tsx",
+          "frontend/src/app/report/%u005Bcode%u005D/components/ReportStudentTable.tsx",
+          "backend/app/services/lab_visibility.py",
+          "backend/app/api/v1/endpoints/admin_labs.py"
+        ],
+        "metric_graph_edge_out_count": [
+          "frontend/src/app/admin/students/%u005Bid%u005D/components/StudentProfileCard.tsx",
+          "frontend/src/components/lectures/public/LecturePublicSettings.tsx",
+          "backend/app/api/v1/endpoints/admin_lab_schedule.py",
+          "frontend/src/components/labs/editor/QuestionsTab.tsx",
+          "backend/app/api/v1/endpoints/admin_audit.py",
+          "frontend/src/components/schedule/LessonSheet.tsx",
+          "frontend/src/components/schedule/LectureSheet.tsx",
+          "backend/app/services/reports/data_collector.py",
+          "backend/app/api/v1/endpoints/admin_attendance.py",
+          "backend/app/api/v1/endpoints/admin_reports.py"
+        ]
+      },
+      "latency_summary": {
+        "index_ms": 0,
+        "brief_before_refresh_ms": 1758,
+        "refresh_ms": 3628,
+        "brief_after_refresh_ms": 1637,
+        "violation_count_ms": 1425,
+        "size_bytes_ms": 1440,
+        "non_empty_lines_ms": 1425,
+        "metric_graph_edge_out_count_ms": 1419
+      },
+      "resource_summary": {
+        "db_size_bytes": 100118528,
+        "wal_size_bytes": 4152,
+        "total_size_bytes": 100155448,
+        "peak_rss_bytes": null,
+        "peak_rss_note": "unsupported_on_host"
+      },
+      "noise_summary": {
+        "violating_file_ratio": 0.8467532467532467,
+        "top_rule_share": 0.6073500967117988,
+        "manual_review_required": true,
+        "review_shortlist": [
+          "frontend/src/components/ui/sidebar.tsx",
+          "frontend/src/app/admin/journal/components/JournalTable.tsx",
+          "frontend/src/app/admin/audit/components/AuditDetailDialog.tsx",
+          "frontend/src/components/labs/LabScheduleAttachment.tsx",
+          "frontend/src/app/admin/students/%u005Bid%u005D/components/StudentProfileCard.tsx"
+        ]
+      }
+    },
+    {
+      "repo_id": "qubeforge",
+      "profile": "mixed",
+      "pre_refresh_status": "stale",
+      "post_refresh_status": "ready",
+      "evaluated_files": 198,
+      "violating_files": 71,
+      "total_violations": 106,
+      "top_rules": [
+        {
+          "rule_id": "max_function_lines",
+          "files": 30,
+          "violations": 30
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "files": 28,
+          "violations": 28
+        },
+        {
+          "rule_id": "max_class_member_count",
+          "files": 19,
+          "violations": 19
+        },
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "files": 7,
+          "violations": 7
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "files": 7,
+          "violations": 7
+        }
+      ],
+      "top_metrics": [
+        {
+          "metric_id": "size_bytes",
+          "files": 198,
+          "max_value": 17416
+        },
+        {
+          "metric_id": "non_empty_lines",
+          "files": 198,
+          "max_value": 517
+        },
+        {
+          "metric_id": "max_line_length",
+          "files": 198,
+          "max_value": 174
+        },
+        {
+          "metric_id": "ref_count",
+          "files": 198,
+          "max_value": 154
+        },
+        {
+          "metric_id": "graph_edge_out_count",
+          "files": 198,
+          "max_value": 86
+        }
+      ],
+      "top_hot_files": {
+        "violation_count": [
+          "src/core/Game.ts",
+          "src/world/generation/runtime/GenerateChunk.ts",
+          "src/initialization/GameInitializer.ts",
+          "src/inventory/InventoryUI.ts",
+          "src/player/PlayerHand.ts",
+          "src/world/chunks/ChunkMeshBuilder.ts",
+          "src/blocks/BlockInteraction.ts",
+          "src/world/Environment.ts",
+          "src/mobs/Mob.ts",
+          "src/crafting/FurnaceUI.ts"
+        ],
+        "size_bytes": [
+          "src/inventory/InventoryUI.ts",
+          "src/world/generation/runtime/GenerateChunk.ts",
+          "src/player/PlayerHand.ts",
+          "src/core/Game.ts",
+          "src/world/chunks/ChunkMeshBuilder.ts",
+          "src/mobile/MobileControls.ts",
+          "src/blocks/BlockInteraction.ts",
+          "src/crafting/FurnaceManager.ts",
+          "src/mobs/Mob.ts",
+          "src/crafting/FurnaceUI.ts"
+        ],
+        "non_empty_lines": [
+          "src/world/generation/runtime/GenerateChunk.ts",
+          "src/inventory/InventoryUI.ts",
+          "src/player/PlayerHand.ts",
+          "src/core/Game.ts",
+          "src/world/chunks/ChunkMeshBuilder.ts",
+          "src/styles/menus.css",
+          "src/mobs/Mob.ts",
+          "src/mobile/MobileControls.ts",
+          "src/initialization/GameInitializer.ts",
+          "src/utils/profiler/overlay/styles.ts"
+        ],
+        "metric_graph_edge_out_count": [
+          "src/core/Game.ts",
+          "src/initialization/GameInitializer.ts",
+          "src/world/WorldCreation.test.ts",
+          "src/ui/menus/gameStart.ts",
+          "src/entities/ItemPhysics.test.ts",
+          "src/entities/ItemEntity.test.ts",
+          "src/world/chunks/ChunkMeshBuilder.ts",
+          "src/mobs/MobManager.ts",
+          "src/world/World.ts",
+          "src/player/PlayerHand.ts"
+        ]
+      },
+      "latency_summary": {
+        "index_ms": 0,
+        "brief_before_refresh_ms": 278,
+        "refresh_ms": 475,
+        "brief_after_refresh_ms": 305,
+        "violation_count_ms": 145,
+        "size_bytes_ms": 139,
+        "non_empty_lines_ms": 164,
+        "metric_graph_edge_out_count_ms": 157
+      },
+      "resource_summary": {
+        "db_size_bytes": 8945664,
+        "wal_size_bytes": 4152,
+        "total_size_bytes": 8982584,
+        "peak_rss_bytes": null,
+        "peak_rss_note": "unsupported_on_host"
+      },
+      "noise_summary": {
+        "violating_file_ratio": 0.35858585858585856,
+        "top_rule_share": 0.2830188679245283,
+        "manual_review_required": true,
+        "review_shortlist": [
+          "src/core/Game.ts",
+          "src/world/generation/runtime/GenerateChunk.ts",
+          "src/initialization/GameInitializer.ts",
+          "src/inventory/InventoryUI.ts",
+          "src/player/PlayerHand.ts"
+        ]
+      }
+    },
+    {
+      "repo_id": "qubeforge_rust",
+      "profile": "rust-monorepo",
+      "pre_refresh_status": "stale",
+      "post_refresh_status": "ready",
+      "evaluated_files": 34,
+      "violating_files": 12,
+      "total_violations": 40,
+      "top_rules": [
+        {
+          "rule_id": "module_cycle_member",
+          "files": 10,
+          "violations": 10
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "files": 8,
+          "violations": 8
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "files": 6,
+          "violations": 6
+        },
+        {
+          "rule_id": "max_export_count_per_file",
+          "files": 5,
+          "violations": 5
+        },
+        {
+          "rule_id": "max_function_lines",
+          "files": 5,
+          "violations": 5
+        }
+      ],
+      "top_metrics": [
+        {
+          "metric_id": "size_bytes",
+          "files": 34,
+          "max_value": 43891
+        },
+        {
+          "metric_id": "non_empty_lines",
+          "files": 34,
+          "max_value": 1097
+        },
+        {
+          "metric_id": "ref_count",
+          "files": 34,
+          "max_value": 684
+        },
+        {
+          "metric_id": "max_line_length",
+          "files": 34,
+          "max_value": 183
+        },
+        {
+          "metric_id": "symbol_count",
+          "files": 34,
+          "max_value": 74
+        }
+      ],
+      "top_hot_files": {
+        "violation_count": [
+          "crates/qf_sandbox/src/lib.rs",
+          "crates/qf_world/src/world.rs",
+          "crates/qf_content/src/lib.rs",
+          "crates/qf_world/src/mesh.rs",
+          "crates/qf_render/src/lib.rs",
+          "crates/qf_game/src/lib.rs",
+          "crates/qf_platform/src/lib.rs",
+          "crates/qf_save/src/lib.rs",
+          "crates/qf_world/src/generator.rs",
+          "crates/qf_core/src/math.rs"
+        ],
+        "size_bytes": [
+          "crates/qf_sandbox/src/lib.rs",
+          "crates/qf_world/src/world.rs",
+          "crates/qf_render/src/lib.rs",
+          "crates/qf_content/src/lib.rs",
+          "crates/qf_game/src/lib.rs",
+          "crates/qf_world/src/mesh.rs",
+          "crates/qf_platform/src/lib.rs",
+          "crates/qf_save/src/lib.rs",
+          "crates/qf_world/src/generator.rs",
+          "crates/qf_core/src/math.rs"
+        ],
+        "non_empty_lines": [
+          "crates/qf_sandbox/src/lib.rs",
+          "crates/qf_world/src/world.rs",
+          "crates/qf_render/src/lib.rs",
+          "crates/qf_content/src/lib.rs",
+          "crates/qf_game/src/lib.rs",
+          "crates/qf_world/src/mesh.rs",
+          "crates/qf_platform/src/lib.rs",
+          "crates/qf_save/src/lib.rs",
+          "crates/qf_world/src/generator.rs",
+          "crates/qf_core/src/math.rs"
+        ],
+        "metric_graph_edge_out_count": [
+          "crates/qf_sandbox/src/lib.rs",
+          "crates/qf_world/src/world.rs",
+          "crates/qf_content/src/lib.rs",
+          "crates/qf_world/src/mesh.rs",
+          "crates/qf_render/src/lib.rs",
+          "crates/qf_save/src/lib.rs",
+          "crates/qf_game/src/lib.rs",
+          "crates/qf_platform/src/lib.rs",
+          "crates/qf_core/src/math.rs",
+          "crates/qf_world/src/generator.rs"
+        ]
+      },
+      "latency_summary": {
+        "index_ms": 0,
+        "brief_before_refresh_ms": 182,
+        "refresh_ms": 140,
+        "brief_after_refresh_ms": 190,
+        "violation_count_ms": 65,
+        "size_bytes_ms": 65,
+        "non_empty_lines_ms": 63,
+        "metric_graph_edge_out_count_ms": 61
+      },
+      "resource_summary": {
+        "db_size_bytes": 2859008,
+        "wal_size_bytes": 4152,
+        "total_size_bytes": 2895928,
+        "peak_rss_bytes": null,
+        "peak_rss_note": "unsupported_on_host"
+      },
+      "noise_summary": {
+        "violating_file_ratio": 0.35294117647058826,
+        "top_rule_share": 0.25,
+        "manual_review_required": true,
+        "review_shortlist": [
+          "crates/qf_sandbox/src/lib.rs",
+          "crates/qf_world/src/world.rs",
+          "crates/qf_content/src/lib.rs",
+          "crates/qf_world/src/mesh.rs",
+          "crates/qf_render/src/lib.rs"
+        ]
+      }
+    }
+  ]
+}

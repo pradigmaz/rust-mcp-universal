@@ -9,6 +9,8 @@ mod cli_contract {
     mod maintenance;
     mod navigation;
     mod navigation_python;
+    mod quality_hotspots;
+    mod quality_matrix;
 
     fn write_query_benchmark_fixture(project_root: &Path) -> (PathBuf, PathBuf) {
         std::fs::create_dir_all(project_root.join("src")).expect("create src");

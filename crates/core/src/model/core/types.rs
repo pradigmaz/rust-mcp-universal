@@ -19,9 +19,15 @@ pub use navigation::{
     SymbolReferenceHit,
 };
 pub use quality::{
-    QualityLocation, QualityMetricValue, QualityMode, QualityStatus, QualityViolationEntry,
+    QualityCategory, QualityDeltaSummary, QualityHotspotAggregation, QualityHotspotBucket,
+    QualityHotspotRuleCount, QualityHotspotStructuralSignals, QualityHotspotsOptions,
+    QualityHotspotsResult, QualityHotspotsSortBy, QualityHotspotsSummary, QualityLocation,
+    QualityMetricValue, QualityMode, QualityRiskScoreBreakdown, QualityRiskScoreComponents,
+    QualityRiskScoreWeights, QualitySeverity, QualitySource, QualityStatus, QualitySuppression,
+    QualityViolationEntry,
     RuleViolationFileHit, RuleViolationsOptions, RuleViolationsResult, RuleViolationsSortBy,
-    RuleViolationsSummary, WorkspaceQualitySummary, WorkspaceQualityTopMetric,
+    RuleViolationsSummary, SuppressedQualityViolationEntry, WorkspaceQualityCategoryCount,
+    WorkspaceQualitySeverityCount, WorkspaceQualitySummary, WorkspaceQualityTopMetric,
     WorkspaceQualityTopRule,
 };
 pub use query::{QueryOptions, SearchHit};

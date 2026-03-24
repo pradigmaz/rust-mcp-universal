@@ -10,7 +10,8 @@ use crate::ServerState;
 use super::errors::{invalid_params_error, is_invalid_params_error, tool_domain_error};
 use super::handlers::{
     agent_bootstrap, build_context_under_budget, call_path, context_pack, db_maintenance,
-    query_benchmark, query_report, related_files, related_files_v2, rule_violations,
+    quality_hotspots, query_benchmark, query_report, related_files, related_files_v2,
+    rule_violations,
     search_candidates, semantic_search, symbol_lookup, symbol_lookup_v2, symbol_references,
     symbol_references_v2,
 };
@@ -51,6 +52,7 @@ pub(super) fn handle_tool_call(params: Option<Value>, state: &mut ServerState) -
         "search_candidates" => search_candidates(&args, state).map_err(into_tool_error),
         "semantic_search" => semantic_search(&args, state).map_err(into_tool_error),
         "rule_violations" => rule_violations(&args, state).map_err(into_tool_error),
+        "quality_hotspots" => quality_hotspots(&args, state).map_err(into_tool_error),
         "build_context_under_budget" => {
             build_context_under_budget(&args, state).map_err(into_tool_error)
         }

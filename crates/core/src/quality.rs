@@ -1,4 +1,7 @@
-use crate::model::{QualityMode, QualityViolationEntry};
+use crate::model::{
+    QualityLocation, QualityMode, QualitySource, QualityViolationEntry,
+    SuppressedQualityViolationEntry,
+};
 
 #[path = "quality/evaluate.rs"]
 mod evaluate;
@@ -8,17 +11,56 @@ mod location;
 mod metrics;
 #[path = "quality/policy.rs"]
 mod policy;
-#[path = "quality/rules.rs"]
+#[path = "quality/policy_schema.rs"]
+mod policy_schema;
+#[path = "quality/rule_metadata.rs"]
+mod rule_metadata;
+#[path = "quality/rules/mod.rs"]
 mod rules;
+#[path = "quality/scoring.rs"]
+mod scoring;
 
-pub(crate) const QUALITY_RULESET_ID: &str = "quality-core-v2";
-pub(crate) const CURRENT_QUALITY_RULESET_VERSION: i64 = 2;
+pub(crate) const QUALITY_RULESET_ID: &str = "quality-core-v5";
+pub(crate) const CURRENT_QUALITY_RULESET_VERSION: i64 = 5;
 
 #[derive(Debug, Clone)]
 pub(crate) struct QualityMetricEntry {
     pub(crate) metric_id: String,
     pub(crate) metric_value: i64,
-    pub(crate) location: Option<crate::model::QualityLocation>,
+    pub(crate) location: Option<QualityLocation>,
+    pub(crate) source: Option<QualitySource>,
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct ObservedMetric {
+    pub(crate) metric_value: i64,
+    pub(crate) location: Option<QualityLocation>,
+    pub(crate) source: QualitySource,
+}
+
+#[derive(Debug, Clone, Default)]
+pub(crate) struct HotspotFacts {
+    pub(crate) max_function_lines: Option<ObservedMetric>,
+    pub(crate) max_nesting_depth: Option<ObservedMetric>,
+    pub(crate) max_parameters_per_function: Option<ObservedMetric>,
+    pub(crate) max_export_count_per_file: Option<ObservedMetric>,
+    pub(crate) max_class_member_count: Option<ObservedMetric>,
+    pub(crate) max_todo_count_per_file: Option<ObservedMetric>,
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct CrossLayerFacts {
+    pub(crate) edge_count: i64,
+    pub(crate) message: String,
+}
+
+#[derive(Debug, Clone, Default)]
+pub(crate) struct StructuralFacts {
+    pub(crate) fan_in_count: Option<i64>,
+    pub(crate) fan_out_count: Option<i64>,
+    pub(crate) cycle_member: bool,
+    pub(crate) cross_layer: Option<CrossLayerFacts>,
+    pub(crate) orphan_module: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -30,6 +72,7 @@ pub(crate) struct QualitySnapshot {
     pub(crate) quality_mode: QualityMode,
     pub(crate) metrics: Vec<QualityMetricEntry>,
     pub(crate) violations: Vec<QualityViolationEntry>,
+    pub(crate) suppressed_violations: Vec<SuppressedQualityViolationEntry>,
 }
 
 #[derive(Debug, Clone)]
@@ -41,6 +84,7 @@ pub(crate) struct QualityEvaluation {
 
 #[derive(Debug, Clone)]
 pub(crate) struct QualityCandidateFacts {
+    pub(crate) rel_path: String,
     pub(crate) size_bytes: i64,
     pub(crate) total_lines: Option<i64>,
     pub(crate) non_empty_lines: Option<i64>,
@@ -50,6 +94,8 @@ pub(crate) struct QualityCandidateFacts {
     pub(crate) max_line_length_location: Option<crate::model::QualityLocation>,
     pub(crate) quality_mode: QualityMode,
     pub(crate) file_kind: metrics::FileKind,
+    pub(crate) hotspots: HotspotFacts,
+    pub(crate) structural: StructuralFacts,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -64,9 +110,13 @@ pub(crate) use evaluate::{
     build_indexed_quality_facts, build_oversize_quality_facts, evaluate_quality,
 };
 pub(crate) use metrics::quality_metrics_hash;
+pub(crate) use policy_schema::StructuralUnmatchedBehavior;
 pub(crate) use policy::{
-    QualityPolicy, QualityThresholds, default_quality_policy, load_quality_policy,
+    EffectiveQualityPolicy, QualityPolicy, QualityThresholds, StructuralPolicy,
+    default_quality_policy, load_quality_policy,
 };
+pub(crate) use rule_metadata::is_known_rule_id;
+pub(crate) use scoring::compute_hit_risk_score;
 
 pub(crate) fn violations_hash(violations: &[QualityViolationEntry]) -> String {
     let mut bytes = Vec::new();
@@ -79,6 +129,10 @@ pub(crate) fn violations_hash(violations: &[QualityViolationEntry]) -> String {
         bytes.push(0);
         bytes.extend_from_slice(violation.message.as_bytes());
         bytes.push(0);
+        bytes.extend_from_slice(violation.severity.as_str().as_bytes());
+        bytes.push(0);
+        bytes.extend_from_slice(violation.category.as_str().as_bytes());
+        bytes.push(0);
         if let Some(location) = &violation.location {
             bytes.extend_from_slice(location.start_line.to_string().as_bytes());
             bytes.push(0);
@@ -88,11 +142,35 @@ pub(crate) fn violations_hash(violations: &[QualityViolationEntry]) -> String {
             bytes.push(0);
             bytes.extend_from_slice(location.end_column.to_string().as_bytes());
         }
+        bytes.push(0);
+        if let Some(source) = violation.source {
+            bytes.extend_from_slice(source.as_str().as_bytes());
+        }
+        bytes.push(b'\n');
+    }
+    crate::utils::hash_bytes(&bytes)
+}
+
+pub(crate) fn suppressed_violations_hash(violations: &[SuppressedQualityViolationEntry]) -> String {
+    let mut bytes = Vec::new();
+    for violation in violations {
+        bytes.extend_from_slice(violations_hash(std::slice::from_ref(&violation.violation)).as_bytes());
+        bytes.push(0);
+        for suppression in &violation.suppressions {
+            bytes.extend_from_slice(suppression.suppression_id.as_bytes());
+            bytes.push(0);
+            bytes.extend_from_slice(suppression.reason.as_bytes());
+            bytes.push(0);
+            if let Some(scope_id) = &suppression.scope_id {
+                bytes.extend_from_slice(scope_id.as_bytes());
+            }
+            bytes.push(0xff);
+        }
         bytes.push(b'\n');
     }
     crate::utils::hash_bytes(&bytes)
 }
 
 #[cfg(test)]
-#[path = "quality/tests.rs"]
+#[path = "quality/tests/mod.rs"]
 mod tests;

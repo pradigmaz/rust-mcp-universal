@@ -4,7 +4,7 @@ use crate::args::Command;
 
 use super::modes::{parse_context_mode, parse_ignore_install_target, parse_semantic_fail_mode};
 use super::preflight_helpers::PreparedRun;
-use super::{indexing, maintenance, query};
+use super::{indexing, maintenance, quality_hotspots, quality_matrix, query};
 
 pub(super) fn run(prepared: PreparedRun) -> Result<()> {
     let PreparedRun {
@@ -256,6 +256,45 @@ pub(super) fn run(prepared: PreparedRun) -> Result<()> {
                 thresholds,
                 runs,
                 enforce_gates,
+            },
+        ),
+        Command::QualityMatrix {
+            manifest,
+            override_path,
+            output_root,
+            repo_ids,
+        } => quality_matrix::run(
+            &project_path,
+            json,
+            privacy_mode,
+            migration_mode,
+            quality_matrix::QualityMatrixArgs {
+                manifest,
+                override_path,
+                output_root,
+                repo_ids,
+            },
+        ),
+        Command::QualityHotspots {
+            aggregation,
+            limit,
+            path_prefix,
+            language,
+            rule_ids,
+            sort_by,
+            auto_index,
+        } => quality_hotspots::run(
+            required_engine(engine)?,
+            json,
+            privacy_mode,
+            quality_hotspots::QualityHotspotsArgs {
+                aggregation,
+                limit,
+                path_prefix,
+                language,
+                rule_ids,
+                sort_by,
+                auto_index,
             },
         ),
         Command::Brief => maintenance::run_brief(required_engine(engine)?, json, privacy_mode),

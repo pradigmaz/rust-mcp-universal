@@ -195,7 +195,7 @@ impl SearchIntent {
     pub(super) fn lexical_candidate_limit(&self, requested_limit: usize) -> usize {
         let requested_limit = requested_limit.max(1);
         if self.code_first && self.coverage_groups.len() >= 2 {
-            return requested_limit.saturating_mul(4).max(40).min(320);
+            return requested_limit.saturating_mul(4).clamp(40, 320);
         }
         requested_limit.saturating_mul(2).min(200)
     }
@@ -210,7 +210,7 @@ impl SearchIntent {
             return requested_limit.saturating_mul(3).min(240);
         }
         if self.code_first && self.coverage_groups.len() >= 2 {
-            return requested_limit.saturating_mul(2).max(20).min(80);
+            return requested_limit.saturating_mul(2).clamp(20, 80);
         }
         requested_limit
     }

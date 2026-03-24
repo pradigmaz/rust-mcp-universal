@@ -6,7 +6,27 @@ use crate::engine::Engine;
 use crate::index_scope::IndexScope;
 use crate::index_scope_meta::load_effective_index_scope_from_meta;
 use crate::model::{IndexingOptions, QualityMode};
+use crate::quality::QualityPolicy;
 use crate::utils::{ProjectIgnoreMatcher, is_probably_ignored, normalized_path_to_fs_path};
+
+const BUILTIN_QUALITY_EXCLUDE_PATHS: &[&str] = &[
+    ".ai",
+    ".ai/**",
+    ".codex",
+    ".codex/**",
+    ".codex-planning",
+    ".codex-planning/**",
+    "package-lock.json",
+    "**/package-lock.json",
+    "pnpm-lock.yaml",
+    "**/pnpm-lock.yaml",
+    "yarn.lock",
+    "**/yarn.lock",
+    "bun.lockb",
+    "**/bun.lockb",
+    "Cargo.lock",
+    "**/Cargo.lock",
+];
 
 #[derive(Debug, Default)]
 pub(super) struct QualityRefreshPlan {
@@ -29,6 +49,31 @@ pub(super) fn load_existing_quality_paths(conn: &rusqlite::Connection) -> Result
     Ok(stmt
         .query_map([], |row| row.get::<_, String>(0))?
         .collect::<rusqlite::Result<HashSet<_>>>()?)
+}
+
+pub(super) fn apply_quality_scope_policy(
+    conn: &rusqlite::Connection,
+    plan: QualityRefreshPlan,
+    policy: &QualityPolicy,
+) -> Result<QualityRefreshPlan> {
+    let exclude_scope = quality_exclude_scope(policy)?;
+    let existing_quality_paths = load_existing_quality_paths(conn)?;
+    let refresh_paths = plan
+        .refresh_paths
+        .into_iter()
+        .filter(|path| exclude_scope.allows(path))
+        .collect::<HashSet<_>>();
+    let mut deleted_paths = plan.deleted_paths;
+    deleted_paths.extend(
+        existing_quality_paths
+            .into_iter()
+            .filter(|path| !exclude_scope.allows(path)),
+    );
+
+    Ok(QualityRefreshPlan {
+        refresh_paths,
+        deleted_paths,
+    })
 }
 
 fn build_scoped_refresh_plan(
@@ -117,4 +162,20 @@ fn is_currently_reachable(
         .metadata()
         .map(|metadata| metadata.is_file())
         .unwrap_or(false)
+}
+
+fn quality_exclude_scope(policy: &QualityPolicy) -> Result<IndexScope> {
+    let mut exclude_paths = BUILTIN_QUALITY_EXCLUDE_PATHS
+        .iter()
+        .map(|value| (*value).to_string())
+        .collect::<Vec<_>>();
+    exclude_paths.extend(policy.quality_scope.exclude_paths.iter().cloned());
+    IndexScope::new(&IndexingOptions {
+        profile: None,
+        changed_since: None,
+        changed_since_commit: None,
+        include_paths: Vec::new(),
+        exclude_paths,
+        reindex: false,
+    })
 }

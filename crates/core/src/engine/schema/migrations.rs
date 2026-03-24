@@ -21,7 +21,7 @@ pub(super) struct SchemaMigration {
     pub(super) apply: fn(&Transaction<'_>) -> Result<()>,
 }
 
-pub(super) const MIGRATIONS: [SchemaMigration; 12] = [
+pub(super) const MIGRATIONS: [SchemaMigration; 14] = [
     SchemaMigration {
         id: 1,
         name: "file_chunks_excerpt_column",
@@ -81,6 +81,16 @@ pub(super) const MIGRATIONS: [SchemaMigration; 12] = [
         id: 12,
         name: "file_rule_violation_locations",
         apply: migration_file_rule_violation_locations,
+    },
+    SchemaMigration {
+        id: 13,
+        name: "quality_metric_details_and_violation_source",
+        apply: migration_quality_metric_details_and_violation_source,
+    },
+    SchemaMigration {
+        id: 14,
+        name: "quality_policy_stage3_contracts",
+        apply: migration_quality_policy_stage3_contracts,
     },
 ];
 
@@ -240,5 +250,13 @@ fn migration_file_quality_metrics_and_columns(tx: &Transaction<'_>) -> Result<()
 }
 
 fn migration_file_rule_violation_locations(tx: &Transaction<'_>) -> Result<()> {
+    ensure_file_quality_tables(tx)
+}
+
+fn migration_quality_metric_details_and_violation_source(tx: &Transaction<'_>) -> Result<()> {
+    ensure_file_quality_tables(tx)
+}
+
+fn migration_quality_policy_stage3_contracts(tx: &Transaction<'_>) -> Result<()> {
     ensure_file_quality_tables(tx)
 }

@@ -21,6 +21,8 @@ mod maintenance;
 mod modes;
 #[path = "handlers/query_report.rs"]
 mod query_report;
+#[path = "handlers/quality_hotspots.rs"]
+mod quality_hotspots;
 #[path = "handlers/related_files.rs"]
 mod related_files;
 #[path = "handlers/rule_violations.rs"]
@@ -93,6 +95,10 @@ pub(super) fn related_files_v2(args: &Value, state: &mut ServerState) -> Result<
 
 pub(super) fn rule_violations(args: &Value, state: &mut ServerState) -> Result<Value> {
     rule_violations::rule_violations(args, state)
+}
+
+pub(super) fn quality_hotspots(args: &Value, state: &mut ServerState) -> Result<Value> {
+    quality_hotspots::quality_hotspots(args, state)
 }
 
 pub(super) fn call_path(args: &Value, state: &mut ServerState) -> Result<Value> {

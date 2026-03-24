@@ -4,9 +4,9 @@ use rusqlite::{Connection, OptionalExtension, params};
 use crate::engine::Engine;
 use crate::engine::storage::load_existing_quality_state_conn;
 use crate::model::QualityStatus;
-use crate::quality::CURRENT_QUALITY_RULESET_VERSION;
+use crate::quality::{CURRENT_QUALITY_RULESET_VERSION, load_quality_policy};
 
-use super::scope::build_full_quality_refresh_plan;
+use super::scope::{apply_quality_scope_policy, build_full_quality_refresh_plan};
 
 const META_QUALITY_STATUS: &str = "quality.status";
 const META_QUALITY_RULESET_VERSION: &str = "quality.ruleset_version";
@@ -40,7 +40,15 @@ pub(crate) fn compute_quality_status(engine: &Engine) -> Result<QualityStatus> {
         _ => {}
     }
 
+    let policy = match load_quality_policy(&engine.project_root) {
+        Ok(policy) => policy,
+        Err(_) => return Ok(QualityStatus::Degraded),
+    };
     let plan = match build_full_quality_refresh_plan(engine, &conn) {
+        Ok(plan) => plan,
+        Err(_) => return Ok(QualityStatus::Degraded),
+    };
+    let plan = match apply_quality_scope_policy(&conn, plan, &policy) {
         Ok(plan) => plan,
         Err(_) => return Ok(QualityStatus::Degraded),
     };
@@ -51,6 +59,32 @@ pub(crate) fn compute_quality_status(engine: &Engine) -> Result<QualityStatus> {
         return Ok(QualityStatus::Stale);
     }
     Ok(QualityStatus::Ready)
+}
+
+pub(crate) fn read_quality_degradation_reason(engine: &Engine) -> Result<Option<String>> {
+    if !engine.db_path.exists() {
+        return Ok(None);
+    }
+
+    let conn = engine.open_db_read_only()?;
+    if !quality_tables_available(&conn)? {
+        return Ok(None);
+    }
+    if stored_quality_status(&conn)? != QualityStatus::Degraded {
+        return Ok(None);
+    }
+
+    Ok(conn
+        .query_row(
+            "SELECT value FROM meta WHERE key = ?1",
+            [META_QUALITY_LAST_ERROR_RULE_ID],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()?
+        .and_then(|value| {
+            let trimmed = value.trim();
+            (!trimmed.is_empty()).then(|| trimmed.to_string())
+        }))
 }
 
 pub(super) fn write_quality_status_ready(tx: &rusqlite::Transaction<'_>) -> Result<()> {

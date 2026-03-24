@@ -2,9 +2,12 @@ use anyhow::Result;
 
 use crate::engine::Engine;
 use crate::model::{
-    QualityStatus, RuleViolationsOptions, RuleViolationsResult, WorkspaceQualitySummary,
+    QualityHotspotsOptions, QualityHotspotsResult, QualityStatus, RuleViolationsOptions,
+    RuleViolationsResult, WorkspaceQualitySummary,
 };
 
+#[path = "engine_quality/hotspots.rs"]
+mod hotspots;
 #[path = "engine_quality/metrics.rs"]
 mod metrics;
 #[path = "engine_quality/query.rs"]
@@ -15,10 +18,20 @@ mod refresh;
 mod scope;
 #[path = "engine_quality/status.rs"]
 mod status;
+#[path = "engine_quality/structural.rs"]
+mod structural;
 
 impl Engine {
+    pub fn quality_hotspots(&self, options: &QualityHotspotsOptions) -> Result<QualityHotspotsResult> {
+        hotspots::load_quality_hotspots(self, options)
+    }
+
     pub fn rule_violations(&self, options: &RuleViolationsOptions) -> Result<RuleViolationsResult> {
         query::load_rule_violations(self, options)
+    }
+
+    pub fn quality_degradation_reason(&self) -> Result<Option<String>> {
+        status::read_quality_degradation_reason(self)
     }
 
     pub fn refresh_quality_if_needed(&self) -> Result<()> {

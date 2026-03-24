@@ -127,6 +127,57 @@ pub(super) fn preflight_validate(command: &Command) -> Result<()> {
                 bail!("`--enforce-gates` requires --thresholds");
             }
         }
+        Command::QualityMatrix {
+            manifest,
+            output_root,
+            repo_ids,
+            ..
+        } => {
+            if manifest.as_os_str().is_empty() {
+                bail!("`manifest` must be non-empty");
+            }
+            if let Some(root) = output_root
+                && root.as_os_str().is_empty()
+            {
+                bail!("`output_root` must be non-empty when provided");
+            }
+            if repo_ids.iter().any(|repo_id| repo_id.trim().is_empty()) {
+                bail!("`repo` values must be non-empty");
+            }
+        }
+        Command::QualityHotspots {
+            aggregation,
+            limit,
+            path_prefix,
+            language,
+            rule_ids,
+            sort_by,
+            ..
+        } => {
+            let _ = require_min("limit", *limit, 1)?;
+            let _ = require_max("limit", *limit, limit_max)?;
+            if path_prefix
+                .as_ref()
+                .is_some_and(|value| value.trim().is_empty())
+            {
+                bail!("`path_prefix` must be non-empty when provided");
+            }
+            if language
+                .as_ref()
+                .is_some_and(|value| value.trim().is_empty())
+            {
+                bail!("`language` must be non-empty when provided");
+            }
+            if rule_ids.iter().any(|rule_id| rule_id.trim().is_empty()) {
+                bail!("`rule-id` values must be non-empty");
+            }
+            if rmu_core::QualityHotspotAggregation::parse(aggregation).is_none() {
+                bail!("`aggregation` must be one of: file, directory, module");
+            }
+            if rmu_core::QualityHotspotsSortBy::parse(sort_by).is_none() {
+                bail!("`sort_by` must be one of: hotspot_score, risk_score_delta, new_violations");
+            }
+        }
         Command::Agent {
             query,
             limit,

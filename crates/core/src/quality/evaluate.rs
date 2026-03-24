@@ -38,7 +38,8 @@ pub(crate) fn evaluate_quality(
     indexed_metrics: &IndexedQualityMetrics,
     policy: &QualityPolicy,
 ) -> QualityEvaluation {
-    let evaluation = evaluate_rules(facts, indexed_metrics, policy);
+    let effective_policy = policy.effective_for_path(&facts.rel_path);
+    let evaluation = evaluate_rules(facts, indexed_metrics, &effective_policy);
     QualityEvaluation {
         snapshot: QualitySnapshot {
             size_bytes: facts.size_bytes,
@@ -48,6 +49,7 @@ pub(crate) fn evaluate_quality(
             quality_mode: facts.quality_mode,
             metrics: evaluation.metrics,
             violations: evaluation.violations,
+            suppressed_violations: evaluation.suppressed_violations,
         },
         had_rule_errors: evaluation.had_rule_errors,
         last_error_rule_id: evaluation.last_error_rule_id,
