@@ -6,12 +6,18 @@ mod cluster;
 mod cluster_policy;
 #[path = "investigation/cluster_scoring.rs"]
 mod cluster_scoring;
+#[path = "investigation/cluster_selection.rs"]
+mod cluster_selection;
 #[path = "investigation/common.rs"]
 pub(crate) mod common;
+#[path = "investigation/constraint_items.rs"]
+mod constraint_items;
 #[path = "investigation/constraints.rs"]
 mod constraints;
 #[path = "investigation/divergence.rs"]
 mod divergence;
+#[path = "investigation/path_helpers.rs"]
+pub(crate) mod path_helpers;
 #[path = "investigation/route.rs"]
 mod route;
 
