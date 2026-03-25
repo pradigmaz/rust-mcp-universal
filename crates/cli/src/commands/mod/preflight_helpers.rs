@@ -37,7 +37,7 @@ pub(super) fn prepare(app: App) -> Result<PreparedRun> {
     preflight_validate(&command)?;
     let engine = match &command {
         Command::InstallIgnoreRules { .. } | Command::QualityMatrix { .. } => None,
-        Command::Status | Command::ScopePreview(_) => {
+        Command::Status | Command::ScopePreview(_) | Command::Preflight => {
             Some(Engine::new_read_only_with_migration_mode(
                 project_path.clone(),
                 db_path.clone(),

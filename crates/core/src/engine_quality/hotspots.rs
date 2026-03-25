@@ -36,11 +36,8 @@ pub(super) fn load_quality_hotspots(
         Ok(policy) => (policy, scan.summary.status),
         Err(_) => (default_quality_policy(), QualityStatus::Degraded),
     };
-    let mut buckets = aggregate_buckets(
-        &scan.hits,
-        options.aggregation,
-        policy.structural.as_ref(),
-    )?;
+    let mut buckets =
+        aggregate_buckets(&scan.hits, options.aggregation, policy.structural.as_ref())?;
     buckets.sort_by(|left, right| compare_buckets(left, right, options.sort_by));
 
     let summary = QualityHotspotsSummary {
@@ -51,7 +48,10 @@ pub(super) fn load_quality_hotspots(
             .iter()
             .filter(|bucket| bucket.active_violation_count > 0)
             .count(),
-        total_active_violations: buckets.iter().map(|bucket| bucket.active_violation_count).sum(),
+        total_active_violations: buckets
+            .iter()
+            .map(|bucket| bucket.active_violation_count)
+            .sum(),
         total_suppressed_violations: buckets
             .iter()
             .map(|bucket| bucket.suppressed_violation_count)
@@ -124,10 +124,12 @@ fn build_bucket(
             let mut risk_scores = top_five_sum;
             risk_scores.sort_by(|left, right| right.partial_cmp(left).unwrap_or(Ordering::Equal));
             let top_five_sum: f64 = risk_scores.into_iter().take(5).sum();
-            let active_hot_file_count = hits.iter().filter(|hit| !hit.violations.is_empty()).count();
+            let active_hot_file_count =
+                hits.iter().filter(|hit| !hit.violations.is_empty()).count();
             let structural_bonus = (structural_signals.module_cycle_member
                 + structural_signals.hub_module
-                + structural_signals.cross_layer_dependency) as f64;
+                + structural_signals.cross_layer_dependency)
+                as f64;
             top_five_sum + active_hot_file_count as f64 + structural_bonus
         }
     };
@@ -240,7 +242,11 @@ fn compare_buckets(
         }
     };
     primary
-        .then_with(|| right.active_violation_count.cmp(&left.active_violation_count))
+        .then_with(|| {
+            right
+                .active_violation_count
+                .cmp(&left.active_violation_count)
+        })
         .then_with(|| left.bucket_id.cmp(&right.bucket_id))
 }
 

@@ -10,7 +10,7 @@ use crate::rpc_tools::parsing::{
 };
 use crate::rpc_tools::result::tool_result;
 
-use super::{ensure_query_index_ready, parse_optional_migration_mode, parse_optional_privacy_mode};
+use super::{parse_optional_migration_mode, parse_optional_privacy_mode};
 
 pub(super) fn related_files(args: &Value, state: &mut ServerState) -> Result<Value> {
     run_related_files(args, state, false)
@@ -45,7 +45,7 @@ fn run_related_files(args: &Value, state: &mut ServerState, wrap_hits: bool) -> 
         state.db_path.clone(),
         migration_mode,
     )?;
-    ensure_query_index_ready(&engine, auto_index)?;
+    let _ = engine.ensure_mixed_index_ready_for_paths(auto_index, std::slice::from_ref(&path))?;
     let hits = engine.related_files(&path, limit)?;
     let mut payload = serde_json::to_value(hits)?;
     sanitize_value_for_privacy(privacy_mode, &mut payload);

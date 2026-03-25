@@ -304,7 +304,13 @@ fn validate_structural_policy(
     }
 
     for direction in &structural.allowed_directions {
-        validate_direction(policy_path, &zone_ids, &direction.from, &direction.to, "allowed")?;
+        validate_direction(
+            policy_path,
+            &zone_ids,
+            &direction.from,
+            &direction.to,
+            "allowed",
+        )?;
     }
     for edge in &structural.forbidden_edges {
         validate_direction(policy_path, &zone_ids, &edge.from, &edge.to, "forbidden")?;

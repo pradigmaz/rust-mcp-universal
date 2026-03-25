@@ -92,7 +92,7 @@ pub(crate) fn run_related_files(
     if path.trim().is_empty() {
         return Err(anyhow!("`path` must be non-empty"));
     }
-    ensure_query_index_ready(engine, auto_index)?;
+    let _ = engine.ensure_mixed_index_ready_for_paths(auto_index, std::slice::from_ref(&path))?;
     let hits = engine.related_files(&path, limit)?;
 
     if json {

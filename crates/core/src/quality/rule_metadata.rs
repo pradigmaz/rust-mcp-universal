@@ -11,7 +11,9 @@ pub(crate) struct RuleMetadata {
 pub(crate) fn default_rule_metadata_map() -> BTreeMap<String, RuleMetadata> {
     known_rule_ids()
         .iter()
-        .filter_map(|rule_id| default_rule_metadata(rule_id).map(|metadata| ((*rule_id).to_string(), metadata)))
+        .filter_map(|rule_id| {
+            default_rule_metadata(rule_id).map(|metadata| ((*rule_id).to_string(), metadata))
+        })
         .collect()
 }
 

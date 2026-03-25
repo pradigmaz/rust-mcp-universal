@@ -160,6 +160,7 @@ fn agent_bootstrap_with_query_returns_context_bundle() {
     assert!(bundle["hits"].is_array());
     assert!(bundle["context"].is_object());
     assert!(bundle["report"].is_object());
+    assert!(bundle["report"]["investigation_summary"].is_object());
 
     let _ = fs::remove_dir_all(project_dir);
 }

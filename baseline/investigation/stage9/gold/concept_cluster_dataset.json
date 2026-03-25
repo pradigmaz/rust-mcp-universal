@@ -1,0 +1,112 @@
+{
+    "cases":  [
+                  {
+                      "id":  "concept-cluster-resolve-origin",
+                      "tool":  "concept_cluster",
+                      "fixture":  "mixed_app",
+                      "seed":  "resolve_origin",
+                      "seed_kind":  "query",
+                      "expected_capability_status":  "supported",
+                      "expected_assertions":  [
+                                                  {
+                                                      "kind":  "min_variant_count",
+                                                      "value":  "3"
+                                                  }
+                                              ],
+                      "labels":  {
+                                     "expected_variant_entry_paths":  [
+                                                                          "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+                                                                          "baseline/investigation/fixtures/mixed_app/src/validators/origin_validator.rs",
+                                                                          "baseline/investigation/fixtures/mixed_app/legacy/origin_service.py"
+                                                                      ],
+                                     "expected_top_variant_entry_path":  "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+                                     "expected_semantic_state":  "used"
+                                 }
+                  },
+                  {
+                      "id":  "concept-cluster-resolve-profile",
+                      "tool":  "concept_cluster",
+                      "fixture":  "adapter_app",
+                      "seed":  "resolve_profile",
+                      "seed_kind":  "query",
+                      "expected_capability_status":  "supported",
+                      "expected_assertions":  [
+                                                  {
+                                                      "kind":  "min_variant_count",
+                                                      "value":  "3"
+                                                  }
+                                              ],
+                      "labels":  {
+                                     "expected_variant_entry_paths":  [
+                                                                          "baseline/investigation/fixtures/adapter_app/src/services/profile_service.rs",
+                                                                          "baseline/investigation/fixtures/adapter_app/src/policies/profile_policy.rs",
+                                                                          "baseline/investigation/fixtures/adapter_app/legacy/profile_worker.py"
+                                                                      ],
+                                     "expected_top_variant_entry_path":  "baseline/investigation/fixtures/adapter_app/src/services/profile_service.rs",
+                                     "expected_semantic_state":  "used"
+                                 }
+                  },
+                  {
+                      "id":  "concept-cluster-enforce-profile-policy",
+                      "tool":  "concept_cluster",
+                      "fixture":  "adapter_app",
+                      "seed":  "enforce_profile_policy",
+                      "seed_kind":  "query",
+                      "expected_capability_status":  "supported",
+                      "expected_assertions":  [
+                                                  {
+                                                      "kind":  "min_variant_count",
+                                                      "value":  "2"
+                                                  }
+                                              ],
+                      "labels":  {
+                                     "expected_variant_entry_paths":  [
+                                                                          "baseline/investigation/fixtures/adapter_app/src/policies/profile_policy.rs",
+                                                                          "baseline/investigation/fixtures/adapter_app/src/services/profile_service.rs"
+                                                                      ],
+                                     "expected_top_variant_entry_path":  "baseline/investigation/fixtures/adapter_app/src/policies/profile_policy.rs",
+                                     "expected_semantic_state":  "used"
+                                 }
+                  },
+                  {
+                      "id":  "concept-cluster-low-signal-id",
+                      "tool":  "concept_cluster",
+                      "fixture":  "mixed_app",
+                      "seed":  "id",
+                      "seed_kind":  "query",
+                      "expected_capability_status":  "supported",
+                      "expected_assertions":  [
+                                                  {
+                                                      "kind":  "min_variant_count",
+                                                      "value":  "1"
+                                                  }
+                                              ],
+                      "labels":  {
+                                     "expected_semantic_state":  "disabled_low_signal",
+                                     "low_signal_semantic_case":  true
+                                 }
+                  },
+                  {
+                      "id":  "concept-cluster-semantic-fail-open",
+                      "tool":  "concept_cluster",
+                      "fixture":  "mixed_app",
+                      "seed":  "resolve_origin",
+                      "seed_kind":  "query",
+                      "expected_capability_status":  "supported",
+                      "expected_assertions":  [
+                                                  {
+                                                      "kind":  "min_variant_count",
+                                                      "value":  "1"
+                                                  },
+                                                  {
+                                                      "kind":  "contains_gap",
+                                                      "value":  "semantic_unavailable_fail_open"
+                                                  }
+                                              ],
+                      "labels":  {
+                                     "expected_semantic_state":  "unavailable_fail_open",
+                                     "semantic_fail_open_case":  true
+                                 }
+                  }
+              ]
+}

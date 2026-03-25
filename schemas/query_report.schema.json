@@ -146,6 +146,82 @@
         "chunk_coverage": { "type": "number", "minimum": 0, "maximum": 1 },
         "chunk_source": { "type": "string" }
       }
+    },
+    "investigation_summary": {
+      "type": "object",
+      "required": [
+        "concept_cluster",
+        "route_trace",
+        "constraint_evidence",
+        "surface_kind"
+      ],
+      "properties": {
+        "surface_kind": { "type": "string" },
+        "concept_cluster": {
+          "type": "object",
+          "required": ["variant_count", "top_variants"],
+          "properties": {
+            "variant_count": { "type": "integer", "minimum": 0 },
+            "top_variants": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["path", "confidence"],
+                "properties": {
+                  "path": { "type": "string" },
+                  "symbol": { "type": "string" },
+                  "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+                }
+              }
+            }
+          }
+        },
+        "route_trace": {
+          "type": "object",
+          "required": [
+            "best_route_segment_count",
+            "alternate_route_count",
+            "unresolved_gap_count",
+            "segment_kinds"
+          ],
+          "properties": {
+            "best_route_segment_count": { "type": "integer", "minimum": 0 },
+            "alternate_route_count": { "type": "integer", "minimum": 0 },
+            "unresolved_gap_count": { "type": "integer", "minimum": 0 },
+            "segment_kinds": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "constraint_evidence": {
+          "type": "object",
+          "required": ["total", "strong", "weak", "constraint_kinds", "normalized_keys"],
+          "properties": {
+            "total": { "type": "integer", "minimum": 0 },
+            "strong": { "type": "integer", "minimum": 0 },
+            "weak": { "type": "integer", "minimum": 0 },
+            "constraint_kinds": { "type": "array", "items": { "type": "string" } },
+            "normalized_keys": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "divergence": {
+          "type": "object",
+          "required": [
+            "surface_kind",
+            "authoritative_tool",
+            "preview_only",
+            "highest_severity",
+            "signal_count",
+            "recommended_followups"
+          ],
+          "properties": {
+            "surface_kind": { "type": "string" },
+            "authoritative_tool": { "type": "string" },
+            "preview_only": { "type": "boolean" },
+            "highest_severity": { "type": "string" },
+            "signal_count": { "type": "integer", "minimum": 0 },
+            "recommended_followups": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
     }
   }
 }

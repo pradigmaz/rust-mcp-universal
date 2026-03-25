@@ -165,6 +165,24 @@ pub fn render_worker() {
             .iter()
             .any(|kind| kind.ends_with(":ref_exact") || kind.ends_with(":ref_tail_unique"))
     );
+    let investigation = report
+        .investigation_summary
+        .as_ref()
+        .expect("embedded investigation summary should be present");
+    assert_eq!(investigation.surface_kind, "embedded_investigation_hints");
+    assert!(investigation.concept_cluster.variant_count >= 1);
+    assert!(!investigation.concept_cluster.top_variants.is_empty());
+    assert!(investigation.route_trace.best_route_segment_count >= 1);
+    assert!(
+        investigation.constraint_evidence.total
+            >= investigation.constraint_evidence.strong + investigation.constraint_evidence.weak
+    );
+    if let Some(divergence) = &investigation.divergence {
+        assert_eq!(divergence.surface_kind, "divergence_preview");
+        assert_eq!(divergence.authoritative_tool, "divergence_report");
+        assert!(divergence.preview_only);
+        assert!(divergence.signal_count >= 1);
+    }
 
     cleanup_project(&project_dir);
     Ok(())

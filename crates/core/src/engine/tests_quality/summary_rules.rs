@@ -223,7 +223,10 @@ fn rule_violations_keep_suppressed_entries_auditable() -> anyhow::Result<()> {
         .as_ref()
         .expect("risk_score should be present for suppressed-only hits");
     assert_eq!(suppressed.suppressions.len(), 1);
-    assert_eq!(suppressed.suppressions[0].suppression_id, "legacy-line-length");
+    assert_eq!(
+        suppressed.suppressions[0].suppression_id,
+        "legacy-line-length"
+    );
     assert_eq!(
         suppressed.suppressions[0].reason,
         "legacy file kept for compatibility"

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SymbolBodyResult",
+  "type": "object",
+  "required": [
+    "seed",
+    "items",
+    "capability_status",
+    "unsupported_sources",
+    "ambiguity_status",
+    "confidence"
+  ],
+  "properties": {
+    "seed": {
+      "type": "object",
+      "required": ["seed", "seed_kind"],
+      "properties": {
+        "seed": { "type": "string" },
+        "seed_kind": { "type": "string" }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "anchor",
+          "signature",
+          "body",
+          "span",
+          "source_kind",
+          "resolution_kind",
+          "truncated",
+          "confidence"
+        ],
+        "properties": {
+          "anchor": {
+            "type": "object",
+            "required": ["path", "language"],
+            "properties": {
+              "path": { "type": "string" },
+              "language": { "type": "string" },
+              "symbol": { "type": "string" },
+              "kind": { "type": "string" },
+              "line": { "type": "integer", "minimum": 0 },
+              "column": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "signature": { "type": "string" },
+          "body": { "type": "string" },
+          "span": {
+            "type": "object",
+            "required": ["start_line", "end_line"],
+            "properties": {
+              "start_line": { "type": "integer", "minimum": 0 },
+              "end_line": { "type": "integer", "minimum": 0 },
+              "start_column": { "type": "integer", "minimum": 0 },
+              "end_column": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "source_kind": { "type": "string" },
+          "resolution_kind": { "type": "string" },
+          "truncated": { "type": "boolean" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "capability_status": { "type": "string" },
+    "unsupported_sources": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "ambiguity_status": { "type": "string" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+  }
+}

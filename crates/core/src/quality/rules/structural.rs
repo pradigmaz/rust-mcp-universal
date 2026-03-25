@@ -83,21 +83,17 @@ impl QualityRule for CycleMemberRule {
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
-        Ok(ctx
-            .facts
-            .structural
-            .cycle_member
-            .then(|| {
-                explicit_violation(
-                    ctx,
-                    self.name(),
-                    1,
-                    0,
-                    "file participates in a direct dependency cycle".to_string(),
-                    None,
-                    None,
-                )
-            }))
+        Ok(ctx.facts.structural.cycle_member.then(|| {
+            explicit_violation(
+                ctx,
+                self.name(),
+                1,
+                0,
+                "file participates in a direct dependency cycle".to_string(),
+                None,
+                None,
+            )
+        }))
     }
 }
 
@@ -141,22 +137,17 @@ impl QualityRule for CrossLayerDependencyRule {
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
-        Ok(ctx
-            .facts
-            .structural
-            .cross_layer
-            .as_ref()
-            .map(|facts| {
-                explicit_violation(
-                    ctx,
-                    self.name(),
-                    facts.edge_count,
-                    0,
-                    facts.message.clone(),
-                    None,
-                    None,
-                )
-            }))
+        Ok(ctx.facts.structural.cross_layer.as_ref().map(|facts| {
+            explicit_violation(
+                ctx,
+                self.name(),
+                facts.edge_count,
+                0,
+                facts.message.clone(),
+                None,
+                None,
+            )
+        }))
     }
 }
 
@@ -170,20 +161,16 @@ impl QualityRule for OrphanModuleRule {
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
-        Ok(ctx
-            .facts
-            .structural
-            .orphan_module
-            .then(|| {
-                explicit_violation(
-                    ctx,
-                    self.name(),
-                    1,
-                    0,
-                    "file is isolated from the direct dependency graph".to_string(),
-                    None,
-                    None,
-                )
-            }))
+        Ok(ctx.facts.structural.orphan_module.then(|| {
+            explicit_violation(
+                ctx,
+                self.name(),
+                1,
+                0,
+                "file is isolated from the direct dependency graph".to_string(),
+                None,
+                None,
+            )
+        }))
     }
 }

@@ -3,14 +3,13 @@ use std::time::Instant;
 
 use anyhow::Result;
 use rmu_core::{
-    DbMaintenanceOptions, Engine, MigrationMode, QualityHotspotAggregation,
-    QualityHotspotsResult, RuleViolationsOptions, RuleViolationsResult,
-    RuleViolationsSortBy, WorkspaceBrief,
+    DbMaintenanceOptions, Engine, MigrationMode, QualityHotspotAggregation, QualityHotspotsResult,
+    RuleViolationsOptions, RuleViolationsResult, RuleViolationsSortBy, WorkspaceBrief,
 };
 
+use super::RepoRunOutcome;
 use super::baseline;
 use super::hotspots;
-use super::RepoRunOutcome;
 use super::manifest;
 use super::notes;
 use super::report;
@@ -42,15 +41,12 @@ pub(super) fn run_repo(
             Some("graph_edge_out_count".to_string()),
         )
     })?;
-    let (mut file_hotspots, file_hotspots_ms) = timed(|| {
-        hotspots::run_quality_hotspots(&engine, QualityHotspotAggregation::File)
-    })?;
-    let (mut directory_hotspots, directory_hotspots_ms) = timed(|| {
-        hotspots::run_quality_hotspots(&engine, QualityHotspotAggregation::Directory)
-    })?;
-    let (mut module_hotspots, module_hotspots_ms) = timed(|| {
-        hotspots::run_quality_hotspots(&engine, QualityHotspotAggregation::Module)
-    })?;
+    let (mut file_hotspots, file_hotspots_ms) =
+        timed(|| hotspots::run_quality_hotspots(&engine, QualityHotspotAggregation::File))?;
+    let (mut directory_hotspots, directory_hotspots_ms) =
+        timed(|| hotspots::run_quality_hotspots(&engine, QualityHotspotAggregation::Directory))?;
+    let (mut module_hotspots, module_hotspots_ms) =
+        timed(|| hotspots::run_quality_hotspots(&engine, QualityHotspotAggregation::Module))?;
 
     baseline::apply_baseline_deltas(
         &mut file_hotspots,

@@ -5,6 +5,7 @@ use std::path::Path;
 use std::process::{Child, Command, Stdio};
 
 use assert_cmd::cargo::cargo_bin_cmd;
+use rusqlite::Connection;
 use tempfile::tempdir;
 
 #[test]
@@ -255,4 +256,45 @@ fn read_json_file(path: &Path) -> serde_json::Value {
 
 fn automatic_json_fallback_path() -> std::path::PathBuf {
     env::temp_dir().join("rmu-cli-json-error-latest.json")
+}
+
+#[test]
+fn compatibility_errors_use_structured_json_details() {
+    let project = tempdir().expect("temp dir");
+    let db_dir = project.path().join(".rmu");
+    fs::create_dir_all(&db_dir).expect("create db dir");
+    let db_path = db_dir.join("index.db");
+    let conn = Connection::open(&db_path).expect("open db");
+    conn.execute_batch("CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);")
+        .expect("create meta");
+    conn.execute(
+        "INSERT INTO meta(key, value) VALUES (?1, ?2)",
+        rusqlite::params!["schema_version", "999"],
+    )
+    .expect("insert schema version");
+    drop(conn);
+
+    let assert = cargo_bin_cmd!("rmu-cli")
+        .args([
+            "--project-path",
+            project.path().to_str().expect("utf-8 path"),
+            "--json",
+            "search",
+            "--query",
+            "compatibility",
+        ])
+        .assert()
+        .code(1);
+
+    let stdout =
+        String::from_utf8(assert.get_output().stdout.clone()).expect("stdout must be utf8");
+    let payload: serde_json::Value = serde_json::from_str(&stdout).expect("stdout should be JSON");
+    assert_eq!(payload["code"], serde_json::json!("E_COMPATIBILITY"));
+    assert_eq!(
+        payload["details"]["kind"],
+        serde_json::json!("compatibility")
+    );
+    assert!(payload["details"]["running_binary_version"].is_string());
+    assert!(payload["details"].get("stale_process_suspected").is_none());
+    assert!(payload["details"]["safe_recovery_hint"].is_string());
 }

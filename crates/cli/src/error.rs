@@ -2,6 +2,7 @@ use std::fmt;
 
 pub(crate) const CODE_PARSE_ARGS: &str = "E_PARSE_ARGS";
 pub(crate) const CODE_RUNTIME: &str = "E_RUNTIME";
+pub(crate) const CODE_COMPATIBILITY: &str = "E_COMPATIBILITY";
 pub(crate) const CODE_CONFIRM_REQUIRED: &str = "E_CONFIRM_REQUIRED";
 pub(crate) const CODE_INDEX_NOT_READY: &str = "E_INDEX_NOT_READY";
 
@@ -43,5 +44,11 @@ pub(crate) fn classify_error(
     if let Some(cli_error) = err.downcast_ref::<CliError>() {
         return (cli_error.code(), cli_error.to_string());
     }
-    (default_code, err.to_string())
+    let message = err.to_string();
+    if message.contains("newer than binary supported")
+        || message.contains("running binary version") && message.contains("is stale")
+    {
+        return (CODE_COMPATIBILITY, message);
+    }
+    (default_code, message)
 }

@@ -2,7 +2,9 @@ use anyhow::Result;
 
 use crate::args::Command;
 
-use super::modes::{parse_context_mode, parse_ignore_install_target, parse_semantic_fail_mode};
+use super::modes::{
+    parse_context_mode, parse_ignore_install_target, parse_seed_kind, parse_semantic_fail_mode,
+};
 use super::preflight_helpers::PreparedRun;
 use super::{indexing, maintenance, quality_hotspots, quality_matrix, query};
 
@@ -58,6 +60,9 @@ pub(super) fn run(prepared: PreparedRun) -> Result<()> {
                 prune,
             },
         ),
+        Command::Preflight => {
+            maintenance::run_preflight(required_engine(engine)?, json, privacy_mode)
+        }
         Command::Status => maintenance::run_status(required_engine(engine)?, json, privacy_mode),
         Command::Search {
             query,
@@ -123,6 +128,22 @@ pub(super) fn run(prepared: PreparedRun) -> Result<()> {
             auto_index,
             privacy_mode,
         ),
+        Command::SymbolBody {
+            seed,
+            seed_kind,
+            limit,
+            auto_index,
+        } => query::run_symbol_body(
+            required_engine(engine)?,
+            json,
+            query::InvestigationArgs {
+                seed,
+                seed_kind: parse_seed_kind(&seed_kind)?,
+                limit,
+                auto_index,
+                privacy_mode,
+            },
+        ),
         Command::RelatedFiles {
             path,
             limit,
@@ -148,6 +169,90 @@ pub(super) fn run(prepared: PreparedRun) -> Result<()> {
             max_hops,
             auto_index,
             privacy_mode,
+        ),
+        Command::RouteTrace {
+            seed,
+            seed_kind,
+            limit,
+            auto_index,
+        } => query::run_route_trace(
+            required_engine(engine)?,
+            json,
+            query::InvestigationArgs {
+                seed,
+                seed_kind: parse_seed_kind(&seed_kind)?,
+                limit,
+                auto_index,
+                privacy_mode,
+            },
+        ),
+        Command::ConstraintEvidence {
+            seed,
+            seed_kind,
+            limit,
+            auto_index,
+        } => query::run_constraint_evidence(
+            required_engine(engine)?,
+            json,
+            query::InvestigationArgs {
+                seed,
+                seed_kind: parse_seed_kind(&seed_kind)?,
+                limit,
+                auto_index,
+                privacy_mode,
+            },
+        ),
+        Command::ConceptCluster {
+            seed,
+            seed_kind,
+            limit,
+            auto_index,
+        } => query::run_concept_cluster(
+            required_engine(engine)?,
+            json,
+            query::InvestigationArgs {
+                seed,
+                seed_kind: parse_seed_kind(&seed_kind)?,
+                limit,
+                auto_index,
+                privacy_mode,
+            },
+        ),
+        Command::DivergenceReport {
+            seed,
+            seed_kind,
+            limit,
+            auto_index,
+        } => query::run_divergence_report(
+            required_engine(engine)?,
+            json,
+            query::InvestigationArgs {
+                seed,
+                seed_kind: parse_seed_kind(&seed_kind)?,
+                limit,
+                auto_index,
+                privacy_mode,
+            },
+        ),
+        Command::InvestigationBenchmark {
+            dataset,
+            limit,
+            auto_index,
+            baseline_report,
+            thresholds,
+            enforce_gates,
+        } => query::run_investigation_benchmark(
+            required_engine(engine)?,
+            json,
+            query::InvestigationBenchmarkArgs {
+                dataset,
+                limit,
+                auto_index,
+                privacy_mode,
+                baseline_report,
+                thresholds,
+                enforce_gates,
+            },
         ),
         Command::Context {
             query,

@@ -46,6 +46,11 @@ fn query_report_returns_mcp_envelope_with_required_fields() {
     assert!(structured["confidence"]["signals"]["explain_coverage"].is_number());
     assert!(structured["gaps"].is_array());
     assert!(structured["index_telemetry"].is_object());
+    assert!(structured["investigation_summary"].is_object());
+    assert_eq!(
+        structured["investigation_summary"]["surface_kind"],
+        json!("embedded_investigation_hints")
+    );
     assert!(structured["index_telemetry"]["last_index_lock_wait_ms"].is_number());
     assert!(structured["index_telemetry"]["last_embedding_cache_hits"].is_number());
     assert!(structured["index_telemetry"]["last_embedding_cache_misses"].is_number());
@@ -66,6 +71,28 @@ fn query_report_returns_mcp_envelope_with_required_fields() {
         assert!(first_item["explain"]["rrf"].is_number());
         assert!(first_item["explain"]["rank_before"].is_u64());
         assert!(first_item["explain"]["rank_after"].is_u64());
+    }
+    assert!(structured["investigation_summary"]["concept_cluster"]["variant_count"].is_u64());
+    assert!(structured["investigation_summary"]["concept_cluster"]["top_variants"].is_array());
+    assert!(structured["investigation_summary"]["route_trace"]["segment_kinds"].is_array());
+    assert!(
+        structured["investigation_summary"]["constraint_evidence"]["normalized_keys"].is_array()
+    );
+    if structured["investigation_summary"]["divergence"].is_object() {
+        assert_eq!(
+            structured["investigation_summary"]["divergence"]["surface_kind"],
+            json!("divergence_preview")
+        );
+        assert_eq!(
+            structured["investigation_summary"]["divergence"]["authoritative_tool"],
+            json!("divergence_report")
+        );
+        assert_eq!(
+            structured["investigation_summary"]["divergence"]["preview_only"],
+            json!(true)
+        );
+        assert!(structured["investigation_summary"]["divergence"]["variants"].is_null());
+        assert!(structured["investigation_summary"]["divergence"]["divergence_signals"].is_null());
     }
 
     let _ = fs::remove_dir_all(project_dir);

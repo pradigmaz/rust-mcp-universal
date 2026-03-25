@@ -1,0 +1,33 @@
+{
+    "cases":  [
+                  {
+                      "id":  "route-trace-origin-service",
+                      "tool":  "route_trace",
+                      "fixture":  "mixed_app",
+                      "seed":  "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+                      "seed_kind":  "path",
+                      "expected_capability_status":  "partial",
+                      "expected_assertions":  [
+                                                  {
+                                                      "kind":  "contains_route_kind",
+                                                      "value":  "service"
+                                                  },
+                                                  {
+                                                      "kind":  "contains_gap",
+                                                      "value":  "call_path_unresolved:query"
+                                                  }
+                                              ],
+                      "labels":  {
+                                     "expected_variant_entry_paths":  [
+                                                                          "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs"
+                                                                      ],
+                                     "expected_route_segments":  [
+                                                                     {
+                                                                         "path":  "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+                                                                         "kind":  "service"
+                                                                     }
+                                                                 ]
+                                 }
+                  }
+              ]
+}

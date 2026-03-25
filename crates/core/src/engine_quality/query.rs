@@ -301,8 +301,9 @@ fn attach_metrics_and_suppressed(
 ) -> Vec<RuleViolationFileHit> {
     for candidate in &mut candidates {
         candidate.metrics = metrics_by_path.remove(&candidate.path).unwrap_or_default();
-        candidate.suppressed_violations =
-            suppressed_by_path.remove(&candidate.path).unwrap_or_default();
+        candidate.suppressed_violations = suppressed_by_path
+            .remove(&candidate.path)
+            .unwrap_or_default();
     }
     candidates
 }
@@ -477,11 +478,13 @@ fn build_severity_breakdown(hits: &[RuleViolationFileHit]) -> Vec<WorkspaceQuali
     }
     counts
         .into_iter()
-        .map(|(severity, (violations, files))| WorkspaceQualitySeverityCount {
-            severity,
-            files: files.len(),
-            violations,
-        })
+        .map(
+            |(severity, (violations, files))| WorkspaceQualitySeverityCount {
+                severity,
+                files: files.len(),
+                violations,
+            },
+        )
         .collect()
 }
 
@@ -498,11 +501,13 @@ fn build_category_breakdown(hits: &[RuleViolationFileHit]) -> Vec<WorkspaceQuali
     }
     counts
         .into_iter()
-        .map(|(category, (violations, files))| WorkspaceQualityCategoryCount {
-            category,
-            files: files.len(),
-            violations,
-        })
+        .map(
+            |(category, (violations, files))| WorkspaceQualityCategoryCount {
+                category,
+                files: files.len(),
+                violations,
+            },
+        )
         .collect()
 }
 

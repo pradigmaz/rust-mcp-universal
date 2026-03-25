@@ -63,9 +63,8 @@ pub(super) fn quality_hotspots(args: &Value, state: &mut ServerState) -> Result<
             .unwrap_or(false);
     let privacy_mode = parse_optional_privacy_mode(args, "quality_hotspots", "privacy_mode")?
         .unwrap_or(PrivacyMode::Off);
-    let migration_mode =
-        parse_optional_migration_mode(args, "quality_hotspots", "migration_mode")?
-            .unwrap_or(MigrationMode::Auto);
+    let migration_mode = parse_optional_migration_mode(args, "quality_hotspots", "migration_mode")?
+        .unwrap_or(MigrationMode::Auto);
 
     let engine = Engine::new_with_migration_mode(
         state.project_path.clone(),

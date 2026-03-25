@@ -11,9 +11,9 @@ mod types;
 #[path = "compatibility/tests.rs"]
 mod tests;
 
-pub(super) const CURRENT_SCHEMA_VERSION: u32 = 11;
-pub(super) const CURRENT_INDEX_FORMAT_VERSION: u32 = 1;
-pub(super) const CURRENT_ANN_VERSION: u32 = 1;
+pub(crate) const CURRENT_SCHEMA_VERSION: u32 = super::schema::CURRENT_SCHEMA_MIGRATION_VERSION;
+pub(crate) const CURRENT_INDEX_FORMAT_VERSION: u32 = 1;
+pub(crate) const CURRENT_ANN_VERSION: u32 = 1;
 const LEGACY_INDEX_FORMAT_VERSION: u32 = 0;
 const LEGACY_ANN_VERSION: u32 = 0;
 

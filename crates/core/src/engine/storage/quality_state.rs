@@ -181,7 +181,8 @@ pub(in crate::engine) fn load_actual_quality_state(
             });
     }
 
-    let mut suppressed_grouped = HashMap::<String, Vec<crate::model::SuppressedQualityViolationEntry>>::new();
+    let mut suppressed_grouped =
+        HashMap::<String, Vec<crate::model::SuppressedQualityViolationEntry>>::new();
     let mut suppressed_stmt = tx.prepare(
         r#"
         SELECT path, suppressed_violations_json
@@ -190,7 +191,9 @@ pub(in crate::engine) fn load_actual_quality_state(
         "#,
     )?;
     let suppressed_rows = suppressed_stmt
-        .query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)))?
+        .query_map([], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+        })?
         .collect::<rusqlite::Result<Vec<_>>>()?;
     for (path, payload) in suppressed_rows {
         suppressed_grouped.insert(path, parse_suppressed_violations_json(&payload)?);

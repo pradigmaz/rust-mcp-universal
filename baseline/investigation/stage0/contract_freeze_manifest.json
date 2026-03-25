@@ -1,0 +1,20 @@
+{
+  "version": "investigation-v1.1-freeze",
+  "tools": [
+    "preflight",
+    "symbol_body",
+    "route_trace",
+    "constraint_evidence",
+    "concept_cluster",
+    "divergence_report",
+    "investigation-benchmark"
+  ],
+  "additive_contract_only": true,
+  "result_artifacts": [
+    "schemas/preflight_status.schema.json",
+    "schemas/investigation_benchmark_report.schema.json",
+    "baseline/investigation/stage0/investigation_dataset.json",
+    "baseline/investigation/stage9/thresholds.json",
+    "baseline/investigation/stage9/latest_report.json"
+  ]
+}

@@ -153,6 +153,7 @@ fn selected_context_uses_per_result_explain_breakdown_with_ranks() {
                 chunk_coverage: 1.0,
                 chunk_source: "chunk_embedding_index".to_string(),
             },
+            investigation_summary: None,
         },
     )
     .expect("report must build");

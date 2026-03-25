@@ -103,7 +103,10 @@ fn policy_schema_rejects_duplicate_structural_zone_patterns() {
         std::path::Path::new("policy.json"),
     )
     .expect_err("duplicate structural path patterns must fail");
-    assert!(err.to_string().contains("overlapping structural zone pattern"));
+    assert!(
+        err.to_string()
+            .contains("overlapping structural zone pattern")
+    );
 }
 
 #[test]
@@ -150,22 +153,34 @@ fn load_quality_policy_applies_rule_metadata_path_scopes_and_suppressions() {
     let policy = load_quality_policy(&root).expect("policy should load");
     let src_policy = policy.effective_for_path("src/lib.rs");
     assert_eq!(
-        src_policy.metadata_for_rule("max_line_length").severity.as_str(),
+        src_policy
+            .metadata_for_rule("max_line_length")
+            .severity
+            .as_str(),
         "high"
     );
     assert_eq!(
-        src_policy.metadata_for_rule("max_line_length").category.as_str(),
+        src_policy
+            .metadata_for_rule("max_line_length")
+            .category
+            .as_str(),
         "risk"
     );
 
     let test_policy = policy.effective_for_path("tests/heavy.rs");
     assert_eq!(test_policy.thresholds.max_line_length, 999);
     assert_eq!(
-        test_policy.metadata_for_rule("max_line_length").severity.as_str(),
+        test_policy
+            .metadata_for_rule("max_line_length")
+            .severity
+            .as_str(),
         "low"
     );
     assert_eq!(
-        test_policy.metadata_for_rule("max_line_length").category.as_str(),
+        test_policy
+            .metadata_for_rule("max_line_length")
+            .category
+            .as_str(),
         "style"
     );
     let suppressions = test_policy.suppressions_for_rule("max_line_length");

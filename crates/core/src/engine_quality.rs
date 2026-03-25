@@ -22,7 +22,10 @@ mod status;
 mod structural;
 
 impl Engine {
-    pub fn quality_hotspots(&self, options: &QualityHotspotsOptions) -> Result<QualityHotspotsResult> {
+    pub fn quality_hotspots(
+        &self,
+        options: &QualityHotspotsOptions,
+    ) -> Result<QualityHotspotsResult> {
         hotspots::load_quality_hotspots(self, options)
     }
 

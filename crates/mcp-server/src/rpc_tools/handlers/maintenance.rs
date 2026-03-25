@@ -11,6 +11,22 @@ use crate::rpc_tools::result::tool_result;
 
 use super::{parse_optional_migration_mode, parse_optional_privacy_mode};
 
+pub(super) fn preflight(args: &Value, state: &mut ServerState) -> Result<Value> {
+    reject_unknown_fields(args, "preflight", &["privacy_mode", "migration_mode"])?;
+    let privacy_mode =
+        parse_optional_privacy_mode(args, "preflight", "privacy_mode")?.unwrap_or(PrivacyMode::Off);
+    let migration_mode = parse_optional_migration_mode(args, "preflight", "migration_mode")?
+        .unwrap_or(MigrationMode::Auto);
+    let engine = Engine::new_read_only_with_migration_mode(
+        state.project_path.clone(),
+        state.db_path.clone(),
+        migration_mode,
+    )?;
+    let mut payload = serde_json::to_value(engine.preflight_status()?)?;
+    sanitize_value_for_privacy(privacy_mode, &mut payload);
+    tool_result(payload)
+}
+
 pub(super) fn db_maintenance(args: &Value, state: &mut ServerState) -> Result<Value> {
     reject_unknown_fields(
         args,

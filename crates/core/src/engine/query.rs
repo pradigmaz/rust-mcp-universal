@@ -14,6 +14,8 @@ mod fusion;
 mod graph_stage;
 #[path = "query/intent.rs"]
 mod intent;
+#[path = "query/investigation_embed.rs"]
+mod investigation_embed;
 #[path = "query/pipeline.rs"]
 mod pipeline;
 #[path = "query/semantic_candidates.rs"]
@@ -48,6 +50,14 @@ impl Engine {
         Ok(execution.hits)
     }
 
+    pub(crate) fn search_with_semantic_outcome(
+        &self,
+        options: &QueryOptions,
+    ) -> Result<(Vec<SearchHit>, SemanticRerankOutcome)> {
+        let execution = self.search_with_meta(options)?;
+        Ok((execution.hits, execution.semantic_outcome))
+    }
+
     pub fn build_context_under_budget(
         &self,
         options: &QueryOptions,
@@ -75,7 +85,13 @@ impl Engine {
         let mut options = options.clone();
         options.context_mode = Some(mode);
         let context = self.build_context_under_budget(&options, max_chars, max_tokens)?;
-        Ok(ContextPackResult { mode, context })
+        let investigation_hints =
+            investigation_embed::build_investigation_hints(self, &options.query, options.limit)?;
+        Ok(ContextPackResult {
+            mode,
+            context,
+            investigation_hints: Some(investigation_hints),
+        })
     }
 
     pub fn build_report(
@@ -95,6 +111,8 @@ impl Engine {
         )?;
         let (chunk_coverage, chunk_source) = derive_chunk_telemetry(&context);
         let status = self.index_status()?;
+        let investigation_summary =
+            investigation_embed::build_investigation_summary(self, &options.query, options.limit)?;
         build_query_report(
             &self.project_root,
             QueryReportBuildInput {
@@ -113,6 +131,7 @@ impl Engine {
                     chunk_coverage,
                     chunk_source,
                 },
+                investigation_summary: Some(investigation_summary),
             },
         )
     }

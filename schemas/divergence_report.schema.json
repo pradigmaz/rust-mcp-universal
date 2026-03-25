@@ -1,0 +1,251 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DivergenceReport",
+  "type": "object",
+  "required": [
+    "surface_kind",
+    "seed",
+    "variants",
+    "consensus_axes",
+    "divergence_axes",
+    "divergence_signals",
+    "overall_severity",
+    "manual_review_required",
+    "summary",
+    "shared_evidence",
+    "unknowns",
+    "missing_evidence",
+    "recommended_followups",
+    "overall_confidence",
+    "capability_status",
+    "unsupported_sources"
+  ],
+  "properties": {
+    "surface_kind": { "type": "string" },
+    "seed": {
+      "type": "object",
+      "required": ["seed", "seed_kind"],
+      "properties": {
+        "seed": { "type": "string" },
+        "seed_kind": { "type": "string" }
+      }
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "entry_anchor",
+          "route",
+          "constraints",
+          "related_tests",
+          "confidence",
+          "gaps"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "entry_anchor": {
+            "type": "object",
+            "required": ["path", "language"],
+            "properties": {
+              "path": { "type": "string" },
+              "language": { "type": "string" },
+              "symbol": { "type": "string" },
+              "kind": { "type": "string" },
+              "line": { "type": "integer", "minimum": 0 },
+              "column": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "body_anchor": {
+            "type": "object",
+            "required": ["path", "language"],
+            "properties": {
+              "path": { "type": "string" },
+              "language": { "type": "string" },
+              "symbol": { "type": "string" },
+              "kind": { "type": "string" },
+              "line": { "type": "integer", "minimum": 0 },
+              "column": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "route": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "kind",
+                "path",
+                "language",
+                "evidence",
+                "relation_kind",
+                "source_kind",
+                "score"
+              ],
+              "properties": {
+                "kind": { "type": "string" },
+                "path": { "type": "string" },
+                "language": { "type": "string" },
+                "evidence": { "type": "string" },
+                "anchor_symbol": { "type": "string" },
+                "source_span": {
+                  "type": "object",
+                  "required": ["start_line", "end_line"],
+                  "properties": {
+                    "start_line": { "type": "integer", "minimum": 0 },
+                    "end_line": { "type": "integer", "minimum": 0 },
+                    "start_column": { "type": "integer", "minimum": 0 },
+                    "end_column": { "type": "integer", "minimum": 0 }
+                  }
+                },
+                "relation_kind": { "type": "string" },
+                "source_kind": { "type": "string" },
+                "score": { "type": "number" }
+              }
+            }
+          },
+          "constraints": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "kind",
+                "strength",
+                "scope",
+                "source_path",
+                "confidence",
+                "normalized_text"
+              ],
+              "properties": {
+                "kind": { "type": "string" },
+                "strength": { "type": "string" },
+                "scope": { "type": "string" },
+                "source_path": { "type": "string" },
+                "source_span": {
+                  "type": "object",
+                  "required": ["start_line", "end_line"],
+                  "properties": {
+                    "start_line": { "type": "integer", "minimum": 0 },
+                    "end_line": { "type": "integer", "minimum": 0 },
+                    "start_column": { "type": "integer", "minimum": 0 },
+                    "end_column": { "type": "integer", "minimum": 0 }
+                  }
+                },
+                "introduced_by": { "type": "string" },
+                "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+                "normalized_text": { "type": "string" }
+              }
+            }
+          },
+          "related_tests": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "gaps": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "consensus_axes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["axis", "values"],
+        "properties": {
+          "axis": { "type": "string" },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["variant_id", "values"],
+              "properties": {
+                "variant_id": { "type": "string" },
+                "values": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "divergence_axes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["axis", "values"],
+        "properties": {
+          "axis": { "type": "string" },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["variant_id", "values"],
+              "properties": {
+                "variant_id": { "type": "string" },
+                "values": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "divergence_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "severity",
+          "axis",
+          "evidence_strength",
+          "classification_reason",
+          "summary",
+          "variant_ids"
+        ],
+        "properties": {
+          "severity": { "type": "string" },
+          "axis": { "type": "string" },
+          "evidence_strength": { "type": "string" },
+          "classification_reason": { "type": "string" },
+          "summary": { "type": "string" },
+          "variant_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "overall_severity": { "type": "string" },
+    "manual_review_required": { "type": "boolean" },
+    "summary": { "type": "string" },
+    "shared_evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "missing_evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "recommended_followups": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "overall_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "capability_status": { "type": "string" },
+    "unsupported_sources": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

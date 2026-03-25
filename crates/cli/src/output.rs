@@ -8,6 +8,7 @@ use rmu_core::{PrivacyMode, sanitize_error_message};
 
 const JSON_FALLBACK_PATH_ENV: &str = "RMU_JSON_FALLBACK_PATH";
 const JSON_AUTOMATIC_FALLBACK_FILE_NAME: &str = "rmu-cli-json-error-latest.json";
+const RUNNING_BINARY_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub(crate) fn print_json(serialized: std::result::Result<String, serde_json::Error>) -> Result<()> {
     write_stdout_line(&serialized?)?;
@@ -34,11 +35,14 @@ pub(crate) fn print_app_error(
 }
 
 pub(crate) fn json_error_payload(code: &str, error: &str) -> String {
-    let payload = serde_json::json!({
+    let mut payload = serde_json::json!({
         "ok": false,
         "code": code,
         "error": error
     });
+    if let Some(details) = compatibility_details(code, error) {
+        payload["details"] = details;
+    }
     serde_json::to_string_pretty(&payload).unwrap_or_else(|_| {
         r#"{"ok":false,"code":"E_RUNTIME","error":"internal serialization error"}"#.to_string()
     })
@@ -106,6 +110,22 @@ fn write_json_error_to_file(path: &PathBuf, payload: &str) -> io::Result<()> {
     fs::write(path, format!("{payload}\n"))
 }
 
+fn compatibility_details(code: &str, error: &str) -> Option<serde_json::Value> {
+    if code != crate::error::CODE_COMPATIBILITY {
+        return None;
+    }
+    Some(serde_json::json!({
+        "kind": "compatibility",
+        "running_binary_version": RUNNING_BINARY_VERSION,
+        "safe_recovery_hint": if cfg!(windows) {
+            "use scripts/rmu-mcp-server-fresh.cmd or restart the process with a fresh binary, then re-open the index"
+        } else {
+            "restart the process with a fresh binary and re-open the index"
+        },
+        "reason": error
+    }))
+}
+
 #[cfg(test)]
 mod tests {
     use super::{automatic_json_fallback_path, json_error_payload};
@@ -127,5 +147,14 @@ mod tests {
             path.file_name().and_then(|name| name.to_str()),
             Some("rmu-cli-json-error-latest.json")
         );
+    }
+
+    #[test]
+    fn compatibility_payload_reports_running_binary_version_without_fake_stale_flag() {
+        let raw = json_error_payload("E_COMPATIBILITY", "db newer than binary supported");
+        let value: serde_json::Value =
+            serde_json::from_str(&raw).expect("payload should be valid json");
+        assert!(value["details"]["running_binary_version"].is_string());
+        assert!(value["details"].get("stale_process_suspected").is_none());
     }
 }

@@ -153,7 +153,7 @@ impl Engine {
         })
     }
 
-    pub(super) fn normalize_lookup_path(&self, path: &str) -> Result<String> {
+    pub(crate) fn normalize_lookup_path(&self, path: &str) -> Result<String> {
         let raw = require_non_empty(path, "path")?;
         let input_path = Path::new(raw);
         if !input_path.is_absolute() {

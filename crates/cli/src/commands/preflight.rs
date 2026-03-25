@@ -6,7 +6,7 @@ use crate::validation::{require_max, require_min};
 
 use super::modes::{
     parse_changed_since, parse_changed_since_commit, parse_context_mode,
-    parse_ignore_install_target, parse_index_profile, parse_semantic_fail_mode,
+    parse_ignore_install_target, parse_index_profile, parse_seed_kind, parse_semantic_fail_mode,
 };
 
 pub(super) fn preflight_validate(command: &Command) -> Result<()> {
@@ -44,6 +44,55 @@ pub(super) fn preflight_validate(command: &Command) -> Result<()> {
             let _ = require_max("limit", *limit, limit_max)?;
             if name.trim().is_empty() {
                 bail!("`name` must be non-empty");
+            }
+        }
+        Command::SymbolBody {
+            seed,
+            seed_kind,
+            limit,
+            ..
+        }
+        | Command::RouteTrace {
+            seed,
+            seed_kind,
+            limit,
+            ..
+        }
+        | Command::ConstraintEvidence {
+            seed,
+            seed_kind,
+            limit,
+            ..
+        }
+        | Command::ConceptCluster {
+            seed,
+            seed_kind,
+            limit,
+            ..
+        }
+        | Command::DivergenceReport {
+            seed,
+            seed_kind,
+            limit,
+            ..
+        } => {
+            let _ = require_min("limit", *limit, 1)?;
+            let _ = require_max("limit", *limit, limit_max)?;
+            if seed.trim().is_empty() {
+                bail!("`seed` must be non-empty");
+            }
+            let _ = parse_seed_kind(seed_kind)?;
+        }
+        Command::InvestigationBenchmark {
+            limit,
+            thresholds,
+            enforce_gates,
+            ..
+        } => {
+            let _ = require_min("limit", *limit, 1)?;
+            let _ = require_max("limit", *limit, limit_max)?;
+            if *enforce_gates && thresholds.is_none() {
+                bail!("`investigation-benchmark` --enforce-gates requires --thresholds");
             }
         }
         Command::RelatedFiles { path, limit, .. } => {
@@ -216,7 +265,7 @@ pub(super) fn preflight_validate(command: &Command) -> Result<()> {
         Command::InstallIgnoreRules { target } => {
             let _ = parse_ignore_install_target(target)?;
         }
-        Command::Status | Command::Brief | Command::DbMaintenance { .. } => {}
+        Command::Status | Command::Brief | Command::DbMaintenance { .. } | Command::Preflight => {}
     }
     Ok(())
 }

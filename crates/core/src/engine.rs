@@ -16,20 +16,30 @@ pub(crate) mod compatibility;
 mod context;
 #[path = "engine/indexing.rs"]
 mod indexing;
+#[path = "engine/investigation.rs"]
+mod investigation;
 #[path = "engine/lifecycle.rs"]
 mod lifecycle;
 #[path = "engine/maintenance.rs"]
 mod maintenance;
 #[path = "engine/navigation.rs"]
 mod navigation;
+#[path = "engine/preflight.rs"]
+mod preflight;
 #[path = "engine/preview.rs"]
 mod preview;
 #[path = "engine/query.rs"]
 mod query;
+#[path = "engine/readiness.rs"]
+mod readiness;
 #[path = "engine/schema.rs"]
 mod schema;
 #[path = "engine/storage.rs"]
 pub(crate) mod storage;
+pub use preflight::{
+    ThreadRunningBinaryTimestampsOverrideGuard,
+    set_thread_running_binary_timestamps_override_for_tests,
+};
 
 #[derive(Debug, Clone)]
 pub struct Engine {

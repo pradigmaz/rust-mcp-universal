@@ -180,6 +180,54 @@ pub(crate) fn run_status(engine: &Engine, json: bool, privacy_mode: PrivacyMode)
     Ok(())
 }
 
+pub(crate) fn run_preflight(engine: &Engine, json: bool, privacy_mode: PrivacyMode) -> Result<()> {
+    let status = engine.preflight_status()?;
+    if json {
+        let mut value = serde_json::to_value(&status)?;
+        sanitize_value_for_privacy(privacy_mode, &mut value);
+        print_json(serde_json::to_string_pretty(&value))?;
+    } else {
+        print_line(format!("status={:?}", status.status));
+        print_line(format!(
+            "running_binary_version={}",
+            status.running_binary_version
+        ));
+        print_line(format!(
+            "running_binary_stale={}",
+            status.running_binary_stale
+        ));
+        print_line(format!(
+            "supported_schema_version={}",
+            status
+                .supported_schema_version
+                .map_or_else(|| "unknown".to_string(), |value| value.to_string())
+        ));
+        print_line(format!(
+            "db_schema_version={}",
+            status
+                .db_schema_version
+                .map_or_else(|| "unknown".to_string(), |value| value.to_string())
+        ));
+        print_line(format!(
+            "stale_process_suspected={}",
+            status.stale_process_suspected
+        ));
+        print_line(format!(
+            "project={}",
+            sanitize_path_text(privacy_mode, &status.project_path)
+        ));
+        print_line(format!(
+            "db={}",
+            sanitize_path_text(privacy_mode, &engine.db_path.display().to_string())
+        ));
+        if !status.errors.is_empty() {
+            print_line(format!("errors={}", status.errors.join(" | ")));
+        }
+        print_line(format!("safe_recovery_hint={}", status.safe_recovery_hint));
+    }
+    Ok(())
+}
+
 pub(crate) fn run_brief(engine: &Engine, json: bool, privacy_mode: PrivacyMode) -> Result<()> {
     let brief = engine.workspace_brief()?;
     if json {

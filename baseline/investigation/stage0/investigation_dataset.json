@@ -1,0 +1,286 @@
+{
+  "cases": [
+    {
+      "id": "symbol-body-rust-origin-service",
+      "tool": "symbol_body",
+      "fixture": "mixed_app",
+      "seed": "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+      "seed_kind": "path",
+      "expected_capability_status": "supported",
+      "expected_assertions": [
+        { "kind": "contains_language", "value": "rust" },
+        { "kind": "min_body_items", "value": "1" }
+      ],
+      "labels": {
+        "expected_body_anchors": [
+          { "path": "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs" }
+        ]
+      }
+    },
+    {
+      "id": "symbol-body-typescript-origin-client",
+      "tool": "symbol_body",
+      "fixture": "mixed_app",
+      "seed": "baseline/investigation/fixtures/mixed_app/web/origin_client.ts",
+      "seed_kind": "path",
+      "expected_capability_status": "supported",
+      "expected_assertions": [
+        { "kind": "contains_language", "value": "typescript" },
+        { "kind": "min_body_items", "value": "1" }
+      ],
+      "labels": {
+        "expected_body_anchors": [
+          { "path": "baseline/investigation/fixtures/mixed_app/web/origin_client.ts" }
+        ]
+      }
+    },
+    {
+      "id": "symbol-body-python-origin-service",
+      "tool": "symbol_body",
+      "fixture": "mixed_app",
+      "seed": "baseline/investigation/fixtures/mixed_app/legacy/origin_service.py",
+      "seed_kind": "path",
+      "expected_capability_status": "supported",
+      "expected_assertions": [
+        { "kind": "contains_language", "value": "python" },
+        { "kind": "min_body_items", "value": "1" }
+      ],
+      "labels": {
+        "expected_body_anchors": [
+          { "path": "baseline/investigation/fixtures/mixed_app/legacy/origin_service.py" }
+        ]
+      }
+    },
+    {
+      "id": "route-trace-origin-service",
+      "tool": "route_trace",
+      "fixture": "mixed_app",
+      "seed": "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+      "seed_kind": "path",
+      "expected_capability_status": "partial",
+      "expected_assertions": [
+        { "kind": "contains_route_kind", "value": "service" },
+        { "kind": "contains_gap", "value": "call_path_unresolved:query" }
+      ],
+      "labels": {
+        "expected_variant_entry_paths": [
+          "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs"
+        ],
+        "expected_route_segments": [
+          { "path": "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs", "kind": "service" }
+        ]
+      }
+    },
+    {
+      "id": "constraint-origin-service",
+      "tool": "constraint_evidence",
+      "fixture": "mixed_app",
+      "seed": "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+      "seed_kind": "path",
+      "expected_capability_status": "supported",
+      "expected_assertions": [
+        { "kind": "contains_constraint_kind", "value": "index_constraint" },
+        { "kind": "strong_constraint_present", "value": "strong" }
+      ],
+      "labels": {
+        "expected_constraints": [
+          { "source_path": "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs", "kind": "runtime_guard", "strength": "weak" },
+          { "source_path": "baseline/investigation/fixtures/mixed_app/legacy/origin_service.py", "kind": "runtime_guard", "strength": "weak" },
+          { "source_path": "baseline/investigation/fixtures/mixed_app/src/validators/origin_validator.rs", "kind": "runtime_guard", "strength": "weak" },
+          { "source_path": "baseline/investigation/fixtures/mixed_app/legacy/origin_validator.py", "kind": "runtime_guard", "strength": "weak" },
+          { "source_path": "baseline/investigation/fixtures/mixed_app/migrations/001_create_origins.sql", "kind": "index_constraint", "strength": "strong" },
+          { "source_path": "baseline/investigation/fixtures/mixed_app/tests/test_origin_flow.py", "kind": "runtime_guard", "strength": "weak" }
+        ]
+      }
+    },
+    {
+      "id": "constraint-origin-legacy-service",
+      "tool": "constraint_evidence",
+      "fixture": "mixed_app",
+      "seed": "baseline/investigation/fixtures/mixed_app/legacy/origin_service.py",
+      "seed_kind": "path",
+      "expected_capability_status": "supported",
+      "expected_assertions": [
+        { "kind": "contains_constraint_kind", "value": "index_constraint" },
+        { "kind": "strong_constraint_present", "value": "strong" }
+      ],
+      "labels": {
+        "expected_constraints": [
+          { "source_path": "baseline/investigation/fixtures/mixed_app/legacy/origin_service.py", "kind": "runtime_guard", "strength": "weak" },
+          { "source_path": "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs", "kind": "runtime_guard", "strength": "weak" },
+          { "source_path": "baseline/investigation/fixtures/mixed_app/legacy/origin_validator.py", "kind": "runtime_guard", "strength": "weak" },
+          { "source_path": "baseline/investigation/fixtures/mixed_app/src/validators/origin_validator.rs", "kind": "runtime_guard", "strength": "weak" },
+          { "source_path": "baseline/investigation/fixtures/mixed_app/migrations/001_create_origins.sql", "kind": "index_constraint", "strength": "strong" },
+          { "source_path": "baseline/investigation/fixtures/mixed_app/tests/test_origin_flow.py", "kind": "runtime_guard", "strength": "weak" }
+        ]
+      }
+    },
+    {
+      "id": "concept-cluster-resolve-origin",
+      "tool": "concept_cluster",
+      "fixture": "mixed_app",
+      "seed": "resolve_origin",
+      "seed_kind": "query",
+      "expected_capability_status": "supported",
+      "expected_assertions": [
+        { "kind": "min_variant_count", "value": "3" }
+      ],
+      "labels": {
+        "expected_variant_entry_paths": [
+          "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+          "baseline/investigation/fixtures/mixed_app/src/validators/origin_validator.rs",
+          "baseline/investigation/fixtures/mixed_app/legacy/origin_service.py"
+        ],
+        "expected_top_variant_entry_path": "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+        "expected_semantic_state": "used"
+      }
+    },
+    {
+      "id": "concept-cluster-resolve-profile",
+      "tool": "concept_cluster",
+      "fixture": "adapter_app",
+      "seed": "resolve_profile",
+      "seed_kind": "query",
+      "expected_capability_status": "supported",
+      "expected_assertions": [
+        { "kind": "min_variant_count", "value": "3" }
+      ],
+      "labels": {
+        "expected_variant_entry_paths": [
+          "baseline/investigation/fixtures/adapter_app/src/services/profile_service.rs",
+          "baseline/investigation/fixtures/adapter_app/src/policies/profile_policy.rs",
+          "baseline/investigation/fixtures/adapter_app/legacy/profile_worker.py"
+        ],
+        "expected_top_variant_entry_path": "baseline/investigation/fixtures/adapter_app/src/services/profile_service.rs",
+        "expected_semantic_state": "used"
+      }
+    },
+    {
+      "id": "concept-cluster-enforce-profile-policy",
+      "tool": "concept_cluster",
+      "fixture": "adapter_app",
+      "seed": "enforce_profile_policy",
+      "seed_kind": "query",
+      "expected_capability_status": "supported",
+      "expected_assertions": [
+        { "kind": "min_variant_count", "value": "2" }
+      ],
+      "labels": {
+        "expected_variant_entry_paths": [
+          "baseline/investigation/fixtures/adapter_app/src/policies/profile_policy.rs",
+          "baseline/investigation/fixtures/adapter_app/src/services/profile_service.rs"
+        ],
+        "expected_top_variant_entry_path": "baseline/investigation/fixtures/adapter_app/src/policies/profile_policy.rs",
+        "expected_semantic_state": "used"
+      }
+    },
+    {
+      "id": "concept-cluster-low-signal-id",
+      "tool": "concept_cluster",
+      "fixture": "mixed_app",
+      "seed": "id",
+      "seed_kind": "query",
+      "expected_capability_status": "supported",
+      "expected_assertions": [
+        { "kind": "min_variant_count", "value": "1" }
+      ],
+      "labels": {
+        "expected_semantic_state": "disabled_low_signal",
+        "low_signal_semantic_case": true
+      }
+    },
+    {
+      "id": "divergence-resolve-origin",
+      "tool": "divergence_report",
+      "fixture": "mixed_app",
+      "seed": "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+      "seed_kind": "path",
+      "expected_capability_status": "supported",
+      "expected_assertions": [
+        { "kind": "min_divergence_axes", "value": "5" },
+        { "kind": "expected_severity", "value": "suspicious" },
+        { "kind": "divergence_axis_present", "value": "predicate_signatures" }
+      ],
+      "labels": {
+        "expected_variant_entry_paths": [
+          "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+          "baseline/investigation/fixtures/mixed_app/src/validators/origin_validator.rs",
+          "baseline/investigation/fixtures/mixed_app/legacy/origin_service.py"
+        ],
+        "expected_divergence_signals": [
+          { "axis": "entrypoints", "severity": "informational" },
+          { "axis": "guards_and_validators", "severity": "suspicious" },
+          { "axis": "predicate_signatures", "severity": "suspicious" },
+          { "axis": "downstream_symbols", "severity": "likely_expected" },
+          { "axis": "constraint_evidence", "severity": "suspicious" }
+        ]
+      }
+    },
+    {
+      "id": "divergence-profile-service-intentional",
+      "tool": "divergence_report",
+      "fixture": "adapter_app",
+      "seed": "baseline/investigation/fixtures/adapter_app/src/services/profile_service.rs",
+      "seed_kind": "path",
+      "expected_capability_status": "supported",
+      "expected_assertions": [
+        { "kind": "min_divergence_axes", "value": "2" },
+        { "kind": "expected_severity", "value": "likely_expected" },
+        { "kind": "divergence_axis_present", "value": "downstream_symbols" }
+      ],
+      "labels": {
+        "expected_variant_entry_paths": [
+          "baseline/investigation/fixtures/adapter_app/src/services/profile_service.rs",
+          "baseline/investigation/fixtures/adapter_app/src/repositories/profile_repo.sql"
+        ],
+        "expected_divergence_signals": [
+          { "axis": "entrypoints", "severity": "informational" },
+          { "axis": "downstream_symbols", "severity": "likely_expected" }
+        ]
+      }
+    },
+    {
+      "id": "divergence-member-service-suspicious",
+      "tool": "divergence_report",
+      "fixture": "divergence_risky_app",
+      "seed": "baseline/investigation/fixtures/divergence_risky_app/src/services/member_service.rs",
+      "seed_kind": "path",
+      "expected_capability_status": "supported",
+      "expected_assertions": [
+        { "kind": "min_divergence_axes", "value": "5" },
+        { "kind": "expected_severity", "value": "suspicious" },
+        { "kind": "divergence_axis_present", "value": "guards_and_validators" }
+      ],
+      "labels": {
+        "expected_variant_entry_paths": [
+          "baseline/investigation/fixtures/divergence_risky_app/src/services/member_service.rs",
+          "baseline/investigation/fixtures/divergence_risky_app/src/validators/member_validator.rs",
+          "baseline/investigation/fixtures/divergence_risky_app/legacy/member_service.py"
+        ],
+        "expected_divergence_signals": [
+          { "axis": "entrypoints", "severity": "informational" },
+          { "axis": "guards_and_validators", "severity": "suspicious" },
+          { "axis": "predicate_signatures", "severity": "suspicious" },
+          { "axis": "downstream_symbols", "severity": "likely_expected" },
+          { "axis": "constraint_evidence", "severity": "suspicious" }
+        ]
+      }
+    },
+    {
+      "id": "concept-cluster-semantic-fail-open",
+      "tool": "concept_cluster",
+      "fixture": "mixed_app",
+      "seed": "resolve_origin",
+      "seed_kind": "query",
+      "expected_capability_status": "supported",
+      "expected_assertions": [
+        { "kind": "min_variant_count", "value": "1" },
+        { "kind": "contains_gap", "value": "semantic_unavailable_fail_open" }
+      ],
+      "labels": {
+        "expected_semantic_state": "unavailable_fail_open",
+        "semantic_fail_open_case": true
+      }
+    }
+  ]
+}

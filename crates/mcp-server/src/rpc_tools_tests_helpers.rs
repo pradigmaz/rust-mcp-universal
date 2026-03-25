@@ -7,6 +7,8 @@ use serde_json::{Value, json};
 use super::handle_tool_call;
 use crate::ServerState;
 
+#[path = "../../core/tests/support/investigation_fixture.rs"]
+mod investigation_fixture;
 #[path = "rpc_tools_tests_helpers/schema.rs"]
 mod schema;
 
@@ -36,6 +38,11 @@ pub(super) fn temp_dir(prefix: &str) -> PathBuf {
 pub(super) fn state_for(project_path: PathBuf, db_path: Option<PathBuf>) -> ServerState {
     ServerState::new(project_path, db_path)
 }
+
+pub(super) use investigation_fixture::{
+    write_cluster_and_divergence_fixture, write_investigation_benchmark_fixture,
+    write_route_and_constraint_fixture, write_symbol_body_fixture,
+};
 
 fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")

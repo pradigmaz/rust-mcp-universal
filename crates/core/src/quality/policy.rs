@@ -8,9 +8,9 @@ use crate::index_scope::IndexScope;
 use crate::model::{IndexingOptions, QualitySuppression};
 
 use super::policy_schema::{
-    PathScopePolicyFile, QualityPolicyFile, QualityRuleMetadataOverrideFile, QualityScopePolicyFile,
-    QualitySuppressionFile, QualityThresholdOverrides, StructuralPolicyFile,
-    StructuralUnmatchedBehavior, parse_quality_policy_file,
+    PathScopePolicyFile, QualityPolicyFile, QualityRuleMetadataOverrideFile,
+    QualityScopePolicyFile, QualitySuppressionFile, QualityThresholdOverrides,
+    StructuralPolicyFile, StructuralUnmatchedBehavior, parse_quality_policy_file,
 };
 use super::rule_metadata::{RuleMetadata, default_rule_metadata_map};
 
@@ -249,7 +249,9 @@ fn quality_policy_from_file(parsed: QualityPolicyFile) -> Result<QualityPolicy> 
         &parsed
             .rule_overrides
             .into_iter()
-            .map(|(rule_id, override_file)| (rule_id, rule_metadata_override_from_file(override_file)))
+            .map(|(rule_id, override_file)| {
+                (rule_id, rule_metadata_override_from_file(override_file))
+            })
             .collect(),
     );
     policy.structural = parsed.structural.map(structural_policy_from_file);
@@ -273,7 +275,9 @@ fn path_scope_from_file(parsed: PathScopePolicyFile) -> Result<PathScopePolicy> 
         rule_overrides: parsed
             .rule_overrides
             .into_iter()
-            .map(|(rule_id, override_file)| (rule_id, rule_metadata_override_from_file(override_file)))
+            .map(|(rule_id, override_file)| {
+                (rule_id, rule_metadata_override_from_file(override_file))
+            })
             .collect(),
         suppressions: parsed
             .suppressions
@@ -372,10 +376,7 @@ fn apply_threshold_overrides(
     }
 }
 
-fn apply_quality_scope(
-    scope: &mut QualityScopePolicy,
-    overrides: Option<QualityScopePolicyFile>,
-) {
+fn apply_quality_scope(scope: &mut QualityScopePolicy, overrides: Option<QualityScopePolicyFile>) {
     let Some(overrides) = overrides else {
         return;
     };

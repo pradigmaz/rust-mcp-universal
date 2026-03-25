@@ -1,0 +1,108 @@
+{
+    "cases":  [
+                  {
+                      "id":  "constraint-origin-service",
+                      "tool":  "constraint_evidence",
+                      "fixture":  "mixed_app",
+                      "seed":  "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+                      "seed_kind":  "path",
+                      "expected_capability_status":  "supported",
+                      "expected_assertions":  [
+                                                  {
+                                                      "kind":  "contains_constraint_kind",
+                                                      "value":  "index_constraint"
+                                                  },
+                                                  {
+                                                      "kind":  "strong_constraint_present",
+                                                      "value":  "strong"
+                                                  }
+                                              ],
+                      "labels":  {
+                                     "expected_constraints":  [
+                                                                  {
+                                                                      "source_path":  "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+                                                                      "kind":  "runtime_guard",
+                                                                      "strength":  "weak"
+                                                                  },
+                                                                  {
+                                                                      "source_path":  "baseline/investigation/fixtures/mixed_app/legacy/origin_service.py",
+                                                                      "kind":  "runtime_guard",
+                                                                      "strength":  "weak"
+                                                                  },
+                                                                  {
+                                                                      "source_path":  "baseline/investigation/fixtures/mixed_app/src/validators/origin_validator.rs",
+                                                                      "kind":  "runtime_guard",
+                                                                      "strength":  "weak"
+                                                                  },
+                                                                  {
+                                                                      "source_path":  "baseline/investigation/fixtures/mixed_app/legacy/origin_validator.py",
+                                                                      "kind":  "runtime_guard",
+                                                                      "strength":  "weak"
+                                                                  },
+                                                                  {
+                                                                      "source_path":  "baseline/investigation/fixtures/mixed_app/migrations/001_create_origins.sql",
+                                                                      "kind":  "index_constraint",
+                                                                      "strength":  "strong"
+                                                                  },
+                                                                  {
+                                                                      "source_path":  "baseline/investigation/fixtures/mixed_app/tests/test_origin_flow.py",
+                                                                      "kind":  "runtime_guard",
+                                                                      "strength":  "weak"
+                                                                  }
+                                                              ]
+                                 }
+                  },
+                  {
+                      "id":  "constraint-origin-legacy-service",
+                      "tool":  "constraint_evidence",
+                      "fixture":  "mixed_app",
+                      "seed":  "baseline/investigation/fixtures/mixed_app/legacy/origin_service.py",
+                      "seed_kind":  "path",
+                      "expected_capability_status":  "supported",
+                      "expected_assertions":  [
+                                                  {
+                                                      "kind":  "contains_constraint_kind",
+                                                      "value":  "index_constraint"
+                                                  },
+                                                  {
+                                                      "kind":  "strong_constraint_present",
+                                                      "value":  "strong"
+                                                  }
+                                              ],
+                      "labels":  {
+                                     "expected_constraints":  [
+                                                                  {
+                                                                      "source_path":  "baseline/investigation/fixtures/mixed_app/legacy/origin_service.py",
+                                                                      "kind":  "runtime_guard",
+                                                                      "strength":  "weak"
+                                                                  },
+                                                                  {
+                                                                      "source_path":  "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+                                                                      "kind":  "runtime_guard",
+                                                                      "strength":  "weak"
+                                                                  },
+                                                                  {
+                                                                      "source_path":  "baseline/investigation/fixtures/mixed_app/legacy/origin_validator.py",
+                                                                      "kind":  "runtime_guard",
+                                                                      "strength":  "weak"
+                                                                  },
+                                                                  {
+                                                                      "source_path":  "baseline/investigation/fixtures/mixed_app/src/validators/origin_validator.rs",
+                                                                      "kind":  "runtime_guard",
+                                                                      "strength":  "weak"
+                                                                  },
+                                                                  {
+                                                                      "source_path":  "baseline/investigation/fixtures/mixed_app/migrations/001_create_origins.sql",
+                                                                      "kind":  "index_constraint",
+                                                                      "strength":  "strong"
+                                                                  },
+                                                                  {
+                                                                      "source_path":  "baseline/investigation/fixtures/mixed_app/tests/test_origin_flow.py",
+                                                                      "kind":  "runtime_guard",
+                                                                      "strength":  "weak"
+                                                                  }
+                                                              ]
+                                 }
+                  }
+              ]
+}

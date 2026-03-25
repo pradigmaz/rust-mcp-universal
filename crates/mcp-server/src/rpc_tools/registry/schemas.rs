@@ -292,6 +292,41 @@ pub(super) fn context_pack_schema() -> Value {
     )
 }
 
+pub(super) fn investigation_schema() -> Value {
+    json_schema_object(
+        &[
+            ("seed", json!({"type": "string", "minLength": 1})),
+            (
+                "seed_kind",
+                json!({
+                    "type": "string",
+                    "oneOf": [
+                        {"const": "query"},
+                        {"const": "symbol"},
+                        {"const": "path"},
+                        {"const": "path_line"}
+                    ]
+                }),
+            ),
+            ("limit", json!({"type": "integer", "minimum": 1})),
+            ("auto_index", json!({"type": "boolean"})),
+            ("privacy_mode", privacy_mode_schema()),
+            ("migration_mode", migration_mode_schema()),
+        ],
+        &["seed", "seed_kind"],
+    )
+}
+
+pub(super) fn preflight_schema() -> Value {
+    json_schema_object(
+        &[
+            ("privacy_mode", privacy_mode_schema()),
+            ("migration_mode", migration_mode_schema()),
+        ],
+        &[],
+    )
+}
+
 pub(super) fn navigation_schema(arg_name: &str) -> Value {
     json_schema_object(
         &[

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PreflightStatus",
+  "type": "object",
+  "required": [
+    "status",
+    "project_path",
+    "binary_path",
+    "running_binary_version",
+    "running_binary_stale",
+    "same_binary_other_pids",
+    "stale_process_suspected",
+    "safe_recovery_hint",
+    "errors"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "oneOf": [
+        { "const": "ok" },
+        { "const": "warning" },
+        { "const": "incompatible" }
+      ]
+    },
+    "project_path": { "type": "string", "minLength": 1 },
+    "binary_path": { "type": "string", "minLength": 1 },
+    "running_binary_version": { "type": "string", "minLength": 1 },
+    "running_binary_stale": { "type": "boolean" },
+    "stale_process_probe_binary_path": { "type": "string", "minLength": 1 },
+    "supported_schema_version": { "type": "integer", "minimum": 0 },
+    "db_schema_version": { "type": "integer", "minimum": 0 },
+    "index_format_version": { "type": "integer", "minimum": 0 },
+    "ann_version": { "type": "integer", "minimum": 0 },
+    "same_binary_other_pids": {
+      "type": "array",
+      "items": { "type": "integer", "minimum": 0 }
+    },
+    "stale_process_suspected": { "type": "boolean" },
+    "launcher_recommended": { "type": "string", "minLength": 1 },
+    "safe_recovery_hint": { "type": "string", "minLength": 1 },
+    "errors": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

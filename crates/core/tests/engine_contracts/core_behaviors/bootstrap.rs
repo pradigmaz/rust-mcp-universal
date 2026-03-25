@@ -26,6 +26,7 @@ fn agent_bootstrap_with_query_returns_hits_context_and_report() -> Result<(), Bo
             || hit.path.ends_with("src\\main.rs")
     }));
     assert!(bundle.report.confidence.overall > 0.0);
+    assert!(bundle.report.investigation_summary.is_some());
 
     cleanup_project(&project_dir);
     Ok(())

@@ -1,0 +1,11 @@
+{
+  "status": "ready",
+  "source_report": "baseline/investigation/stage9/latest_report.json",
+  "per_tool_latency_targets": {
+    "symbol_body": { "p50_ms": 0.3433, "p95_ms": 0.3433 },
+    "route_trace": { "p50_ms": 38.4039, "p95_ms": 38.4039 },
+    "constraint_evidence": { "p50_ms": 53.8651, "p95_ms": 53.8651 },
+    "concept_cluster": { "p50_ms": 180.7342, "p95_ms": 180.7342 },
+    "divergence_report": { "p50_ms": 151.6981, "p95_ms": 151.6981 }
+  }
+}

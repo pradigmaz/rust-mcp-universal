@@ -421,6 +421,10 @@ fn context_pack_design_mode_returns_docs_first() {
         payload["context"]["files"][0]["path"],
         json!("docs/design.md")
     );
+    assert!(payload["investigation_hints"].is_object());
+    assert!(payload["investigation_hints"]["top_variants"].is_array());
+    assert!(payload["investigation_hints"]["constraint_keys"].is_array());
+    assert!(payload["investigation_hints"]["followups"].is_array());
 
     let _ = fs::remove_dir_all(project_dir);
 }

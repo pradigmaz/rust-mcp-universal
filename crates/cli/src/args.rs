@@ -51,6 +51,7 @@ pub(crate) enum Command {
         #[arg(long, default_value_t = false)]
         prune: bool,
     },
+    Preflight,
     Status,
     Search {
         #[arg(long)]
@@ -92,6 +93,16 @@ pub(crate) enum Command {
         #[arg(long, default_value_t = false)]
         auto_index: bool,
     },
+    SymbolBody {
+        #[arg(long)]
+        seed: String,
+        #[arg(long)]
+        seed_kind: String,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+        #[arg(long, default_value_t = false)]
+        auto_index: bool,
+    },
     RelatedFiles {
         #[arg(long)]
         path: String,
@@ -109,6 +120,60 @@ pub(crate) enum Command {
         max_hops: usize,
         #[arg(long, default_value_t = false)]
         auto_index: bool,
+    },
+    RouteTrace {
+        #[arg(long)]
+        seed: String,
+        #[arg(long)]
+        seed_kind: String,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+        #[arg(long, default_value_t = false)]
+        auto_index: bool,
+    },
+    ConstraintEvidence {
+        #[arg(long)]
+        seed: String,
+        #[arg(long)]
+        seed_kind: String,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+        #[arg(long, default_value_t = false)]
+        auto_index: bool,
+    },
+    ConceptCluster {
+        #[arg(long)]
+        seed: String,
+        #[arg(long)]
+        seed_kind: String,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+        #[arg(long, default_value_t = false)]
+        auto_index: bool,
+    },
+    DivergenceReport {
+        #[arg(long)]
+        seed: String,
+        #[arg(long)]
+        seed_kind: String,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+        #[arg(long, default_value_t = false)]
+        auto_index: bool,
+    },
+    InvestigationBenchmark {
+        #[arg(long)]
+        dataset: PathBuf,
+        #[arg(long, default_value_t = 5)]
+        limit: usize,
+        #[arg(long, default_value_t = false)]
+        auto_index: bool,
+        #[arg(long)]
+        baseline_report: Option<PathBuf>,
+        #[arg(long)]
+        thresholds: Option<PathBuf>,
+        #[arg(long, default_value_t = false)]
+        enforce_gates: bool,
     },
     Context {
         #[arg(long)]

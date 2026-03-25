@@ -3,9 +3,10 @@ use serde_json::{Value, json};
 use super::helpers::{json_schema_object, tool};
 use super::schemas::{
     budget_query_schema, call_path_schema, context_pack_schema, db_maintenance_schema,
-    index_schema, install_ignore_rules_schema, migration_mode_schema, navigation_schema,
-    privacy_mode_schema, quality_hotspots_schema, query_benchmark_schema, query_schema,
-    rollout_phase_schema, rule_violations_schema, scope_preview_schema,
+    index_schema, install_ignore_rules_schema, investigation_schema, migration_mode_schema,
+    navigation_schema, preflight_schema, privacy_mode_schema, quality_hotspots_schema,
+    query_benchmark_schema, query_schema, rollout_phase_schema, rule_violations_schema,
+    scope_preview_schema,
 };
 
 pub(super) fn tools_list() -> Value {
@@ -95,6 +96,11 @@ pub(super) fn tools_list() -> Value {
                 db_maintenance_schema()
             ),
             tool(
+                "preflight",
+                "Inspect binary/db/runtime compatibility and stale-process risks for the current project",
+                preflight_schema()
+            ),
+            tool(
                 "symbol_lookup",
                 "Compatibility-only legacy navigation tool: find symbol definitions by exact or partial name",
                 navigation_schema("name")
@@ -115,6 +121,11 @@ pub(super) fn tools_list() -> Value {
                 navigation_schema("name")
             ),
             tool(
+                "symbol_body",
+                "Resolve symbol/path/query seed into body snippets with typed anchors",
+                investigation_schema()
+            ),
+            tool(
                 "related_files",
                 "Compatibility-only legacy navigation tool: show files adjacent by dependency and call relationships",
                 navigation_schema("path")
@@ -128,6 +139,26 @@ pub(super) fn tools_list() -> Value {
                 "call_path",
                 "Find a bounded heuristic path over refs/deps between two endpoints",
                 call_path_schema()
+            ),
+            tool(
+                "route_trace",
+                "Build implementation variants with typed route segments for a conceptual seed",
+                investigation_schema()
+            ),
+            tool(
+                "constraint_evidence",
+                "Collect normalized schema/model/migration constraint evidence for a conceptual seed",
+                investigation_schema()
+            ),
+            tool(
+                "concept_cluster",
+                "Cluster multiple implementation variants around a conceptual seed",
+                investigation_schema()
+            ),
+            tool(
+                "divergence_report",
+                "Compare implementation variants and surface divergence axes for a conceptual seed",
+                investigation_schema()
             ),
             tool(
                 "search_candidates",

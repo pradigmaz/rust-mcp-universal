@@ -1,7 +1,7 @@
 use anyhow::Result;
 use rmu_core::{
-    ContextMode, IgnoreInstallTarget, IndexProfile, MigrationMode, PrivacyMode, RolloutPhase,
-    SemanticFailMode,
+    ConceptSeedKind, ContextMode, IgnoreInstallTarget, IndexProfile, MigrationMode, PrivacyMode,
+    RolloutPhase, SemanticFailMode,
 };
 use time::{OffsetDateTime, UtcOffset, format_description::well_known::Rfc3339};
 
@@ -27,6 +27,15 @@ pub(super) fn parse_context_mode(raw: &str) -> Result<ContextMode> {
     ContextMode::parse(raw).ok_or_else(|| {
         anyhow::anyhow!(
             "`mode` must be one of: code, design, bugfix (got `{}`)",
+            raw
+        )
+    })
+}
+
+pub(super) fn parse_seed_kind(raw: &str) -> Result<ConceptSeedKind> {
+    ConceptSeedKind::parse(raw).ok_or_else(|| {
+        anyhow::anyhow!(
+            "`seed_kind` must be one of: query, symbol, path, path_line (got `{}`)",
             raw
         )
     })

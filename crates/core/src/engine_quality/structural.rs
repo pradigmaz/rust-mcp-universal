@@ -6,8 +6,7 @@ use anyhow::{Result, bail};
 use crate::index_scope::IndexScope;
 use crate::model::IndexingOptions;
 use crate::quality::{
-    CrossLayerFacts, QualityPolicy, StructuralFacts, StructuralPolicy,
-    StructuralUnmatchedBehavior,
+    CrossLayerFacts, QualityPolicy, StructuralFacts, StructuralPolicy, StructuralUnmatchedBehavior,
 };
 
 const ORPHAN_ENTRYPOINTS: &[&str] = &["main", "lib", "mod", "index", "__init__"];
@@ -47,7 +46,10 @@ pub(super) fn load_structural_facts(
         }
     }
 
-    let Some(structural_policy) = policy.structural.as_ref().filter(|policy| policy.has_zones())
+    let Some(structural_policy) = policy
+        .structural
+        .as_ref()
+        .filter(|policy| policy.has_zones())
     else {
         return Ok(facts);
     };
@@ -59,11 +61,9 @@ pub(super) fn load_structural_facts(
         let src_zone = zone_matches.get(src_path).and_then(|zone| zone.as_deref());
         for dst_path in neighbors {
             let dst_zone = zone_matches.get(dst_path).and_then(|zone| zone.as_deref());
-            let Some((src_zone, dst_zone)) = matched_zone_pair(
-                src_zone,
-                dst_zone,
-                structural_policy.unmatched_behavior,
-            ) else {
+            let Some((src_zone, dst_zone)) =
+                matched_zone_pair(src_zone, dst_zone, structural_policy.unmatched_behavior)
+            else {
                 continue;
             };
             if src_zone == dst_zone {

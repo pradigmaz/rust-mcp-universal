@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::super::serde_glue;
+use super::investigation_embed::InvestigationSummary;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RetrievalStage {
@@ -77,6 +78,8 @@ pub struct QueryReport {
     pub confidence: ConfidenceInfo,
     pub gaps: Vec<String>,
     pub index_telemetry: IndexTelemetry,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub investigation_summary: Option<InvestigationSummary>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

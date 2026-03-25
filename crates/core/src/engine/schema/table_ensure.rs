@@ -221,8 +221,14 @@ pub(super) fn ensure_file_quality_tables(conn: &Connection) -> Result<()> {
         &[
             ("quality_metric_count", "INTEGER NOT NULL DEFAULT 0"),
             ("quality_metric_hash", "TEXT NOT NULL DEFAULT ''"),
-            ("quality_suppressed_violation_count", "INTEGER NOT NULL DEFAULT 0"),
-            ("quality_suppressed_violation_hash", "TEXT NOT NULL DEFAULT ''"),
+            (
+                "quality_suppressed_violation_count",
+                "INTEGER NOT NULL DEFAULT 0",
+            ),
+            (
+                "quality_suppressed_violation_hash",
+                "TEXT NOT NULL DEFAULT ''",
+            ),
             ("suppressed_violations_json", "TEXT NOT NULL DEFAULT '[]'"),
         ],
     )?;

@@ -1,0 +1,79 @@
+{
+    "cases":  [
+                  {
+                      "id":  "symbol-body-rust-origin-service",
+                      "tool":  "symbol_body",
+                      "fixture":  "mixed_app",
+                      "seed":  "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+                      "seed_kind":  "path",
+                      "expected_capability_status":  "supported",
+                      "expected_assertions":  [
+                                                  {
+                                                      "kind":  "contains_language",
+                                                      "value":  "rust"
+                                                  },
+                                                  {
+                                                      "kind":  "min_body_items",
+                                                      "value":  "1"
+                                                  }
+                                              ],
+                      "labels":  {
+                                     "expected_body_anchors":  [
+                                                                   {
+                                                                       "path":  "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs"
+                                                                   }
+                                                               ]
+                                 }
+                  },
+                  {
+                      "id":  "symbol-body-typescript-origin-client",
+                      "tool":  "symbol_body",
+                      "fixture":  "mixed_app",
+                      "seed":  "baseline/investigation/fixtures/mixed_app/web/origin_client.ts",
+                      "seed_kind":  "path",
+                      "expected_capability_status":  "supported",
+                      "expected_assertions":  [
+                                                  {
+                                                      "kind":  "contains_language",
+                                                      "value":  "typescript"
+                                                  },
+                                                  {
+                                                      "kind":  "min_body_items",
+                                                      "value":  "1"
+                                                  }
+                                              ],
+                      "labels":  {
+                                     "expected_body_anchors":  [
+                                                                   {
+                                                                       "path":  "baseline/investigation/fixtures/mixed_app/web/origin_client.ts"
+                                                                   }
+                                                               ]
+                                 }
+                  },
+                  {
+                      "id":  "symbol-body-python-origin-service",
+                      "tool":  "symbol_body",
+                      "fixture":  "mixed_app",
+                      "seed":  "baseline/investigation/fixtures/mixed_app/legacy/origin_service.py",
+                      "seed_kind":  "path",
+                      "expected_capability_status":  "supported",
+                      "expected_assertions":  [
+                                                  {
+                                                      "kind":  "contains_language",
+                                                      "value":  "python"
+                                                  },
+                                                  {
+                                                      "kind":  "min_body_items",
+                                                      "value":  "1"
+                                                  }
+                                              ],
+                      "labels":  {
+                                     "expected_body_anchors":  [
+                                                                   {
+                                                                       "path":  "baseline/investigation/fixtures/mixed_app/legacy/origin_service.py"
+                                                                   }
+                                                               ]
+                                 }
+                  }
+              ]
+}

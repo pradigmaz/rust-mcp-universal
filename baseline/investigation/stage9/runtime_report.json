@@ -1,0 +1,44 @@
+{
+    "generated_at_utc":  "2026-03-24T21:44:33.6493622Z",
+    "platform":  "windows",
+    "cli_binary_path":  "D:\\rust и оптимизация\\rust-mcp-universal\\target\\debug\\rmu-cli.exe",
+    "server_binary_path":  "D:\\rust и оптимизация\\rust-mcp-universal\\target\\debug\\rmu-mcp-server.exe",
+    "startup_compat_success_rate":  1,
+    "stale_server_detection":  "deterministic",
+    "stale_runtime_guard":  "deterministic",
+    "supported_case_count":  2,
+    "supported_passed_case_count":  2,
+    "cases":  [
+                  {
+                      "id":  "startup-empty-project",
+                      "category":  "compat",
+                      "pass":  true,
+                      "status":  "ok",
+                      "error_count":  0
+                  },
+                  {
+                      "id":  "startup-initialized-project",
+                      "category":  "compat",
+                      "pass":  true,
+                      "status":  "ok",
+                      "error_count":  0
+                  },
+                  {
+                      "id":  "windows-stale-server-detection",
+                      "category":  "stale_detection",
+                      "pass":  true,
+                      "status":  "warning",
+                      "stale_process_suspected":  true,
+                      "same_binary_other_pid_count":  1,
+                      "stale_process_probe_binary_path":  "D:\\rust и оптимизация\\rust-mcp-universal\\target\\debug\\rmu-mcp-server.exe"
+                  },
+                  {
+                      "id":  "windows-stale-running-binary",
+                      "category":  "runtime_guard",
+                      "pass":  true,
+                      "status":  "incompatible",
+                      "running_binary_stale":  true,
+                      "running_binary_version":  "0.1.0"
+                  }
+              ]
+}

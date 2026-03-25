@@ -4,8 +4,8 @@ use anyhow::Result;
 use time::OffsetDateTime;
 
 use crate::model::{
-    BudgetInfo, ConfidenceInfo, ContextSelection, IndexTelemetry, PrivacyMode, QueryReport,
-    RankExplainBreakdown, SearchHit, SelectedContextItem,
+    BudgetInfo, ConfidenceInfo, ContextSelection, IndexTelemetry, InvestigationSummary,
+    PrivacyMode, QueryReport, RankExplainBreakdown, SearchHit, SelectedContextItem,
 };
 use crate::vector_rank::SemanticRerankOutcome;
 use crate::{sanitize_path_text, sanitize_value_for_privacy};
@@ -42,6 +42,7 @@ pub struct QueryReportBuildInput<'a> {
     pub explain_entries: &'a [ResultExplainEntry],
     pub stage_counts: Option<RetrievalStageCounts>,
     pub index_telemetry: IndexTelemetry,
+    pub investigation_summary: Option<InvestigationSummary>,
 }
 
 pub(crate) fn build_query_report(
@@ -58,6 +59,7 @@ pub(crate) fn build_query_report(
         explain_entries,
         stage_counts,
         index_telemetry,
+        investigation_summary,
     } = input;
 
     let explain_by_path = explain_entries
@@ -131,6 +133,7 @@ pub(crate) fn build_query_report(
         },
         gaps: helpers::gap_reasons(semantic_requested, semantic_outcome),
         index_telemetry,
+        investigation_summary,
     };
     let mut report_value = serde_json::to_value(&report)?;
     sanitize_value_for_privacy(privacy_mode, &mut report_value);

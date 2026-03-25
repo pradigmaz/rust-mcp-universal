@@ -1,7 +1,5 @@
 use anyhow::Result;
-use rmu_core::{
-    Engine, QualityHotspotAggregation, QualityHotspotsOptions, QualityHotspotsResult,
-};
+use rmu_core::{Engine, QualityHotspotAggregation, QualityHotspotsOptions, QualityHotspotsResult};
 
 pub(super) fn run_quality_hotspots(
     engine: &Engine,

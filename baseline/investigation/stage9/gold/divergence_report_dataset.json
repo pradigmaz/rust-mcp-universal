@@ -1,0 +1,186 @@
+{
+    "cases":  [
+                  {
+                      "id":  "divergence-resolve-origin",
+                      "tool":  "divergence_report",
+                      "fixture":  "mixed_app",
+                      "seed":  "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+                      "seed_kind":  "path",
+                      "expected_capability_status":  "supported",
+                      "expected_assertions":  [
+                                                  {
+                                                      "kind":  "min_divergence_axes",
+                                                      "value":  "5"
+                                                  },
+                                                  {
+                                                      "kind":  "expected_severity",
+                                                      "value":  "suspicious"
+                                                  },
+                                                  {
+                                                      "kind":  "divergence_axis_present",
+                                                      "value":  "predicate_signatures"
+                                                  }
+                                              ],
+                      "labels":  {
+                                     "expected_variant_entry_paths":  [
+                                                                          "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+                                                                          "baseline/investigation/fixtures/mixed_app/src/validators/origin_validator.rs",
+                                                                          "baseline/investigation/fixtures/mixed_app/legacy/origin_service.py"
+                                                                      ],
+                                     "expected_divergence_signals":  [
+                                                                         {
+                                                                             "axis":  "entrypoints",
+                                                                             "severity":  "informational",
+                                                                             "evidence_strength":  "proxy_only",
+                                                                             "classification_reason":  "entrypoint_only"
+                                                                         },
+                                                                         {
+                                                                             "axis":  "guards_and_validators",
+                                                                             "severity":  "suspicious",
+                                                                             "evidence_strength":  "corroborated_proxy",
+                                                                             "classification_reason":  "multi_axis_proxy_corroboration"
+                                                                         },
+                                                                         {
+                                                                             "axis":  "predicate_signatures",
+                                                                             "severity":  "suspicious",
+                                                                             "evidence_strength":  "corroborated_proxy",
+                                                                             "classification_reason":  "multi_axis_proxy_corroboration"
+                                                                         },
+                                                                         {
+                                                                             "axis":  "downstream_symbols",
+                                                                             "severity":  "likely_expected",
+                                                                             "evidence_strength":  "proxy_only",
+                                                                             "classification_reason":  "single_axis_proxy_only"
+                                                                         },
+                                                                         {
+                                                                             "axis":  "constraint_evidence",
+                                                                             "severity":  "suspicious",
+                                                                             "evidence_strength":  "corroborated_proxy",
+                                                                             "classification_reason":  "multi_axis_proxy_corroboration"
+                                                                         },
+                                                                         {
+                                                                             "axis":  "test_coverage",
+                                                                             "severity":  "likely_expected",
+                                                                             "evidence_strength":  "proxy_only",
+                                                                             "classification_reason":  "test_only"
+                                                                         }
+                                                                     ]
+                                 }
+                  },
+                  {
+                      "id":  "divergence-profile-service-intentional",
+                      "tool":  "divergence_report",
+                      "fixture":  "adapter_app",
+                      "seed":  "baseline/investigation/fixtures/adapter_app/src/services/profile_service.rs",
+                      "seed_kind":  "path",
+                      "expected_capability_status":  "supported",
+                      "expected_assertions":  [
+                                                  {
+                                                      "kind":  "min_divergence_axes",
+                                                      "value":  "2"
+                                                  },
+                                                  {
+                                                      "kind":  "expected_severity",
+                                                      "value":  "likely_expected"
+                                                  },
+                                                  {
+                                                      "kind":  "divergence_axis_present",
+                                                      "value":  "downstream_symbols"
+                                                  }
+                                              ],
+                      "labels":  {
+                                     "expected_variant_entry_paths":  [
+                                                                          "baseline/investigation/fixtures/adapter_app/src/services/profile_service.rs",
+                                                                          "baseline/investigation/fixtures/adapter_app/src/repositories/profile_repo.sql"
+                                                                      ],
+                                     "expected_divergence_signals":  [
+                                                                         {
+                                                                             "axis":  "guards_and_validators",
+                                                                             "severity":  "likely_expected",
+                                                                             "evidence_strength":  "proxy_only",
+                                                                             "classification_reason":  "single_axis_proxy_only"
+                                                                         },
+                                                                         {
+                                                                             "axis":  "entrypoints",
+                                                                             "severity":  "informational",
+                                                                             "evidence_strength":  "proxy_only",
+                                                                             "classification_reason":  "entrypoint_only"
+                                                                         },
+                                                                         {
+                                                                             "axis":  "downstream_symbols",
+                                                                             "severity":  "likely_expected",
+                                                                             "evidence_strength":  "corroborated_proxy",
+                                                                             "classification_reason":  "shared_backing_downstream_variation"
+                                                                         },
+                                                                         {
+                                                                             "axis":  "test_coverage",
+                                                                             "severity":  "likely_expected",
+                                                                             "evidence_strength":  "proxy_only",
+                                                                             "classification_reason":  "test_only"
+                                                                         }
+                                                                     ]
+                                 }
+                  },
+                  {
+                      "id":  "divergence-member-service-suspicious",
+                      "tool":  "divergence_report",
+                      "fixture":  "divergence_risky_app",
+                      "seed":  "baseline/investigation/fixtures/divergence_risky_app/src/services/member_service.rs",
+                      "seed_kind":  "path",
+                      "expected_capability_status":  "supported",
+                      "expected_assertions":  [
+                                                  {
+                                                      "kind":  "min_divergence_axes",
+                                                      "value":  "5"
+                                                  },
+                                                  {
+                                                      "kind":  "expected_severity",
+                                                      "value":  "suspicious"
+                                                  },
+                                                  {
+                                                      "kind":  "divergence_axis_present",
+                                                      "value":  "guards_and_validators"
+                                                  }
+                                              ],
+                      "labels":  {
+                                     "expected_variant_entry_paths":  [
+                                                                          "baseline/investigation/fixtures/divergence_risky_app/src/services/member_service.rs",
+                                                                          "baseline/investigation/fixtures/divergence_risky_app/src/validators/member_validator.rs",
+                                                                          "baseline/investigation/fixtures/divergence_risky_app/legacy/member_service.py"
+                                                                      ],
+                                     "expected_divergence_signals":  [
+                                                                         {
+                                                                             "axis":  "entrypoints",
+                                                                             "severity":  "informational",
+                                                                             "evidence_strength":  "proxy_only",
+                                                                             "classification_reason":  "entrypoint_only"
+                                                                         },
+                                                                         {
+                                                                             "axis":  "guards_and_validators",
+                                                                             "severity":  "suspicious",
+                                                                             "evidence_strength":  "corroborated_proxy",
+                                                                             "classification_reason":  "multi_axis_proxy_corroboration"
+                                                                         },
+                                                                         {
+                                                                             "axis":  "predicate_signatures",
+                                                                             "severity":  "suspicious",
+                                                                             "evidence_strength":  "corroborated_proxy",
+                                                                             "classification_reason":  "multi_axis_proxy_corroboration"
+                                                                         },
+                                                                         {
+                                                                             "axis":  "downstream_symbols",
+                                                                             "severity":  "likely_expected",
+                                                                             "evidence_strength":  "proxy_only",
+                                                                             "classification_reason":  "single_axis_proxy_only"
+                                                                         },
+                                                                         {
+                                                                             "axis":  "constraint_evidence",
+                                                                             "severity":  "suspicious",
+                                                                             "evidence_strength":  "corroborated_proxy",
+                                                                             "classification_reason":  "multi_axis_proxy_corroboration"
+                                                                         }
+                                                                     ]
+                                 }
+                  }
+              ]
+}

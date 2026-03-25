@@ -86,6 +86,13 @@ fn context_pack_design_mode_returns_docs_first() -> Result<(), Box<dyn Error>> {
     assert_eq!(pack.mode.as_str(), "design");
     assert!(!pack.context.files.is_empty());
     assert_eq!(pack.context.files[0].path, "docs/design.md");
+    let hints = pack
+        .investigation_hints
+        .as_ref()
+        .expect("embedded investigation hints should be present");
+    assert!(hints.top_variants.len() <= 3);
+    assert!(hints.constraint_keys.len() <= 5);
+    assert!(hints.followups.len() <= 3);
 
     cleanup_project(&project_dir);
     Ok(())

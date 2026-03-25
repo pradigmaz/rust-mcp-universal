@@ -3,7 +3,9 @@ use std::fs;
 
 use anyhow::Result;
 
-use super::scope::{QualityRefreshPlan, apply_quality_scope_policy, build_full_quality_refresh_plan};
+use super::scope::{
+    QualityRefreshPlan, apply_quality_scope_policy, build_full_quality_refresh_plan,
+};
 use super::status::{
     write_quality_status_degraded, write_quality_status_ready, write_quality_status_unavailable,
 };
@@ -141,7 +143,8 @@ fn apply_quality_refresh(engine: &Engine, plan: QualityRefreshPlan) -> Result<()
                                 crate::quality::CURRENT_QUALITY_RULESET_VERSION,
                             quality_metric_hash: &record.quality_metric_hash,
                             quality_violation_hash: &record.quality_violation_hash,
-                            quality_suppressed_violation_hash: &record.quality_suppressed_violation_hash,
+                            quality_suppressed_violation_hash: &record
+                                .quality_suppressed_violation_hash,
                             quality_indexed_at_utc: &now_rfc3339()?,
                             metrics: &record.metrics,
                             violations: &record.violations,

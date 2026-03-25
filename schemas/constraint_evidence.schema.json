@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ConstraintEvidenceResult",
+  "type": "object",
+  "required": [
+    "seed",
+    "items",
+    "capability_status",
+    "unsupported_sources",
+    "confidence"
+  ],
+  "properties": {
+    "seed": {
+      "type": "object",
+      "required": ["seed", "seed_kind"],
+      "properties": {
+        "seed": { "type": "string" },
+        "seed_kind": { "type": "string" }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "constraint_kind",
+          "source_kind",
+          "path",
+          "line_start",
+          "line_end",
+          "excerpt",
+          "confidence",
+          "normalized_key",
+          "kind",
+          "strength",
+          "scope",
+          "source_path",
+          "confidence",
+          "normalized_text"
+        ],
+        "properties": {
+          "constraint_kind": { "type": "string" },
+          "source_kind": { "type": "string" },
+          "path": { "type": "string" },
+          "line_start": { "type": "integer", "minimum": 0 },
+          "line_end": { "type": "integer", "minimum": 0 },
+          "excerpt": { "type": "string" },
+          "normalized_key": { "type": "string" },
+          "kind": { "type": "string" },
+          "strength": { "type": "string" },
+          "scope": { "type": "string" },
+          "source_path": { "type": "string" },
+          "source_span": {
+            "type": "object",
+            "required": ["start_line", "end_line"],
+            "properties": {
+              "start_line": { "type": "integer", "minimum": 0 },
+              "end_line": { "type": "integer", "minimum": 0 },
+              "start_column": { "type": "integer", "minimum": 0 },
+              "end_column": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "introduced_by": { "type": "string" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "normalized_text": { "type": "string" }
+        }
+      }
+    },
+    "capability_status": { "type": "string" },
+    "unsupported_sources": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+  }
+}

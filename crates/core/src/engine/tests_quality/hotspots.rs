@@ -108,14 +108,20 @@ fn quality_hotspots_file_mode_reuses_file_risk_scores() -> anyhow::Result<()> {
         .find(|bucket| bucket.bucket_id == "src/lib.rs")
         .expect("file hotspot bucket should exist");
 
-    assert_eq!(hotspots.summary.aggregation, QualityHotspotAggregation::File);
+    assert_eq!(
+        hotspots.summary.aggregation,
+        QualityHotspotAggregation::File
+    );
     assert_eq!(
         hotspot_bucket.risk_score.map(|risk| risk.score),
         violation_hit.risk_score.map(|risk| risk.score)
     );
     assert_eq!(
         hotspot_bucket.hotspot_score,
-        violation_hit.risk_score.map(|risk| risk.score).unwrap_or_default()
+        violation_hit
+            .risk_score
+            .map(|risk| risk.score)
+            .unwrap_or_default()
     );
 
     let _ = std::fs::remove_dir_all(root);
@@ -141,7 +147,11 @@ fn quality_hotspots_directory_and_module_modes_group_deterministically() -> anyh
             }
         }"#,
     )?;
-    write_project_file(&root, "src/ui/page.ts", "export function page() {\n  return 1;\n}\n")?;
+    write_project_file(
+        &root,
+        "src/ui/page.ts",
+        "export function page() {\n  return 1;\n}\n",
+    )?;
     write_project_file(
         &root,
         "src/core/logic.ts",
@@ -161,14 +171,31 @@ fn quality_hotspots_directory_and_module_modes_group_deterministically() -> anyh
         ..QualityHotspotsOptions::default()
     })?;
 
-    assert!(directory.buckets.iter().any(|bucket| bucket.bucket_id == "src/core"));
-    assert!(directory.buckets.iter().any(|bucket| bucket.bucket_id == "src/ui"));
-    assert!(module.buckets.iter().any(|bucket| bucket.bucket_id == "core"));
+    assert!(
+        directory
+            .buckets
+            .iter()
+            .any(|bucket| bucket.bucket_id == "src/core")
+    );
+    assert!(
+        directory
+            .buckets
+            .iter()
+            .any(|bucket| bucket.bucket_id == "src/ui")
+    );
+    assert!(
+        module
+            .buckets
+            .iter()
+            .any(|bucket| bucket.bucket_id == "core")
+    );
     assert!(module.buckets.iter().any(|bucket| bucket.bucket_id == "ui"));
-    assert!(module
-        .buckets
-        .iter()
-        .any(|bucket| bucket.bucket_id == "unmatched"));
+    assert!(
+        module
+            .buckets
+            .iter()
+            .any(|bucket| bucket.bucket_id == "unmatched")
+    );
 
     let _ = std::fs::remove_dir_all(root);
     Ok(())

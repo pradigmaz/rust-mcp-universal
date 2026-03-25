@@ -217,7 +217,9 @@ fn load_actual_quality_state_conn(
         "#,
     )?;
     let suppressed_rows = suppressed_stmt
-        .query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)))?
+        .query_map([], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+        })?
         .collect::<rusqlite::Result<Vec<_>>>()?;
     for (path, payload) in suppressed_rows {
         suppressed_grouped.insert(path, parse_suppressed_violations_json(&payload)?);

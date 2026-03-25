@@ -110,11 +110,11 @@ pub(crate) use evaluate::{
     build_indexed_quality_facts, build_oversize_quality_facts, evaluate_quality,
 };
 pub(crate) use metrics::quality_metrics_hash;
-pub(crate) use policy_schema::StructuralUnmatchedBehavior;
 pub(crate) use policy::{
     EffectiveQualityPolicy, QualityPolicy, QualityThresholds, StructuralPolicy,
     default_quality_policy, load_quality_policy,
 };
+pub(crate) use policy_schema::StructuralUnmatchedBehavior;
 pub(crate) use rule_metadata::is_known_rule_id;
 pub(crate) use scoring::compute_hit_risk_score;
 
@@ -154,7 +154,9 @@ pub(crate) fn violations_hash(violations: &[QualityViolationEntry]) -> String {
 pub(crate) fn suppressed_violations_hash(violations: &[SuppressedQualityViolationEntry]) -> String {
     let mut bytes = Vec::new();
     for violation in violations {
-        bytes.extend_from_slice(violations_hash(std::slice::from_ref(&violation.violation)).as_bytes());
+        bytes.extend_from_slice(
+            violations_hash(std::slice::from_ref(&violation.violation)).as_bytes(),
+        );
         bytes.push(0);
         for suppression in &violation.suppressions {
             bytes.extend_from_slice(suppression.suppression_id.as_bytes());

@@ -15,14 +15,16 @@ mod build_context_under_budget;
 mod call_path;
 #[path = "handlers/context_pack.rs"]
 mod context_pack;
+#[path = "handlers/investigation.rs"]
+mod investigation;
 #[path = "handlers/maintenance.rs"]
 mod maintenance;
 #[path = "handlers/modes.rs"]
 mod modes;
-#[path = "handlers/query_report.rs"]
-mod query_report;
 #[path = "handlers/quality_hotspots.rs"]
 mod quality_hotspots;
+#[path = "handlers/query_report.rs"]
+mod query_report;
 #[path = "handlers/related_files.rs"]
 mod related_files;
 #[path = "handlers/rule_violations.rs"]
@@ -47,6 +49,10 @@ pub(super) fn query_benchmark(args: &Value, state: &mut ServerState) -> Result<V
 
 pub(super) fn db_maintenance(args: &Value, state: &mut ServerState) -> Result<Value> {
     maintenance::db_maintenance(args, state)
+}
+
+pub(super) fn preflight(args: &Value, state: &mut ServerState) -> Result<Value> {
+    maintenance::preflight(args, state)
 }
 
 pub(super) fn search_candidates(args: &Value, state: &mut ServerState) -> Result<Value> {
@@ -103,6 +109,26 @@ pub(super) fn quality_hotspots(args: &Value, state: &mut ServerState) -> Result<
 
 pub(super) fn call_path(args: &Value, state: &mut ServerState) -> Result<Value> {
     call_path::call_path(args, state)
+}
+
+pub(super) fn symbol_body(args: &Value, state: &mut ServerState) -> Result<Value> {
+    investigation::symbol_body(args, state)
+}
+
+pub(super) fn route_trace(args: &Value, state: &mut ServerState) -> Result<Value> {
+    investigation::route_trace(args, state)
+}
+
+pub(super) fn constraint_evidence(args: &Value, state: &mut ServerState) -> Result<Value> {
+    investigation::constraint_evidence(args, state)
+}
+
+pub(super) fn concept_cluster(args: &Value, state: &mut ServerState) -> Result<Value> {
+    investigation::concept_cluster(args, state)
+}
+
+pub(super) fn divergence_report(args: &Value, state: &mut ServerState) -> Result<Value> {
+    investigation::divergence_report(args, state)
 }
 
 pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<Value> {

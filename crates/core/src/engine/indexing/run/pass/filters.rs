@@ -149,7 +149,9 @@ mod tests {
             actual_quality_violation_count: 0,
             actual_quality_violation_hash: violations_hash(&[]),
             actual_quality_suppressed_violation_count: 0,
-            actual_quality_suppressed_violation_hash: crate::quality::suppressed_violations_hash(&[]),
+            actual_quality_suppressed_violation_hash: crate::quality::suppressed_violations_hash(
+                &[],
+            ),
         }
     }
 

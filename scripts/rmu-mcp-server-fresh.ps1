@@ -25,5 +25,27 @@ foreach ($server in $staleServers) {
     Stop-Process -Id $server.ProcessId -Force -ErrorAction SilentlyContinue
 }
 
+$deadline = (Get-Date).AddSeconds(5)
+do {
+    $remaining = Get-CimInstance Win32_Process -Filter "Name = 'rmu-mcp-server.exe'" |
+        Where-Object {
+            $_.ExecutablePath -and
+            [System.StringComparer]::OrdinalIgnoreCase.Equals(
+                [System.IO.Path]::GetFullPath($_.ExecutablePath),
+                $binaryPath
+            )
+        }
+    if (-not $remaining) {
+        break
+    }
+    Start-Sleep -Milliseconds 150
+} while ((Get-Date) -lt $deadline)
+
+if ($remaining) {
+    $pids = ($remaining | Select-Object -ExpandProperty ProcessId) -join ","
+    Write-Error "stale rmu-mcp-server.exe processes are still running for $binaryPath (pids: $pids). Use a fresh launcher retry after they exit."
+    exit 1
+}
+
 & $binaryPath @args
 exit $LASTEXITCODE

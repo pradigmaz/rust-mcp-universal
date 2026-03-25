@@ -1,0 +1,316 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "InvestigationBenchmarkReport",
+  "type": "object",
+  "required": [
+    "dataset_path",
+    "limit",
+    "case_count",
+    "per_tool_metrics",
+    "cases",
+    "unsupported_behavior_summary",
+    "privacy_failures"
+  ],
+  "properties": {
+    "dataset_path": { "type": "string", "minLength": 1 },
+    "limit": { "type": "integer", "minimum": 1 },
+    "case_count": { "type": "integer", "minimum": 0 },
+    "per_tool_metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "tool",
+          "case_count",
+          "passed_cases",
+          "pass_rate",
+          "unsupported_case_rate",
+          "latency_p50_ms",
+          "latency_p95_ms"
+        ],
+        "properties": {
+          "tool": {
+            "type": "string",
+            "oneOf": [
+              { "const": "symbol_body" },
+              { "const": "route_trace" },
+              { "const": "constraint_evidence" },
+              { "const": "concept_cluster" },
+              { "const": "divergence_report" }
+            ]
+          },
+          "case_count": { "type": "integer", "minimum": 0 },
+          "passed_cases": { "type": "integer", "minimum": 0 },
+          "pass_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+          "unsupported_case_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+          "latency_p50_ms": { "type": "number", "minimum": 0 },
+          "latency_p95_ms": { "type": "number", "minimum": 0 },
+          "body_anchor_precision": { "type": "number", "minimum": 0, "maximum": 1 },
+          "body_request_p95_budget_ms": { "type": "number", "minimum": 0 },
+          "body_request_p95_ratio": { "type": "number", "minimum": 0 },
+          "route_trace_success_at_1": { "type": "number", "minimum": 0, "maximum": 1 },
+          "route_trace_success_at_3": { "type": "number", "minimum": 0, "maximum": 1 },
+          "segment_type_precision": { "type": "number", "minimum": 0, "maximum": 1 },
+          "constraint_evidence_precision": { "type": "number", "minimum": 0, "maximum": 1 },
+          "constraint_source_recall": { "type": "number", "minimum": 0, "maximum": 1 },
+          "variant_recall_at_3": { "type": "number", "minimum": 0, "maximum": 1 },
+          "top_variant_precision": { "type": "number", "minimum": 0, "maximum": 1 },
+          "variant_rank_consistency": { "type": "number", "minimum": 0, "maximum": 1 },
+          "semantic_state_coverage": { "type": "number", "minimum": 0, "maximum": 1 },
+          "semantic_fail_open_visibility": { "type": "number", "minimum": 0, "maximum": 1 },
+          "low_signal_semantic_false_penalty_rate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "divergence_signal_precision": { "type": "number", "minimum": 0, "maximum": 1 },
+          "false_positive_divergence_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+          "explain_evidence_coverage": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "tool",
+          "fixture",
+          "pass",
+          "assertion_pass_count",
+          "assertion_total_count",
+          "capability_status",
+          "expected_capability_status",
+          "unsupported_sources",
+          "privacy_failures",
+          "latency_ms",
+          "notes"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "tool": {
+            "type": "string",
+            "oneOf": [
+              { "const": "symbol_body" },
+              { "const": "route_trace" },
+              { "const": "constraint_evidence" },
+              { "const": "concept_cluster" },
+              { "const": "divergence_report" }
+            ]
+          },
+          "fixture": { "type": "string", "minLength": 1 },
+          "pass": { "type": "boolean" },
+          "assertion_pass_count": { "type": "integer", "minimum": 0 },
+          "assertion_total_count": { "type": "integer", "minimum": 0 },
+          "capability_status": { "type": "string", "minLength": 1 },
+          "expected_capability_status": { "type": "string", "minLength": 1 },
+          "unsupported_sources": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "privacy_failures": { "type": "integer", "minimum": 0 },
+          "latency_ms": { "type": "number", "minimum": 0 },
+          "returned_anchor_count": { "type": "integer", "minimum": 0 },
+          "expected_body_anchor_count": { "type": "integer", "minimum": 0 },
+          "matched_anchor_count": { "type": "integer", "minimum": 0 },
+          "route_success_at_1": { "type": "boolean" },
+          "route_success_at_3": { "type": "boolean" },
+          "matched_route_segment_count": { "type": "integer", "minimum": 0 },
+          "correctly_typed_route_segment_count": { "type": "integer", "minimum": 0 },
+          "returned_constraint_count": { "type": "integer", "minimum": 0 },
+          "matched_constraint_count": { "type": "integer", "minimum": 0 },
+          "expected_constraint_source_count": { "type": "integer", "minimum": 0 },
+          "recovered_constraint_source_count": { "type": "integer", "minimum": 0 },
+          "expected_variant_count": { "type": "integer", "minimum": 0 },
+          "recovered_variant_count_at_3": { "type": "integer", "minimum": 0 },
+          "top_variant_match": { "type": "boolean" },
+          "variant_rank_consistent": { "type": "boolean" },
+          "semantic_state_present": { "type": "boolean" },
+          "semantic_state_matches_expectation": { "type": "boolean" },
+          "semantic_fail_open_visible": { "type": "boolean" },
+          "low_signal_semantic_false_penalty": { "type": "boolean" },
+          "returned_divergence_signal_count": { "type": "integer", "minimum": 0 },
+          "expected_divergence_signal_count": { "type": "integer", "minimum": 0 },
+          "matched_divergence_signal_count": { "type": "integer", "minimum": 0 },
+          "unexpected_divergence_signal_count": { "type": "integer", "minimum": 0 },
+          "evidence_fields_present": { "type": "integer", "minimum": 0 },
+          "evidence_fields_total": { "type": "integer", "minimum": 0 },
+          "notes": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "unsupported_behavior_summary": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "privacy_failures": { "type": "integer", "minimum": 0 },
+    "navigation_latency_baseline_status": { "type": "string", "minLength": 1 },
+    "diff": {
+      "type": "object",
+      "required": [
+        "baseline_case_count",
+        "current_case_count",
+        "per_tool_deltas",
+        "regressed_metrics",
+        "improved_metrics",
+        "regression_failures"
+      ],
+      "properties": {
+        "baseline_case_count": { "type": "integer", "minimum": 0 },
+        "current_case_count": { "type": "integer", "minimum": 0 },
+        "per_tool_deltas": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["tool", "metrics"],
+            "properties": {
+              "tool": {
+                "type": "string",
+                "oneOf": [
+                  { "const": "symbol_body" },
+                  { "const": "route_trace" },
+                  { "const": "constraint_evidence" },
+                  { "const": "concept_cluster" },
+                  { "const": "divergence_report" }
+                ]
+              },
+              "metrics": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "tool",
+                    "metric",
+                    "expectation",
+                    "baseline",
+                    "current",
+                    "delta"
+                  ],
+                  "properties": {
+                    "tool": {
+                      "type": "string",
+                      "oneOf": [
+                        { "const": "symbol_body" },
+                        { "const": "route_trace" },
+                        { "const": "constraint_evidence" },
+                        { "const": "concept_cluster" },
+                        { "const": "divergence_report" }
+                      ]
+                    },
+                    "metric": { "type": "string", "minLength": 1 },
+                    "expectation": {
+                      "type": "string",
+                      "oneOf": [
+                        { "const": "higher_is_better" },
+                        { "const": "lower_is_better" }
+                      ]
+                    },
+                    "baseline": { "type": "number" },
+                    "current": { "type": "number" },
+                    "delta": { "type": "number" },
+                    "delta_ratio": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "regressed_metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "tool",
+              "metric",
+              "expectation",
+              "baseline",
+              "current",
+              "delta"
+            ],
+            "properties": {
+              "tool": {
+                "type": "string",
+                "oneOf": [
+                  { "const": "symbol_body" },
+                  { "const": "route_trace" },
+                  { "const": "constraint_evidence" },
+                  { "const": "concept_cluster" },
+                  { "const": "divergence_report" }
+                ]
+              },
+              "metric": { "type": "string", "minLength": 1 },
+              "expectation": {
+                "type": "string",
+                "oneOf": [
+                  { "const": "higher_is_better" },
+                  { "const": "lower_is_better" }
+                ]
+              },
+              "baseline": { "type": "number" },
+              "current": { "type": "number" },
+              "delta": { "type": "number" },
+              "delta_ratio": { "type": "number" }
+            }
+          }
+        },
+        "improved_metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "tool",
+              "metric",
+              "expectation",
+              "baseline",
+              "current",
+              "delta"
+            ],
+            "properties": {
+              "tool": {
+                "type": "string",
+                "oneOf": [
+                  { "const": "symbol_body" },
+                  { "const": "route_trace" },
+                  { "const": "constraint_evidence" },
+                  { "const": "concept_cluster" },
+                  { "const": "divergence_report" }
+                ]
+              },
+              "metric": { "type": "string", "minLength": 1 },
+              "expectation": {
+                "type": "string",
+                "oneOf": [
+                  { "const": "higher_is_better" },
+                  { "const": "lower_is_better" }
+                ]
+              },
+              "baseline": { "type": "number" },
+              "current": { "type": "number" },
+              "delta": { "type": "number" },
+              "delta_ratio": { "type": "number" }
+            }
+          }
+        },
+        "regression_failures": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "threshold_verdict": {
+      "type": "object",
+      "required": ["passed", "failures"],
+      "properties": {
+        "passed": { "type": "boolean" },
+        "failures": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -99,8 +99,11 @@ fn quality_hotspots_returns_degraded_status_for_invalid_quality_policy() {
         "pub fn noisy() {\n  let _value = \"this line is intentionally very very very very very very very very very very very very very very very very very very very long\";\n}\n",
     )
     .expect("write rust source");
-    fs::write(project_dir.join("rmu-quality-policy.json"), "{not-valid-json")
-        .expect("write invalid policy");
+    fs::write(
+        project_dir.join("rmu-quality-policy.json"),
+        "{not-valid-json",
+    )
+    .expect("write invalid policy");
 
     let mut state = state_for(project_dir.clone(), Some(project_dir.join(".rmu/index.db")));
     handle_tool_call(

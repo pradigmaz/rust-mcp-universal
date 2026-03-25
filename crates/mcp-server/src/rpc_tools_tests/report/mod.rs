@@ -1,6 +1,8 @@
 use super::*;
 
 mod benchmark;
+mod constraint_surface;
+mod investigation;
 mod navigation;
 mod navigation_python;
 mod query_report_contract;

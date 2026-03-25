@@ -1,14 +1,37 @@
 use std::path::{Path, PathBuf};
 
+use serde_json::Value;
+
+#[path = "../../core/tests/support/investigation_fixture.rs"]
+mod investigation_fixture;
+#[allow(dead_code)]
+#[path = "../../mcp-server/src/rpc_tools_tests_helpers/schema.rs"]
+mod schema_helper;
+
+fn load_schema(file_name: &str) -> Value {
+    let schema_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..")
+        .join("schemas")
+        .join(file_name);
+    let raw = std::fs::read_to_string(&schema_path)
+        .unwrap_or_else(|err| panic!("failed to read schema {}: {err}", schema_path.display()));
+    serde_json::from_str(&raw)
+        .unwrap_or_else(|err| panic!("failed to parse schema {}: {err}", schema_path.display()))
+}
+
 mod cli_contract {
     use super::*;
 
     mod benchmark;
+    mod constraint_surface;
     mod index_lifecycle;
+    mod investigation;
     mod json_and_runtime;
     mod maintenance;
     mod navigation;
     mod navigation_python;
+    mod preflight;
     mod quality_hotspots;
     mod quality_matrix;
 
@@ -57,5 +80,14 @@ mod cli_contract {
         let mut bytes = vec![0xEF, 0xBB, 0xBF];
         bytes.extend_from_slice(json_content.as_bytes());
         std::fs::write(path, bytes).expect("write utf-8 bom json");
+    }
+
+    fn assert_required_structure(value: &Value, schema: &Value, context: &str) {
+        schema_helper::assert_required_structure(value, schema, context);
+    }
+
+    fn validate_schema_keyword_coverage(schema: &Value, context: &str) {
+        schema_helper::validate_schema_keyword_coverage(schema, context)
+            .unwrap_or_else(|err| panic!("schema keyword validation failed at {context}: {err}"));
     }
 }

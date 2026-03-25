@@ -21,7 +21,9 @@ pub(super) struct SchemaMigration {
     pub(super) apply: fn(&Transaction<'_>) -> Result<()>,
 }
 
-pub(super) const MIGRATIONS: [SchemaMigration; 14] = [
+pub(super) const CURRENT_SCHEMA_MIGRATION_VERSION: u32 = 14;
+
+pub(super) const MIGRATIONS: [SchemaMigration; CURRENT_SCHEMA_MIGRATION_VERSION as usize] = [
     SchemaMigration {
         id: 1,
         name: "file_chunks_excerpt_column",

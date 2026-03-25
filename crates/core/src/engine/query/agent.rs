@@ -143,6 +143,12 @@ impl Engine {
                     max_tokens,
                 )?;
                 let (chunk_coverage, chunk_source) = super::derive_chunk_telemetry(&context);
+                let investigation_summary =
+                    super::investigation_embed::build_investigation_summary(
+                        self,
+                        value,
+                        requested_limit,
+                    )?;
                 let report = build_query_report(
                     &self.project_root,
                     QueryReportBuildInput {
@@ -163,6 +169,7 @@ impl Engine {
                             chunk_coverage,
                             chunk_source,
                         },
+                        investigation_summary: Some(investigation_summary),
                     },
                 )?;
 

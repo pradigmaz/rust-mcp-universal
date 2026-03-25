@@ -1,0 +1,102 @@
+name: Investigation Regression Gate
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+
+jobs:
+  investigation-release-gate:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Prepare trusted investigation gate inputs from PR base
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          DATASET_PATH="baseline/investigation/stage9/investigation_dataset.json"
+          BASELINE_REPORT_PATH="baseline/investigation/stage9/baseline_report.json"
+          THRESHOLDS_PATH="baseline/investigation/stage9/thresholds.json"
+
+          mkdir -p .ci-base .ci-artifacts
+
+          if ! git cat-file -e "${BASE_SHA}^{commit}"; then
+            echo "Base commit ${BASE_SHA} is missing locally, fetching it"
+            git fetch --no-tags --depth=1 origin "${BASE_SHA}"
+          fi
+
+          echo "Reading trusted investigation inputs from base commit ${BASE_SHA}"
+          git show "${BASE_SHA}:${DATASET_PATH}" > .ci-base/investigation_dataset.json
+          git show "${BASE_SHA}:${BASELINE_REPORT_PATH}" > .ci-base/investigation_baseline_report.json
+          git show "${BASE_SHA}:${THRESHOLDS_PATH}" > .ci-base/investigation_thresholds.json
+
+      - name: Run investigation benchmark gate with enforced regression checks
+        id: gate
+        shell: bash
+        run: |
+          set -uo pipefail
+
+          DB_DIR="$(mktemp -d)"
+          OUTPUT_JSON=".ci-artifacts/investigation_benchmark_report.json"
+          DIFF_JSON=".ci-artifacts/investigation_benchmark_diff.json"
+          STDERR_LOG=".ci-artifacts/investigation_benchmark_stderr.log"
+
+          set +e
+          cargo run --locked -p rmu-cli -- \
+            --project-path . \
+            --db-path "${DB_DIR}/.rmu/index.db" \
+            --json \
+            investigation-benchmark \
+            --dataset .ci-base/investigation_dataset.json \
+            --baseline-report .ci-base/investigation_baseline_report.json \
+            --thresholds .ci-base/investigation_thresholds.json \
+            --auto-index \
+            --enforce-gates \
+            2> >(tee "${STDERR_LOG}" >&2) | tee "${OUTPUT_JSON}"
+          GATE_EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path(".ci-artifacts/investigation_benchmark_report.json").read_text())
+          Path(".ci-artifacts/investigation_benchmark_diff.json").write_text(
+              json.dumps(report.get("diff", {}), indent=2) + "\n"
+          )
+          PY
+
+          echo "gate_exit_code=${GATE_EXIT_CODE}" >> "${GITHUB_OUTPUT}"
+          exit "${GATE_EXIT_CODE}"
+
+      - name: Upload investigation gate artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: investigation-regression-gate
+          if-no-files-found: warn
+          path: |
+            .ci-artifacts/investigation_benchmark_report.json
+            .ci-artifacts/investigation_benchmark_diff.json
+            .ci-artifacts/investigation_benchmark_stderr.log
+            .ci-base/investigation_dataset.json
+            .ci-base/investigation_baseline_report.json
+            .ci-base/investigation_thresholds.json
