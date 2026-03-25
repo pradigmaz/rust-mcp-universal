@@ -10,6 +10,8 @@ use crate::model::{
     SearchHit, SourceSpan,
 };
 
+use super::path_helpers::{display_path, source_fs_path};
+
 #[derive(Debug, Clone)]
 pub(crate) struct CandidateFile {
     pub(crate) path: String,
@@ -124,6 +126,12 @@ pub(crate) fn classify_route_segment(path: &str) -> RouteSegmentKind {
     if lowered.contains("service") {
         return RouteSegmentKind::Service;
     }
+    if lowered.contains("/lib/api/")
+        || lowered.starts_with("lib/api/")
+        || lowered.starts_with("frontend/src/lib/api/")
+    {
+        return RouteSegmentKind::ApiClient;
+    }
     if lowered.contains("endpoint")
         || lowered.contains("controller")
         || lowered.contains("/api/")
@@ -134,7 +142,12 @@ pub(crate) fn classify_route_segment(path: &str) -> RouteSegmentKind {
     if lowered.contains("client") {
         return RouteSegmentKind::ApiClient;
     }
-    if lowered.contains("hook") || lowered.contains("/frontend/") || lowered.contains("/ui/") {
+    if lowered.contains("hook")
+        || lowered.contains("/frontend/")
+        || lowered.starts_with("frontend/")
+        || lowered.contains("/ui/")
+        || lowered.starts_with("ui/")
+    {
         return RouteSegmentKind::Ui;
     }
     RouteSegmentKind::Unknown
@@ -179,6 +192,12 @@ pub(crate) fn classify_route_source_kind(path: &str) -> &'static str {
     if lowered.contains("service") {
         return "service";
     }
+    if lowered.contains("/lib/api/")
+        || lowered.starts_with("lib/api/")
+        || lowered.starts_with("frontend/src/lib/api/")
+    {
+        return "api_client";
+    }
     if lowered.contains("endpoint")
         || lowered.contains("controller")
         || lowered.contains("/api/")
@@ -189,7 +208,12 @@ pub(crate) fn classify_route_source_kind(path: &str) -> &'static str {
     if lowered.contains("client") {
         return "api_client";
     }
-    if lowered.contains("hook") || lowered.contains("/frontend/") || lowered.contains("/ui/") {
+    if lowered.contains("hook")
+        || lowered.contains("/frontend/")
+        || lowered.starts_with("frontend/")
+        || lowered.contains("/ui/")
+        || lowered.starts_with("ui/")
+    {
         return "ui";
     }
     if lowered.contains("constraint") || lowered.contains("index") {
@@ -237,7 +261,7 @@ pub(crate) fn is_supported_language(language: &str, path: &str) -> bool {
 }
 
 pub(super) fn resolve_source_path(project_root: &Path, path: &str) -> PathBuf {
-    let candidate = PathBuf::from(path);
+    let candidate = source_fs_path(path);
     if candidate.is_absolute() {
         candidate
     } else {
@@ -317,7 +341,7 @@ fn collect_symbol_candidates(
         .symbol_lookup(seed.trim(), limit.max(1))?
         .into_iter()
         .map(|symbol| CandidateFile {
-            path: symbol.path,
+            path: display_path(&symbol.path),
             language: symbol.language,
             line: symbol.line,
             column: symbol.column,
@@ -335,9 +359,10 @@ fn collect_symbol_candidates(
 }
 
 fn candidate_from_hit(hit: SearchHit) -> CandidateFile {
+    let path = display_path(&hit.path);
     CandidateFile {
-        path: hit.path.clone(),
-        language: detect_language(&hit.path, &hit.language),
+        path: path.clone(),
+        language: detect_language(&path, &hit.language),
         line: None,
         column: None,
         symbol: None,

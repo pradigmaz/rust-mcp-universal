@@ -7,8 +7,9 @@ use crate::model::{RouteSegment, RouteSegmentKind};
 
 use super::common::{
     CandidateFile, classify_route_segment, classify_route_source_kind, detect_language,
-    source_span_from_position,
+    is_supported_language, source_span_from_position,
 };
+use super::path_helpers::display_path;
 
 pub(super) fn build_route(engine: &Engine, candidate: &CandidateFile) -> Result<Vec<RouteSegment>> {
     let mut segments = vec![RouteSegment {
@@ -25,10 +26,10 @@ pub(super) fn build_route(engine: &Engine, candidate: &CandidateFile) -> Result<
     let mut seen = HashSet::from([candidate.path.clone()]);
 
     for hit in engine.related_files(&candidate.path, 6)? {
-        if !seen.insert(hit.path.clone()) {
+        let path = display_path(&hit.path);
+        if !seen.insert(path.clone()) {
             continue;
         }
-        let path = hit.path;
         let source_kind = classify_route_source_kind(&path).to_string();
         segments.push(RouteSegment {
             kind: classify_route_segment(&path),
@@ -48,10 +49,10 @@ pub(super) fn build_route(engine: &Engine, candidate: &CandidateFile) -> Result<
 
     if let Some(symbol) = candidate.symbol.as_deref() {
         for hit in engine.symbol_references(symbol, 4)? {
-            if !seen.insert(hit.path.clone()) {
+            let path = display_path(&hit.path);
+            if !seen.insert(path.clone()) {
                 continue;
             }
-            let path = hit.path;
             let source_kind = classify_route_source_kind(&path).to_string();
             segments.push(RouteSegment {
                 kind: classify_route_segment(&path),
@@ -127,22 +128,26 @@ fn adjacent_repo_paths(engine: &Engine, candidate: &CandidateFile) -> Vec<(Strin
 
     for row in rows.flatten() {
         let (relative, language) = row;
-        let lowered = relative.to_ascii_lowercase();
+        let path = display_path(&relative);
+        let lowered = path.to_ascii_lowercase();
         if !tokens.iter().any(|token| lowered.contains(token)) {
             continue;
         }
-        let kind = classify_route_segment(&relative);
+        let kind = classify_route_segment(&path);
         if !matches!(
             kind,
             RouteSegmentKind::Test
                 | RouteSegmentKind::Migration
                 | RouteSegmentKind::Query
                 | RouteSegmentKind::Crud
-                | RouteSegmentKind::Unknown
         ) {
             continue;
         }
-        out.push((relative.clone(), detect_language(&relative, &language)));
+        let detected_language = detect_language(&path, &language);
+        if !is_supported_language(&detected_language, &path) {
+            continue;
+        }
+        out.push((path, detected_language));
         if out.len() >= 6 {
             break;
         }

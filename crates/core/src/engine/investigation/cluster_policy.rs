@@ -10,6 +10,7 @@ use crate::model::{
 use crate::vector_rank::SemanticRerankOutcome;
 
 use super::common::{CandidateFile, CandidateMatchKind, detect_language};
+use super::path_helpers::display_path;
 
 pub(super) fn collect_expanded_candidates(
     engine: &Engine,
@@ -88,9 +89,10 @@ pub(super) fn collect_expanded_candidates(
     for candidate in initial_candidates.iter().take(limit.max(1)) {
         if let Ok(hits) = engine.related_files(&candidate.path, 3) {
             for hit in hits {
+                let path = display_path(&hit.path);
                 candidates.push(CandidateFile {
-                    path: hit.path.clone(),
-                    language: detect_language(&hit.path, &hit.language),
+                    path: path.clone(),
+                    language: detect_language(&path, &hit.language),
                     line: None,
                     column: None,
                     symbol: None,
@@ -307,12 +309,12 @@ fn candidate_from_segment(segment: &RouteSegment, source_kind: &str, score: f32)
 
 fn canonical_rank(kind: RouteSegmentKind) -> usize {
     match kind {
-        RouteSegmentKind::Ui => 0,
-        RouteSegmentKind::ApiClient => 1,
-        RouteSegmentKind::Endpoint => 2,
-        RouteSegmentKind::Service => 3,
-        RouteSegmentKind::Crud => 4,
-        RouteSegmentKind::Query => 5,
+        RouteSegmentKind::Endpoint => 0,
+        RouteSegmentKind::Service => 1,
+        RouteSegmentKind::Crud => 2,
+        RouteSegmentKind::Query => 3,
+        RouteSegmentKind::ApiClient => 4,
+        RouteSegmentKind::Ui => 5,
         RouteSegmentKind::Test => 6,
         RouteSegmentKind::Migration => 7,
         RouteSegmentKind::Unknown => 8,

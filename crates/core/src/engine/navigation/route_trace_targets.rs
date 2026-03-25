@@ -5,7 +5,9 @@ use anyhow::Result;
 use super::super::Engine;
 use crate::engine::investigation::common::{
     CandidateFile, classify_route_segment, classify_route_source_kind, detect_language,
+    is_supported_language,
 };
+use crate::engine::investigation::path_helpers::display_path;
 use crate::model::RouteSegmentKind;
 
 pub(super) const MAX_ROUTE_HOPS: usize = 6;
@@ -44,6 +46,7 @@ fn push_target(
     path: String,
     _language: String,
 ) {
+    let path = display_path(&path);
     let kind = classify_route_segment(&path);
     let source_kind = classify_route_source_kind(&path).to_string();
     if !seen.insert(path.clone()) || !target_is_meaningful(kind, source_kind.as_str()) {
@@ -94,7 +97,8 @@ fn adjacent_repo_targets(engine: &Engine, start: &CandidateFile) -> Vec<(String,
 
     let mut out = Vec::new();
     for row in rows.flatten() {
-        let (path, language) = row;
+        let (raw_path, language) = row;
+        let path = display_path(&raw_path);
         let lowered = path.to_ascii_lowercase();
         if !tokens.iter().any(|token| lowered.contains(token)) {
             continue;
@@ -111,7 +115,11 @@ fn adjacent_repo_targets(engine: &Engine, start: &CandidateFile) -> Vec<(String,
         {
             continue;
         }
-        out.push((path.clone(), detect_language(&path, &language)));
+        let detected_language = detect_language(&path, &language);
+        if !is_supported_language(&detected_language, &path) {
+            continue;
+        }
+        out.push((path.clone(), detected_language));
         if out.len() >= MAX_TARGETS_PER_START {
             break;
         }

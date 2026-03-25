@@ -27,6 +27,9 @@ pub(super) fn collect_constraint_evidence(
             if normalized_text.is_empty() {
                 continue;
             }
+            if should_ignore_constraint_line(&language, &normalized_text) {
+                continue;
+            }
             let Some(adapter_match) = extract_with_adapter(path, &language, &normalized_text)
             else {
                 continue;
@@ -212,6 +215,9 @@ fn sql_prisma_adapter(input: &ConstraintAdapterInput<'_>) -> Option<AdapterMatch
 }
 
 fn generic_weak_fallback_adapter(input: &ConstraintAdapterInput<'_>) -> Option<AdapterMatch> {
+    if !supports_generic_weak_fallback(input) {
+        return None;
+    }
     if input.lowered_line.contains("validate")
         || input.lowered_line.contains("assert")
         || input.lowered_line.contains("ensure")
@@ -227,6 +233,35 @@ fn generic_weak_fallback_adapter(input: &ConstraintAdapterInput<'_>) -> Option<A
         });
     }
     None
+}
+
+fn supports_generic_weak_fallback(input: &ConstraintAdapterInput<'_>) -> bool {
+    matches!(
+        input.language,
+        "rust" | "python" | "typescript" | "javascript" | "sql" | "prisma"
+    )
+}
+
+fn should_ignore_constraint_line(language: &str, normalized_line: &str) -> bool {
+    let trimmed = normalized_line.trim_start();
+    match language {
+        "python" => {
+            trimmed.starts_with('#')
+                || trimmed.starts_with("\"\"\"")
+                || trimmed.starts_with("'''")
+                || trimmed.starts_with("revision id:")
+                || trimmed.starts_with("revises:")
+                || trimmed.starts_with("create date:")
+        }
+        "rust" | "typescript" | "javascript" => {
+            trimmed.starts_with("//")
+                || trimmed.starts_with("/*")
+                || trimmed.starts_with('*')
+                || trimmed.starts_with("*/")
+        }
+        "sql" => trimmed.starts_with("--"),
+        _ => false,
+    }
 }
 
 fn strong_match(

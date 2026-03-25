@@ -11,6 +11,7 @@ use super::common::{
     CandidateFile, CandidateMatchKind, build_anchor, capability_status, collect_candidates,
     detect_language, is_supported_language, read_source,
 };
+use super::path_helpers::index_lookup_paths;
 
 pub(super) fn symbol_body(
     engine: &Engine,
@@ -182,22 +183,37 @@ fn extract_chunk_excerpt(
     let anchor_line = candidate
         .line
         .map(|line| i64::try_from(line).unwrap_or(i64::MAX));
-    let row = stmt
-        .query_row(params![&candidate.path, anchor_line], |row| {
-            let start_line = row.get::<_, Option<i64>>(0)?.unwrap_or(1);
-            let end_line = row.get::<_, Option<i64>>(1)?.unwrap_or(start_line);
-            let excerpt = row.get::<_, String>(2)?;
-            Ok((start_line, end_line, excerpt))
-        })
-        .optional()?;
+    for lookup_path in index_lookup_paths(&candidate.path) {
+        let row = stmt
+            .query_row(params![&lookup_path, anchor_line], |row| {
+                let start_line = row.get::<_, Option<i64>>(0)?.unwrap_or(1);
+                let end_line = row.get::<_, Option<i64>>(1)?.unwrap_or(start_line);
+                let excerpt = row.get::<_, String>(2)?;
+                Ok((start_line, end_line, excerpt))
+            })
+            .optional()?;
+        if let Some((start_line, end_line, excerpt)) = row {
+            return Ok(excerpt_to_body(
+                &excerpt,
+                usize::try_from(start_line).unwrap_or(1),
+                usize::try_from(end_line).unwrap_or(usize::try_from(start_line).unwrap_or(1)),
+            ));
+        }
+    }
 
-    Ok(row.and_then(|(start_line, end_line, excerpt)| {
-        excerpt_to_body(
-            &excerpt,
-            usize::try_from(start_line).unwrap_or(1),
-            usize::try_from(end_line).unwrap_or(usize::try_from(start_line).unwrap_or(1)),
-        )
-    }))
+    if candidate.line.is_none() {
+        let source = read_source(&engine.project_root, &candidate.path)?;
+        let head = source
+            .lines()
+            .take(12)
+            .map(str::to_string)
+            .collect::<Vec<_>>();
+        if !head.is_empty() {
+            return Ok(build_body(&head, 0, head.len() - 1));
+        }
+    }
+
+    Ok(None)
 }
 
 fn extract_rust_block(

@@ -84,11 +84,11 @@ fn lexical_signal(seed: &str, candidate: &CandidateFile) -> f32 {
         candidate.path,
         candidate.symbol.clone().unwrap_or_default()
     );
-    token_overlap(seed, &haystack).max(if candidate.source_kind == "search_candidate" {
-        candidate.score.clamp(0.0, 1.0)
-    } else {
-        (candidate.score * 0.85).clamp(0.0, 1.0)
-    })
+    let overlap = token_overlap(seed, &haystack);
+    match candidate.source_kind.as_str() {
+        "search_candidate" | "symbol_lookup" => overlap.max(candidate.score.clamp(0.0, 1.0)),
+        _ => overlap,
+    }
 }
 
 fn route_signal(route: &[RouteSegment]) -> f32 {

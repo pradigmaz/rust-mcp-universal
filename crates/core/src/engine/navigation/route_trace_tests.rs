@@ -1,7 +1,8 @@
 use crate::engine::investigation::common::{classify_route_segment, classify_route_source_kind};
 use crate::model::{RouteSegment, RouteSegmentKind};
 
-use super::{collapse_route_segments, route_trace_capability};
+use super::{RankedRoute, collapse_route_segments, compare_ranked_routes, route_trace_capability};
+use crate::model::RoutePath;
 
 #[test]
 fn classifier_maps_unknown_paths_to_unknown() {
@@ -77,6 +78,42 @@ fn capability_marks_unresolved_routes_as_partial() {
         route_trace_capability(false, false, &["python:docs/readme.md".to_string()]),
         "unsupported"
     );
+}
+
+#[test]
+fn compare_ranked_routes_prefers_higher_weight_paths() {
+    let stronger = RankedRoute {
+        sequence: vec!["endpoint".to_string(), "crud".to_string()],
+        route: RoutePath {
+            segments: vec![
+                segment(RouteSegmentKind::Endpoint, "src/routes/origin.rs", "self"),
+                segment(RouteSegmentKind::Crud, "src/crud/origin.py", "ref_exact"),
+            ],
+            total_hops: 1,
+            total_weight: 3.0,
+            collapsed_hops: 0,
+            confidence: 0.9,
+        },
+    };
+    let weaker = RankedRoute {
+        sequence: vec!["endpoint".to_string(), "migration".to_string()],
+        route: RoutePath {
+            segments: vec![
+                segment(RouteSegmentKind::Endpoint, "src/routes/origin.rs", "self"),
+                segment(
+                    RouteSegmentKind::Migration,
+                    "migrations/001_origin.sql",
+                    "shared_dep",
+                ),
+            ],
+            total_hops: 1,
+            total_weight: 0.35,
+            collapsed_hops: 0,
+            confidence: 0.6,
+        },
+    };
+
+    assert!(compare_ranked_routes(&stronger, &weaker).is_lt());
 }
 
 fn segment(kind: RouteSegmentKind, path: &str, evidence: &str) -> RouteSegment {

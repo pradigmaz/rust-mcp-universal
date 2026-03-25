@@ -4,8 +4,11 @@ use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::engine::Engine;
+use crate::engine::investigation::cluster_policy::canonical_entry_candidate;
+use crate::engine::investigation::common::{CandidateFile, CandidateMatchKind};
 use crate::model::{
-    ConceptSeedKind, RouteSegmentKind, SymbolBodyAmbiguityStatus, SymbolBodyResolutionKind,
+    ConceptSeedKind, RouteSegment, RouteSegmentKind, SymbolBodyAmbiguityStatus,
+    SymbolBodyResolutionKind,
 };
 
 fn temp_project_dir(prefix: &str) -> PathBuf {
@@ -65,6 +68,29 @@ fn symbol_body_path_seed_uses_chunk_excerpt_anchor_for_typescript_files() -> any
     assert!(result.items.iter().any(|item| {
         item.anchor.path == "web/origin_client.ts"
             && item.resolution_kind == SymbolBodyResolutionKind::ChunkExcerptAnchor
+    }));
+
+    let _ = fs::remove_dir_all(project_dir);
+    Ok(())
+}
+
+#[test]
+fn symbol_body_path_seed_handles_bracket_paths() -> anyhow::Result<()> {
+    let project_dir = temp_project_dir("rmu-investigation-bracket-path");
+    fs::create_dir_all(project_dir.join("web/[code]/components"))?;
+    fs::write(
+        project_dir.join("web/[code]/components/page.tsx"),
+        "export function ReportStudentTable() {\n  return <div>ok</div>;\n}\n",
+    )?;
+
+    let engine = Engine::new(project_dir.clone(), Some(project_dir.join(".rmu/index.db")))?;
+    let _ = engine.ensure_index_ready_with_policy(true)?;
+    let result = engine.symbol_body("web/[code]/components/page.tsx", ConceptSeedKind::Path, 3)?;
+
+    assert_eq!(result.capability_status, "supported");
+    assert!(result.items.iter().any(|item| {
+        item.anchor.path == "web/[code]/components/page.tsx"
+            && item.body.contains("ReportStudentTable")
     }));
 
     let _ = fs::remove_dir_all(project_dir);
@@ -177,6 +203,64 @@ fn symbol_body_reports_unsupported_sources_for_unsupported_languages() -> anyhow
 }
 
 #[test]
+fn canonical_entry_prefers_backend_segments_over_ui_shells() {
+    let candidate = CandidateFile {
+        path: "frontend/src/app/admin/journal/components/AttendanceCell.tsx".to_string(),
+        language: "typescript".to_string(),
+        line: None,
+        column: None,
+        symbol: None,
+        symbol_kind: None,
+        source_kind: "search_candidate".to_string(),
+        match_kind: CandidateMatchKind::QuerySearch,
+        score: 0.82,
+    };
+    let route = vec![
+        RouteSegment {
+            kind: RouteSegmentKind::Ui,
+            path: "frontend/src/app/admin/journal/components/AttendanceCell.tsx".to_string(),
+            language: "typescript".to_string(),
+            evidence: "ui render path".to_string(),
+            anchor_symbol: Some("AttendanceCell".to_string()),
+            source_span: None,
+            relation_kind: "contains".to_string(),
+            source_kind: "route_trace".to_string(),
+            score: 0.7,
+        },
+        RouteSegment {
+            kind: RouteSegmentKind::Endpoint,
+            path: "backend/app/api/v1/endpoints/admin_attendance.py".to_string(),
+            language: "python".to_string(),
+            evidence: "api handler".to_string(),
+            anchor_symbol: Some("router".to_string()),
+            source_span: None,
+            relation_kind: "calls".to_string(),
+            source_kind: "route_trace".to_string(),
+            score: 0.92,
+        },
+        RouteSegment {
+            kind: RouteSegmentKind::Crud,
+            path: "backend/app/crud/attendance/queries.py".to_string(),
+            language: "python".to_string(),
+            evidence: "query layer".to_string(),
+            anchor_symbol: Some("get_attendance".to_string()),
+            source_span: None,
+            relation_kind: "calls".to_string(),
+            source_kind: "route_trace".to_string(),
+            score: 0.88,
+        },
+    ];
+
+    let canonical = canonical_entry_candidate(&candidate, &route);
+
+    assert_eq!(
+        canonical.path,
+        "backend/app/api/v1/endpoints/admin_attendance.py"
+    );
+    assert_eq!(canonical.symbol.as_deref(), Some("router"));
+}
+
+#[test]
 fn concept_cluster_collects_constraints_or_tests_from_python_paths() -> anyhow::Result<()> {
     let project_dir = temp_project_dir("rmu-investigation-python-cluster");
     fs::create_dir_all(project_dir.join("app/services"))?;
@@ -220,7 +304,9 @@ fn concept_cluster_collects_constraints_or_tests_from_python_paths() -> anyhow::
     );
     assert_eq!(
         result.cluster_summary.cutoff_policy.as_deref(),
-        Some("expand<=limit*3; score+dedup full pool; return top_5 by final confidence")
+        Some(
+            "expand<=limit*3; score+dedup full pool; query seeds promote execution paths within top_4 when score gap<=0.05; return top_5"
+        )
     );
     assert_eq!(
         result.cluster_summary.dedup_policy.as_deref(),
@@ -274,6 +360,32 @@ fn concept_cluster_collects_constraints_or_tests_from_python_paths() -> anyhow::
             && !variant.score_model.is_empty()
             && variant.score_breakdown.final_score >= 0.0
     }));
+
+    let _ = fs::remove_dir_all(project_dir);
+    Ok(())
+}
+
+#[test]
+fn constraint_evidence_prioritizes_strong_schema_signals() -> anyhow::Result<()> {
+    let project_dir = temp_project_dir("rmu-investigation-constraint-priority");
+    fs::create_dir_all(project_dir.join("backend/app/models"))?;
+    fs::create_dir_all(project_dir.join("frontend"))?;
+    fs::write(
+        project_dir.join("backend/app/models/attendance.py"),
+        "UniqueConstraint('student_id', 'lesson_id', name='uq_attendance_student_lesson')\n",
+    )?;
+    fs::write(
+        project_dir.join("frontend/attendance.ts"),
+        "export function validateAttendance(value: string) {\n  return value.length > 0;\n}\n",
+    )?;
+
+    let engine = Engine::new(project_dir.clone(), Some(project_dir.join(".rmu/index.db")))?;
+    let _ = engine.ensure_index_ready_with_policy(true)?;
+    let result = engine.constraint_evidence("attendance", ConceptSeedKind::Query, 5)?;
+
+    assert!(!result.items.is_empty());
+    assert_eq!(result.items[0].strength, "strong");
+    assert_eq!(result.items[0].path, "backend/app/models/attendance.py");
 
     let _ = fs::remove_dir_all(project_dir);
     Ok(())

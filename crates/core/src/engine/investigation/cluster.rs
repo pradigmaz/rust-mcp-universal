@@ -1,12 +1,9 @@
-use std::collections::HashSet;
-
 use anyhow::Result;
 
 use crate::engine::Engine;
 use crate::model::{
     ConceptClusterExpansionPolicy, ConceptClusterResult, ConceptClusterSummary, ConceptSeedKind,
-    ConstraintEvidence, ConstraintEvidenceResult, ImplementationVariant, RouteSegmentKind,
-    SemanticState,
+    ConstraintEvidenceResult, ImplementationVariant, RouteSegmentKind, SemanticState,
 };
 use crate::vector_rank::SemanticRerankOutcome;
 
@@ -16,10 +13,12 @@ use super::cluster_policy::{
     dedupe_variants, expand_evidence_candidates,
 };
 use super::cluster_scoring::{ClusterScoringSignals, compute_scoring_signals};
+use super::cluster_selection::diversify_variants;
 use super::common::{
     CandidateFile, build_anchor, capability_status, collect_candidates, normalized_values,
     route_kind_label,
 };
+use super::constraint_items::normalized_constraint_items;
 use super::constraints::collect_constraint_evidence;
 use super::route::build_route;
 
@@ -54,15 +53,18 @@ pub(super) fn concept_cluster(
     );
     let candidates = cap_candidate_pool(dedupe_candidates(candidates), limit.max(1));
     let mut variant_failures = Vec::new();
-    let variants = dedupe_variants(
-        build_variants(
-            engine,
-            &candidates,
-            &seed.seed,
-            semantic_state,
-            &mut variant_failures,
-        ),
-        limit.max(1),
+    let variants = diversify_variants(
+        retain_relevant_variants(dedupe_variants(
+            build_variants(
+                engine,
+                &candidates,
+                &seed.seed,
+                semantic_state,
+                &mut variant_failures,
+            ),
+            limit.max(1),
+        )),
+        seed.seed_kind,
     );
     let capability_status =
         capability_status(variants.len(), candidates.len(), &unsupported_sources);
@@ -109,7 +111,7 @@ pub(super) fn concept_cluster(
             ],
         }),
         cutoff_policy: Some(format!(
-            "expand<=limit*3; score+dedup full pool; return top_{} by final confidence",
+            "expand<=limit*3; score+dedup full pool; query seeds promote execution paths within top_4 when score gap<=0.05; return top_{}",
             limit.max(1),
         )),
         dedup_policy: Some(
@@ -260,25 +262,6 @@ fn build_variants(
         .collect::<Vec<_>>()
 }
 
-fn normalized_constraint_items(variants: &[ImplementationVariant]) -> Vec<ConstraintEvidence> {
-    let mut seen = HashSet::new();
-    let mut items = Vec::new();
-    for item in variants
-        .iter()
-        .flat_map(|variant| variant.constraints.iter())
-    {
-        if seen.insert((
-            item.path.clone(),
-            item.line_start,
-            item.constraint_kind.clone(),
-            item.normalized_key.clone(),
-        )) {
-            items.push(item.clone());
-        }
-    }
-    items
-}
-
 fn average_confidence(variants: &[ImplementationVariant]) -> f32 {
     if variants.is_empty() {
         0.0
@@ -288,6 +271,25 @@ fn average_confidence(variants: &[ImplementationVariant]) -> f32 {
             .map(|variant| variant.confidence)
             .sum::<f32>()
             / variants.len() as f32
+    }
+}
+
+fn retain_relevant_variants(variants: Vec<ImplementationVariant>) -> Vec<ImplementationVariant> {
+    let filtered = variants
+        .iter()
+        .filter(|variant| {
+            variant.lexical_proximity > 0.0
+                || variant.semantic_proximity > 0.0
+                || variant.symbol_overlap > 0.0
+                || variant.confidence >= 0.4
+        })
+        .cloned()
+        .collect::<Vec<_>>();
+
+    if filtered.is_empty() {
+        variants
+    } else {
+        filtered
     }
 }
 

@@ -212,24 +212,44 @@ fn generic_weak_fallback_stays_low_confidence_without_strong_backing() -> anyhow
     let (project_dir, engine) = fixture_engine("rmu-investigation-weak-fallback")?;
     fs::create_dir_all(project_dir.join("src"))?;
     fs::write(
-        project_dir.join("src/origin_guard.txt"),
-        "ensure origin key is present before request\n",
+        project_dir.join("src/origin_guard.py"),
+        "assert origin_key is not None\n",
     )?;
 
     let items = collect_constraint_evidence(
         &engine,
         &test_anchor(),
-        &[String::from("src/origin_guard.txt")],
+        &[String::from("src/origin_guard.py")],
     )?;
     let item = items.first().expect("weak fallback evidence");
     assert_canonical_fields(
         item,
         "runtime_guard",
         "runtime_guard_code",
-        "origin_guard.txt",
+        "origin_guard.py",
     );
     assert_eq!(item.strength, "weak");
     assert!(item.confidence <= 0.5);
+
+    let _ = fs::remove_dir_all(project_dir);
+    Ok(())
+}
+
+#[test]
+fn comment_only_lines_do_not_emit_constraint_noise() -> anyhow::Result<()> {
+    let (project_dir, engine) = fixture_engine("rmu-investigation-comment-noise")?;
+    fs::create_dir_all(project_dir.join("migrations"))?;
+    fs::write(
+        project_dir.join("migrations/001_comment_only.py"),
+        "# Add constraints and indexes\n\"\"\"Revision ID: test\"\"\"\n",
+    )?;
+
+    let items = collect_constraint_evidence(
+        &engine,
+        &test_anchor(),
+        &[String::from("migrations/001_comment_only.py")],
+    )?;
+    assert!(items.is_empty());
 
     let _ = fs::remove_dir_all(project_dir);
     Ok(())

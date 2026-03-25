@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::{BTreeSet, HashSet};
 
 use anyhow::Result;
@@ -25,6 +26,7 @@ pub(crate) fn route_trace(
     limit: usize,
 ) -> Result<RouteTraceResult> {
     let (seed, starts, unsupported_sources) = collect_candidates(engine, seed, seed_kind, limit)?;
+    let starts = prioritize_start_candidates(starts);
     let mut ranked_routes = Vec::new();
     let mut unresolved_gaps = Vec::new();
 
@@ -94,14 +96,7 @@ pub(crate) fn route_trace(
         }
     }
 
-    ranked_routes.sort_by(|left, right| {
-        left.route
-            .total_weight
-            .total_cmp(&right.route.total_weight)
-            .then_with(|| left.route.segments.len().cmp(&right.route.segments.len()))
-            .then_with(|| right.route.confidence.total_cmp(&left.route.confidence))
-            .then_with(|| left.sequence.cmp(&right.sequence))
-    });
+    ranked_routes.sort_by(compare_ranked_routes);
 
     let mut seen_sequences = HashSet::new();
     let mut deduped = Vec::new();
@@ -265,6 +260,51 @@ fn route_trace_capability(
         "partial".to_string()
     } else {
         "supported".to_string()
+    }
+}
+
+fn compare_ranked_routes(left: &RankedRoute, right: &RankedRoute) -> Ordering {
+    right
+        .route
+        .total_weight
+        .total_cmp(&left.route.total_weight)
+        .then_with(|| right.route.segments.len().cmp(&left.route.segments.len()))
+        .then_with(|| right.route.confidence.total_cmp(&left.route.confidence))
+        .then_with(|| left.sequence.cmp(&right.sequence))
+}
+
+fn prioritize_start_candidates(
+    mut starts: Vec<crate::engine::investigation::common::CandidateFile>,
+) -> Vec<crate::engine::investigation::common::CandidateFile> {
+    starts.sort_by(|left, right| {
+        start_priority(right)
+            .cmp(&start_priority(left))
+            .then_with(|| right.score.total_cmp(&left.score))
+            .then_with(|| left.path.cmp(&right.path))
+    });
+    starts
+}
+
+fn start_priority(candidate: &crate::engine::investigation::common::CandidateFile) -> usize {
+    let kind = classify_route_segment(&candidate.path);
+    let source_kind = classify_route_source_kind(&candidate.path);
+    match kind {
+        crate::model::RouteSegmentKind::Endpoint => 6,
+        crate::model::RouteSegmentKind::Ui => 5,
+        crate::model::RouteSegmentKind::Service => 4,
+        crate::model::RouteSegmentKind::Crud => 3,
+        crate::model::RouteSegmentKind::ApiClient => 3,
+        crate::model::RouteSegmentKind::Query => 2,
+        crate::model::RouteSegmentKind::Test | crate::model::RouteSegmentKind::Migration => 1,
+        crate::model::RouteSegmentKind::Unknown => {
+            if matches!(source_kind, "validator") {
+                4
+            } else if matches!(source_kind, "model") {
+                2
+            } else {
+                0
+            }
+        }
     }
 }
 

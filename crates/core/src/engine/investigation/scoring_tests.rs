@@ -3,6 +3,8 @@ use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::engine::Engine;
+use crate::engine::investigation::cluster_scoring::compute_scoring_signals;
+use crate::engine::investigation::common::{CandidateFile, CandidateMatchKind};
 use crate::model::{ConceptSeedKind, SemanticState};
 
 #[test]
@@ -57,6 +59,36 @@ fn concept_cluster_marks_non_query_seed_as_not_applicable() -> anyhow::Result<()
     );
     let _ = fs::remove_dir_all(project_dir);
     Ok(())
+}
+
+#[test]
+fn related_file_candidates_do_not_inflate_lexical_signal_from_graph_score() {
+    let candidate = CandidateFile {
+        path: "backend/app/api/v1/endpoints/admin_labs.py".to_string(),
+        language: "python".to_string(),
+        line: None,
+        column: None,
+        symbol: None,
+        symbol_kind: None,
+        source_kind: "related_file_expansion".to_string(),
+        match_kind: CandidateMatchKind::PathAnchor,
+        score: 0.9,
+    };
+
+    let signals = compute_scoring_signals(
+        "attendance",
+        &candidate,
+        &[],
+        0,
+        0,
+        &[],
+        SemanticState::Used,
+        false,
+        true,
+        true,
+    );
+
+    assert_eq!(signals.lexical_proximity, 0.0);
 }
 
 fn temp_project_dir(prefix: &str) -> PathBuf {
