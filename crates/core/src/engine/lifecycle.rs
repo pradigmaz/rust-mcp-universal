@@ -75,6 +75,8 @@ pub(super) fn open_db_read_only(engine: &Engine) -> Result<Connection> {
     let conn =
         Connection::open_with_flags(&engine.db_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
             .with_context(|| format!("failed to open db {}", engine.db_path.display()))?;
+    conn.execute_batch(schema::OPEN_DB_READ_ONLY_PRAGMAS_SQL)
+        .context("failed to apply sqlite pragmas")?;
     Ok(conn)
 }
 

@@ -14,6 +14,7 @@ mod table_ensure;
 
 pub(super) const INIT_DB_SCHEMA_SQL: &str = constants::INIT_DB_SCHEMA_SQL;
 pub(super) const OPEN_DB_PRAGMAS_SQL: &str = constants::OPEN_DB_PRAGMAS_SQL;
+pub(super) const OPEN_DB_READ_ONLY_PRAGMAS_SQL: &str = constants::OPEN_DB_READ_ONLY_PRAGMAS_SQL;
 pub(crate) const CURRENT_SCHEMA_MIGRATION_VERSION: u32 =
     migrations::CURRENT_SCHEMA_MIGRATION_VERSION;
 

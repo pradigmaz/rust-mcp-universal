@@ -42,7 +42,7 @@ fn initialize_accepts_supported_legacy_client_protocol_version() {
 }
 
 #[test]
-fn initialize_rejects_unknown_client_protocol_version() {
+fn initialize_accepts_unknown_but_non_empty_client_protocol_version() {
     let mut state = default_state();
     let req = RpcRequest {
         jsonrpc: Some("2.0".to_string()),
@@ -50,6 +50,25 @@ fn initialize_rejects_unknown_client_protocol_version() {
         method: "initialize".to_string(),
         params: Some(json!({
             "protocolVersion": "2099-01-01",
+            "capabilities": {},
+            "clientInfo": {"name": "probe", "version": "0.0.1"}
+        })),
+    };
+
+    let response = handle_request(req, &mut state);
+    let result = response.result.expect("initialize must succeed");
+    assert_eq!(result["protocolVersion"], json!("2099-01-01"));
+}
+
+#[test]
+fn initialize_rejects_empty_client_protocol_version() {
+    let mut state = default_state();
+    let req = RpcRequest {
+        jsonrpc: Some("2.0".to_string()),
+        id: Some(json!(1)),
+        method: "initialize".to_string(),
+        params: Some(json!({
+            "protocolVersion": "   ",
             "capabilities": {},
             "clientInfo": {"name": "probe", "version": "0.0.1"}
         })),

@@ -17,8 +17,6 @@ pub(crate) use parse::process_raw_message;
 pub(crate) use response::parse_error_response;
 
 pub(crate) const PROTOCOL_VERSION: &str = "2025-06-18";
-pub(crate) const SUPPORTED_PROTOCOL_VERSIONS: &[&str] =
-    &[PROTOCOL_VERSION, "2025-03-26", "2024-11-05"];
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct RpcRequest {
@@ -181,7 +179,7 @@ fn resolve_protocol_version(params: Option<&Value>) -> String {
         .and_then(Value::as_object)
         .and_then(|object| object.get("protocolVersion"))
         .and_then(Value::as_str)
-        .filter(|version| SUPPORTED_PROTOCOL_VERSIONS.contains(version))
+        .filter(|version| !version.trim().is_empty())
         .unwrap_or(PROTOCOL_VERSION)
         .to_string()
 }

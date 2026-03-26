@@ -12,7 +12,7 @@ use super::Engine;
 use super::compatibility::{
     CURRENT_ANN_VERSION, CURRENT_INDEX_FORMAT_VERSION, CURRENT_SCHEMA_VERSION,
 };
-use super::schema::OPEN_DB_PRAGMAS_SQL;
+use super::schema::OPEN_DB_READ_ONLY_PRAGMAS_SQL;
 use crate::model::{PreflightState, PreflightStatus};
 
 const RUNNING_BINARY_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -134,7 +134,7 @@ fn resolve_stale_process_probe_binary_path(binary_path: &Path) -> Option<std::pa
 fn open_preflight_db(path: &Path) -> Result<Connection> {
     let conn = Connection::open_with_flags(path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
         .with_context(|| format!("failed to open db {}", path.display()))?;
-    conn.execute_batch(OPEN_DB_PRAGMAS_SQL)
+    conn.execute_batch(OPEN_DB_READ_ONLY_PRAGMAS_SQL)
         .context("failed to apply sqlite pragmas")?;
     Ok(conn)
 }
@@ -311,6 +311,7 @@ fn detect_same_binary_other_pids(binary_path: &str, errors: &mut Vec<String>) ->
 #[cfg(test)]
 mod tests {
     use super::{
+        Engine, PreflightState,
         RUNNING_BINARY_STALE_GRACE_MS, TEST_BINARY_MODIFIED_AT_MS_ENV,
         TEST_PROCESS_STARTED_AT_MS_ENV, is_running_binary_stale, parse_test_timestamp,
         read_running_binary_timestamps, resolve_stale_process_probe_binary_path,
@@ -449,5 +450,26 @@ mod tests {
         let err = parse_test_timestamp(TEST_PROCESS_STARTED_AT_MS_ENV, "not-a-number")
             .expect_err("invalid override must fail");
         assert!(err.to_string().contains("unix milliseconds"));
+    }
+
+    #[test]
+    fn preflight_status_reads_initialized_database_via_read_only_pragmas() {
+        let root = temp_dir("rmu-preflight-readonly-pragmas");
+        fs::create_dir_all(&root).expect("create temp dir");
+        let db_path = root.join(".rmu/index.db");
+
+        let engine = Engine::new(root.clone(), Some(db_path.clone())).expect("initialize db");
+        let status = Engine::new_read_only(root.clone(), Some(db_path))
+            .expect("open read-only engine")
+            .preflight_status()
+            .expect("preflight status should succeed");
+
+        assert_eq!(status.project_path, root.display().to_string());
+        assert_eq!(status.db_schema_version, Some(14));
+        assert!(status.errors.is_empty());
+        assert_ne!(status.status, PreflightState::Incompatible);
+
+        drop(engine);
+        let _ = fs::remove_dir_all(root);
     }
 }

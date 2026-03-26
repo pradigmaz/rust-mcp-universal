@@ -185,6 +185,11 @@ pub(super) const OPEN_DB_PRAGMAS_SQL: &str = r#"
             PRAGMA busy_timeout = 5000;
             "#;
 
+pub(super) const OPEN_DB_READ_ONLY_PRAGMAS_SQL: &str = r#"
+            PRAGMA foreign_keys = ON;
+            PRAGMA busy_timeout = 5000;
+            "#;
+
 pub(super) const REQUIRED_SCHEMA_TABLES: [&str; 11] = [
     "meta",
     "files",
