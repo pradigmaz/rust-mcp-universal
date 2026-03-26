@@ -3,6 +3,7 @@ set -euo pipefail
 
 script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "$script_path/.." && pwd)"
+target_root="$repo_root/target"
 codex_bin_dir="${HOME}/.codex/bin"
 installed_binary="$codex_bin_dir/rmu-mcp-server"
 backup_binary="$codex_bin_dir/rmu-mcp-server.previous"
@@ -19,11 +20,18 @@ running_binary_pids() {
   done < <(pgrep -f 'rmu-mcp-server' || true)
 }
 
-stop_source_binary_processes() {
-  local source_binary="$1"
-  while IFS= read -r pid; do
+stop_checkout_server_processes() {
+  local pid
+  local exe_path
+
+  for proc_dir in /proc/[0-9]*; do
+    pid="${proc_dir##*/}"
+    [[ -L "$proc_dir/exe" ]] || continue
+    exe_path="$(readlink -f "$proc_dir/exe" 2>/dev/null || true)"
+    [[ -n "$exe_path" ]] || continue
+    [[ "$exe_path" == "$target_root"/* ]] || continue
     kill -9 "$pid" 2>/dev/null || true
-  done < <(running_binary_pids "$source_binary")
+  done
 }
 
 source_binary=""
@@ -31,14 +39,14 @@ installed_profile=""
 for profile in release debug; do
   if [[ "$profile" == "release" ]]; then
     candidate="$repo_root/target/release/rmu-mcp-server"
-    stop_source_binary_processes "$candidate"
+    stop_checkout_server_processes
     (
       cd "$repo_root"
       cargo build --release -p rmu-mcp-server
     ) || continue
   else
     candidate="$repo_root/target/debug/rmu-mcp-server"
-    stop_source_binary_processes "$candidate"
+    stop_checkout_server_processes
     (
       cd "$repo_root"
       cargo build -p rmu-mcp-server

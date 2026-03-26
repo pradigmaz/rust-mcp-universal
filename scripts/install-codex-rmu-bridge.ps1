@@ -5,6 +5,7 @@ $ErrorActionPreference = "Stop"
 $scriptPath = [System.IO.Path]::GetFullPath($MyInvocation.MyCommand.Path)
 $scriptDir = [System.IO.Path]::GetDirectoryName($scriptPath)
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $scriptDir ".."))
+$targetRoot = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "target"))
 $codexBinDir = Join-Path $env:USERPROFILE ".codex\\bin"
 $installedBinary = Join-Path $codexBinDir "rmu-mcp-server.exe"
 $backupBinary = Join-Path $codexBinDir "rmu-mcp-server.previous.exe"
@@ -24,12 +25,19 @@ function Get-RunningBinaryProcesses {
         })
 }
 
-function Stop-SourceBinaryProcesses {
+function Stop-CheckoutServerProcesses {
     param(
-        [string]$BinaryPath
+        [string]$TargetRoot
     )
 
-    $running = Get-RunningBinaryProcesses -BinaryPath $BinaryPath
+    $running = @(Get-CimInstance Win32_Process -Filter "Name = 'rmu-mcp-server.exe'" |
+        Where-Object {
+            $_.ExecutablePath -and
+            ([System.IO.Path]::GetFullPath($_.ExecutablePath)).StartsWith(
+                "$TargetRoot\",
+                [System.StringComparison]::OrdinalIgnoreCase
+            )
+        })
 
     foreach ($server in $running) {
         Stop-Process -Id $server.ProcessId -Force -ErrorAction SilentlyContinue
@@ -57,7 +65,7 @@ foreach ($candidate in @(
     @{ profile = "release"; path = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "target\\release\\rmu-mcp-server.exe")) },
     @{ profile = "debug"; path = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "target\\debug\\rmu-mcp-server.exe")) }
 )) {
-    Stop-SourceBinaryProcesses -BinaryPath $candidate.path
+    Stop-CheckoutServerProcesses -TargetRoot $targetRoot
 
     Push-Location $repoRoot
     try {

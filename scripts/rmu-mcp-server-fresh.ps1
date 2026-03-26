@@ -7,6 +7,9 @@ $scriptDir = [System.IO.Path]::GetDirectoryName($scriptPath)
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $scriptDir ".."))
 $releaseBinaryPath = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "target\\release\\rmu-mcp-server.exe"))
 $debugBinaryPath = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "target\\debug\\rmu-mcp-server.exe"))
+$runtimeReleaseBinaryPath = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "target\\runtime\\release\\rmu-mcp-server.exe"))
+$runtimeDebugBinaryPath = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "target\\runtime\\debug\\rmu-mcp-server.exe"))
+$targetRoot = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "target"))
 
 function Get-LatestSourceWriteTimeUtc {
     param(
@@ -57,17 +60,17 @@ function Test-RebuildRequired {
     return $latestSourceWriteTimeUtc -gt $binaryWriteTimeUtc
 }
 
-function Stop-StaleServerProcesses {
+function Stop-CheckoutServerProcesses {
     param(
-        [string]$BinaryPath
+        [string]$TargetRoot
     )
 
     $staleServers = Get-CimInstance Win32_Process -Filter "Name = 'rmu-mcp-server.exe'" |
         Where-Object {
             $_.ExecutablePath -and
-            [System.StringComparer]::OrdinalIgnoreCase.Equals(
-                [System.IO.Path]::GetFullPath($_.ExecutablePath),
-                $BinaryPath
+            ([System.IO.Path]::GetFullPath($_.ExecutablePath)).StartsWith(
+                "$TargetRoot\",
+                [System.StringComparison]::OrdinalIgnoreCase
             )
         }
 
@@ -80,9 +83,9 @@ function Stop-StaleServerProcesses {
         $remaining = Get-CimInstance Win32_Process -Filter "Name = 'rmu-mcp-server.exe'" |
             Where-Object {
                 $_.ExecutablePath -and
-                [System.StringComparer]::OrdinalIgnoreCase.Equals(
-                    [System.IO.Path]::GetFullPath($_.ExecutablePath),
-                    $BinaryPath
+                ([System.IO.Path]::GetFullPath($_.ExecutablePath)).StartsWith(
+                    "$TargetRoot\",
+                    [System.StringComparison]::OrdinalIgnoreCase
                 )
             }
         if (-not $remaining) {
@@ -92,7 +95,7 @@ function Stop-StaleServerProcesses {
     } while ((Get-Date) -lt $deadline)
 
     $pids = ($remaining | Select-Object -ExpandProperty ProcessId) -join ","
-    throw "stale rmu-mcp-server.exe processes are still running for $BinaryPath (pids: $pids). Use a fresh launcher retry after they exit."
+    throw "stale rmu-mcp-server.exe processes are still running under $TargetRoot (pids: $pids). Use a fresh launcher retry after they exit."
 }
 
 function Invoke-BuildIfNeeded {
@@ -123,22 +126,34 @@ function Invoke-BuildIfNeeded {
     return $true
 }
 
+function Publish-RuntimeBinary {
+    param(
+        [string]$SourceBinaryPath,
+        [string]$RuntimeBinaryPath
+    )
+
+    $runtimeDirectory = Split-Path -Parent $RuntimeBinaryPath
+    New-Item -ItemType Directory -Force -Path $runtimeDirectory | Out-Null
+    Copy-Item -LiteralPath $SourceBinaryPath -Destination $RuntimeBinaryPath -Force
+}
+
 $runBinaryPath = $null
 
-Stop-StaleServerProcesses -BinaryPath $releaseBinaryPath
+Stop-CheckoutServerProcesses -TargetRoot $targetRoot
 if (
     (Invoke-BuildIfNeeded -BinaryPath $releaseBinaryPath -RepositoryRoot $repoRoot -CargoArgs @("build", "--release", "-p", "rmu-mcp-server")) -and
     (Test-Path -LiteralPath $releaseBinaryPath)
 ) {
-    $runBinaryPath = $releaseBinaryPath
+    Publish-RuntimeBinary -SourceBinaryPath $releaseBinaryPath -RuntimeBinaryPath $runtimeReleaseBinaryPath
+    $runBinaryPath = $runtimeReleaseBinaryPath
 }
 else {
-    Stop-StaleServerProcesses -BinaryPath $debugBinaryPath
     if (
         (Invoke-BuildIfNeeded -BinaryPath $debugBinaryPath -RepositoryRoot $repoRoot -CargoArgs @("build", "-p", "rmu-mcp-server")) -and
         (Test-Path -LiteralPath $debugBinaryPath)
     ) {
-        $runBinaryPath = $debugBinaryPath
+        Publish-RuntimeBinary -SourceBinaryPath $debugBinaryPath -RuntimeBinaryPath $runtimeDebugBinaryPath
+        $runBinaryPath = $runtimeDebugBinaryPath
     }
 }
 

@@ -5,6 +5,9 @@ script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 repo_root="$(cd -- "$script_dir/.." && pwd -P)"
 release_binary_path="$repo_root/target/release/rmu-mcp-server"
 debug_binary_path="$repo_root/target/debug/rmu-mcp-server"
+runtime_release_binary_path="$repo_root/target/runtime/release/rmu-mcp-server"
+runtime_debug_binary_path="$repo_root/target/runtime/debug/rmu-mcp-server"
+target_root="$repo_root/target"
 
 get_latest_source_mtime() {
   local latest=0
@@ -51,8 +54,8 @@ rebuild_required() {
   (( latest_source_mtime > binary_mtime ))
 }
 
-stop_stale_server_processes() {
-  local binary_path="$1"
+stop_checkout_server_processes() {
+  local target_root_path="$1"
   local pid
   local exe_path
   local matched=()
@@ -67,7 +70,7 @@ stop_stale_server_processes() {
 
     exe_path="$(readlink -f "$proc_dir/exe" 2>/dev/null || true)"
     [[ -n "$exe_path" ]] || continue
-    [[ "$exe_path" == "$binary_path" ]] || continue
+    [[ "$exe_path" == "$target_root_path"/* ]] || continue
     matched+=("$pid")
   done
 
@@ -95,8 +98,8 @@ stop_stale_server_processes() {
     matched=("${remaining[@]}")
   done
 
-  printf 'stale rmu-mcp-server processes are still running for %s (pids: %s)\n' \
-    "$binary_path" \
+  printf 'stale rmu-mcp-server processes are still running under %s (pids: %s)\n' \
+    "$target_root_path" \
     "$(IFS=,; printf '%s' "${matched[*]}")" \
     >&2
   exit 1
@@ -121,15 +124,25 @@ build_profile_if_needed() {
   return 0
 }
 
+publish_runtime_binary() {
+  local source_binary_path="$1"
+  local runtime_binary_path="$2"
+
+  mkdir -p "$(dirname "$runtime_binary_path")"
+  cp -f "$source_binary_path" "$runtime_binary_path"
+  chmod +x "$runtime_binary_path"
+}
+
 run_binary_path=""
 
-stop_stale_server_processes "$release_binary_path"
+stop_checkout_server_processes "$target_root"
 if build_profile_if_needed "$release_binary_path" build --release -p rmu-mcp-server; then
-  run_binary_path="$release_binary_path"
+  publish_runtime_binary "$release_binary_path" "$runtime_release_binary_path"
+  run_binary_path="$runtime_release_binary_path"
 else
-  stop_stale_server_processes "$debug_binary_path"
   if build_profile_if_needed "$debug_binary_path" build -p rmu-mcp-server; then
-    run_binary_path="$debug_binary_path"
+    publish_runtime_binary "$debug_binary_path" "$runtime_debug_binary_path"
+    run_binary_path="$runtime_debug_binary_path"
   fi
 fi
 
