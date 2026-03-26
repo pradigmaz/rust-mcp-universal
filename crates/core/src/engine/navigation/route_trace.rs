@@ -1,23 +1,26 @@
-use std::cmp::Ordering;
-use std::collections::{BTreeSet, HashSet};
+use std::collections::HashSet;
 
 use anyhow::Result;
 
 use super::super::Engine;
 use super::route_trace_targets::{MAX_ROUTE_HOPS, collect_target_candidates};
+#[path = "route_trace_build.rs"]
+mod route_trace_build;
+#[path = "route_trace_ranking.rs"]
+mod route_trace_ranking;
+
 use crate::engine::investigation::common::{
-    build_anchor, canonical_seed, classify_route_segment, classify_route_source_kind,
-    collect_candidates, detect_language, route_kind_label, source_span_from_position,
+    canonical_seed, classify_route_segment, collect_candidates, route_kind_label,
 };
 use crate::model::{
-    CallPathResult, ConceptSeedKind, RouteGap, RoutePath, RouteSegment, RouteTraceResult,
+    ConceptSeedKind, RouteGap, RoutePath, RouteTraceResult,
 };
-
-#[derive(Debug, Clone)]
-struct RankedRoute {
-    route: RoutePath,
-    sequence: Vec<String>,
-}
+use route_trace_build::{
+    dedupe_gaps, fallback_route, route_from_call_path, route_trace_capability,
+};
+use route_trace_ranking::{
+    RankedRoute, compare_ranked_routes, prioritize_start_candidates, route_relevance,
+};
 
 pub(crate) fn route_trace(
     engine: &Engine,
@@ -26,7 +29,7 @@ pub(crate) fn route_trace(
     limit: usize,
 ) -> Result<RouteTraceResult> {
     let (seed, starts, unsupported_sources) = collect_candidates(engine, seed, seed_kind, limit)?;
-    let starts = prioritize_start_candidates(starts);
+    let starts = prioritize_start_candidates(starts, seed.seed_kind);
     let mut ranked_routes = Vec::new();
     let mut unresolved_gaps = Vec::new();
 
@@ -45,6 +48,7 @@ pub(crate) fn route_trace(
                 ranked_routes.push(RankedRoute {
                     sequence: vec![route_kind_label(start_kind).to_string()],
                     route: fallback_route(start),
+                    relevance: route_relevance(seed.seed.as_str(), seed.seed_kind, start, None),
                 });
                 continue;
             }
@@ -84,6 +88,7 @@ pub(crate) fn route_trace(
                     .iter()
                     .map(|segment| route_kind_label(segment.kind).to_string())
                     .collect(),
+                relevance: route_relevance(seed.seed.as_str(), seed.seed_kind, start, Some(&route)),
                 route,
             });
         }
@@ -92,6 +97,7 @@ pub(crate) fn route_trace(
             ranked_routes.push(RankedRoute {
                 sequence: vec![route_kind_label(start_kind).to_string()],
                 route: fallback_route(start),
+                relevance: route_relevance(seed.seed.as_str(), seed.seed_kind, start, None),
             });
         }
     }
@@ -132,187 +138,6 @@ pub(crate) fn route_trace(
         confidence: best_route.confidence,
     })
 }
-
-fn route_from_call_path(
-    start: &crate::engine::investigation::common::CandidateFile,
-    call_path: &CallPathResult,
-) -> RoutePath {
-    let mut raw_segments = vec![RouteSegment {
-        kind: classify_route_segment(&start.path),
-        path: start.path.clone(),
-        language: start.language.clone(),
-        evidence: start.source_kind.clone(),
-        anchor_symbol: start.symbol.clone(),
-        source_span: source_span_from_position(start.line, start.column),
-        relation_kind: "self".to_string(),
-        source_kind: classify_route_source_kind(&start.path).to_string(),
-        score: start.score,
-    }];
-
-    for step in &call_path.steps {
-        raw_segments.push(RouteSegment {
-            kind: classify_route_segment(&step.to_path),
-            path: step.to_path.clone(),
-            language: detect_language(&step.to_path, ""),
-            evidence: format!(
-                "call_path edge={} raw_count={} weight={:.2} evidence={}",
-                step.edge_kind, step.raw_count, step.weight, step.evidence
-            ),
-            anchor_symbol: step_symbol(step.evidence.as_str()),
-            source_span: source_span_from_position(step.line, step.column),
-            relation_kind: step.edge_kind.clone(),
-            source_kind: classify_route_source_kind(&step.to_path).to_string(),
-            score: (step.weight / (step.raw_count.max(1) as f32)).clamp(0.2, 1.0),
-        });
-    }
-
-    let collapsed = collapse_route_segments(raw_segments);
-    RoutePath {
-        collapsed_hops: call_path.path.len().saturating_sub(collapsed.len()),
-        confidence: route_confidence(&collapsed),
-        segments: collapsed,
-        total_hops: call_path.hops,
-        total_weight: call_path.total_weight,
-    }
-}
-
-fn collapse_route_segments(raw_segments: Vec<RouteSegment>) -> Vec<RouteSegment> {
-    let mut collapsed: Vec<RouteSegment> = Vec::new();
-    for segment in raw_segments {
-        if let Some(last) = collapsed.last_mut()
-            && last.kind == segment.kind
-        {
-            last.score = last.score.max(segment.score);
-            if last.evidence != segment.evidence {
-                last.evidence = format!("{} | collapsed:{}", last.evidence, segment.path);
-            }
-            continue;
-        }
-        collapsed.push(segment);
-    }
-    collapsed
-}
-
-fn route_confidence(segments: &[RouteSegment]) -> f32 {
-    if segments.is_empty() {
-        return 0.0;
-    }
-    (segments.iter().map(|segment| segment.score).sum::<f32>() / segments.len() as f32)
-        .clamp(0.1, 1.0)
-}
-
-fn fallback_route(start: &crate::engine::investigation::common::CandidateFile) -> RoutePath {
-    RoutePath {
-        segments: vec![RouteSegment {
-            kind: classify_route_segment(&start.path),
-            path: build_anchor(start).path,
-            language: start.language.clone(),
-            evidence: "fallback_start_anchor".to_string(),
-            anchor_symbol: start.symbol.clone(),
-            source_span: source_span_from_position(start.line, start.column),
-            relation_kind: "self".to_string(),
-            source_kind: classify_route_source_kind(&start.path).to_string(),
-            score: start.score.clamp(0.2, 1.0),
-        }],
-        total_hops: 0,
-        total_weight: 0.0,
-        collapsed_hops: 0,
-        confidence: (start.score * 0.75).clamp(0.1, 1.0),
-    }
-}
-
-fn dedupe_gaps(gaps: Vec<RouteGap>) -> Vec<RouteGap> {
-    let mut seen = BTreeSet::new();
-    let mut out = Vec::new();
-    for gap in gaps {
-        let key = (
-            gap.from_kind
-                .map(route_kind_label)
-                .unwrap_or("none")
-                .to_string(),
-            gap.to_kind
-                .map(route_kind_label)
-                .unwrap_or("none")
-                .to_string(),
-            gap.reason.clone(),
-            gap.last_resolved_path.clone().unwrap_or_default(),
-        );
-        if seen.insert(key) {
-            out.push(gap);
-        }
-    }
-    out
-}
-
-fn route_trace_capability(
-    has_best_route: bool,
-    has_gaps: bool,
-    unsupported_sources: &[String],
-) -> String {
-    if !has_best_route {
-        return if unsupported_sources.is_empty() {
-            "partial".to_string()
-        } else {
-            "unsupported".to_string()
-        };
-    }
-    if has_gaps || !unsupported_sources.is_empty() {
-        "partial".to_string()
-    } else {
-        "supported".to_string()
-    }
-}
-
-fn compare_ranked_routes(left: &RankedRoute, right: &RankedRoute) -> Ordering {
-    right
-        .route
-        .total_weight
-        .total_cmp(&left.route.total_weight)
-        .then_with(|| right.route.segments.len().cmp(&left.route.segments.len()))
-        .then_with(|| right.route.confidence.total_cmp(&left.route.confidence))
-        .then_with(|| left.sequence.cmp(&right.sequence))
-}
-
-fn prioritize_start_candidates(
-    mut starts: Vec<crate::engine::investigation::common::CandidateFile>,
-) -> Vec<crate::engine::investigation::common::CandidateFile> {
-    starts.sort_by(|left, right| {
-        start_priority(right)
-            .cmp(&start_priority(left))
-            .then_with(|| right.score.total_cmp(&left.score))
-            .then_with(|| left.path.cmp(&right.path))
-    });
-    starts
-}
-
-fn start_priority(candidate: &crate::engine::investigation::common::CandidateFile) -> usize {
-    let kind = classify_route_segment(&candidate.path);
-    let source_kind = classify_route_source_kind(&candidate.path);
-    match kind {
-        crate::model::RouteSegmentKind::Endpoint => 6,
-        crate::model::RouteSegmentKind::Ui => 5,
-        crate::model::RouteSegmentKind::Service => 4,
-        crate::model::RouteSegmentKind::Crud => 3,
-        crate::model::RouteSegmentKind::ApiClient => 3,
-        crate::model::RouteSegmentKind::Query => 2,
-        crate::model::RouteSegmentKind::Test | crate::model::RouteSegmentKind::Migration => 1,
-        crate::model::RouteSegmentKind::Unknown => {
-            if matches!(source_kind, "validator") {
-                4
-            } else if matches!(source_kind, "model") {
-                2
-            } else {
-                0
-            }
-        }
-    }
-}
-
-fn step_symbol(evidence: &str) -> Option<String> {
-    let trimmed = evidence.trim();
-    (!trimmed.is_empty() && !trimmed.contains(' ')).then(|| trimmed.to_string())
-}
-
 #[cfg(test)]
 #[path = "route_trace_tests.rs"]
 mod tests;

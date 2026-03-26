@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::engine::Engine;
+use crate::engine::investigation::cluster_scoring::ClusterScoringInputs;
 use crate::engine::investigation::cluster_scoring::compute_scoring_signals;
 use crate::engine::investigation::common::{CandidateFile, CandidateMatchKind};
 use crate::model::{ConceptSeedKind, SemanticState};
@@ -75,18 +76,18 @@ fn related_file_candidates_do_not_inflate_lexical_signal_from_graph_score() {
         score: 0.9,
     };
 
-    let signals = compute_scoring_signals(
-        "attendance",
-        &candidate,
-        &[],
-        0,
-        0,
-        &[],
-        SemanticState::Used,
-        false,
-        true,
-        true,
-    );
+    let signals = compute_scoring_signals(ClusterScoringInputs {
+        seed: "attendance",
+        candidate: &candidate,
+        route: &[],
+        strong_constraint_count: 0,
+        weak_constraint_count: 0,
+        related_tests: &[],
+        semantic_state: SemanticState::Used,
+        body_unresolved: false,
+        no_constraint_evidence: true,
+        no_test_evidence: true,
+    });
 
     assert_eq!(signals.lexical_proximity, 0.0);
 }

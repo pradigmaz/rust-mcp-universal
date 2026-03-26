@@ -10,6 +10,7 @@ use crate::model::{
     SearchHit, SourceSpan,
 };
 
+use super::candidate_relevance::retain_query_relevant_candidates;
 use super::path_helpers::{display_path, source_fs_path};
 
 #[derive(Debug, Clone)]
@@ -56,6 +57,10 @@ pub(crate) fn collect_candidates(
             vec![candidate_from_path(&path, Some(line))]
         }
     };
+    if matches!(seed_kind, ConceptSeedKind::Query) {
+        candidates =
+            retain_query_relevant_candidates(seed, candidates, limit.max(1).saturating_mul(3));
+    }
     let mut seen = HashSet::new();
     candidates.retain(|candidate| {
         seen.insert((

@@ -26,6 +26,17 @@ struct NavigationLatencyBaseline {
     per_tool_latency_targets: std::collections::BTreeMap<String, NavigationLatencyTarget>,
 }
 
+struct ReportWithoutDiffInputs<'a> {
+    dataset: &'a Path,
+    limit: usize,
+    per_tool_metrics: &'a [rmu_core::InvestigationToolMetrics],
+    cases: &'a [rmu_core::InvestigationCaseReport],
+    unsupported_behavior_summary: &'a [String],
+    privacy_failures: usize,
+    threshold_verdict: Option<InvestigationThresholdVerdict>,
+    navigation_latency_baseline_status: Option<String>,
+}
+
 pub(crate) fn run_investigation_benchmark(
     engine: &Engine,
     json: bool,
@@ -109,16 +120,16 @@ pub(crate) fn run_investigation_benchmark(
     let diff = baseline_payload.as_ref().map(|baseline| {
         build_diff_report(
             baseline,
-            &report_without_diff(
-                &dataset,
+            &report_without_diff(ReportWithoutDiffInputs {
+                dataset: &dataset,
                 limit,
-                &per_tool_metrics,
-                &cases,
-                &unsupported_behavior_summary,
+                per_tool_metrics: &per_tool_metrics,
+                cases: &cases,
+                unsupported_behavior_summary: &unsupported_behavior_summary,
                 privacy_failures,
-                threshold_verdict.clone(),
-                navigation_latency_baseline_status.clone(),
-            ),
+                threshold_verdict: threshold_verdict.clone(),
+                navigation_latency_baseline_status: navigation_latency_baseline_status.clone(),
+            }),
         )
     });
     let threshold_verdict = merge_threshold_failures(threshold_verdict, diff.as_ref());
@@ -203,26 +214,17 @@ pub(crate) fn run_investigation_benchmark(
     Ok(())
 }
 
-fn report_without_diff(
-    dataset: &Path,
-    limit: usize,
-    per_tool_metrics: &[rmu_core::InvestigationToolMetrics],
-    cases: &[rmu_core::InvestigationCaseReport],
-    unsupported_behavior_summary: &[String],
-    privacy_failures: usize,
-    threshold_verdict: Option<InvestigationThresholdVerdict>,
-    navigation_latency_baseline_status: Option<String>,
-) -> InvestigationBenchmarkReport {
+fn report_without_diff(inputs: ReportWithoutDiffInputs<'_>) -> InvestigationBenchmarkReport {
     InvestigationBenchmarkReport {
-        dataset_path: dataset.display().to_string(),
-        limit,
-        case_count: cases.len(),
-        per_tool_metrics: per_tool_metrics.to_vec(),
-        cases: cases.to_vec(),
-        unsupported_behavior_summary: unsupported_behavior_summary.to_vec(),
-        privacy_failures,
-        threshold_verdict,
-        navigation_latency_baseline_status,
+        dataset_path: inputs.dataset.display().to_string(),
+        limit: inputs.limit,
+        case_count: inputs.cases.len(),
+        per_tool_metrics: inputs.per_tool_metrics.to_vec(),
+        cases: inputs.cases.to_vec(),
+        unsupported_behavior_summary: inputs.unsupported_behavior_summary.to_vec(),
+        privacy_failures: inputs.privacy_failures,
+        threshold_verdict: inputs.threshold_verdict,
+        navigation_latency_baseline_status: inputs.navigation_latency_baseline_status,
         diff: None,
     }
 }
@@ -231,9 +233,7 @@ fn merge_threshold_failures(
     verdict: Option<InvestigationThresholdVerdict>,
     diff: Option<&rmu_core::InvestigationBenchmarkDiffReport>,
 ) -> Option<InvestigationThresholdVerdict> {
-    let Some(mut verdict) = verdict else {
-        return None;
-    };
+    let mut verdict = verdict?;
     if let Some(diff) = diff {
         verdict
             .failures

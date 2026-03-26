@@ -1,25 +1,30 @@
 # rust-mcp-universal
 
-`rust-mcp-universal` — локальный движок индексации и поиска по кодовой базе на Rust.
-Проект даёт один и тот же retrieval-контур для CLI и MCP-сервера: индексирование, поиск, навигацию по символам и подготовку контекста для ИИ-агентов.
+`rust-mcp-universal` - локальный движок индексации, поиска и навигации по кодовой базе на Rust.
+
+Проект даёт одно и то же ядро для двух поверхностей:
+- `rmu-cli` для работы из терминала
+- `rmu-mcp-server` для MCP-клиентов и агентских сценариев
+
+Если коротко, `RMU` нужен там, где обычного текстового поиска уже мало: надо быстро понять чужой репозиторий, собрать релевантный контекст для агента, найти связанные файлы и не читать проект вслепую.
 
 ## Что умеет
 
-- индексировать кодовый проект в локальную базу `.rmu/index.db`;
-- работать в профилях индексации, включая code-only `mixed`;
-- искать по коду лексически и семантически;
-- поднимать summary по репозиторию через `workspace_brief`;
-- собирать агентский стартовый контекст через `agent_bootstrap`;
-- объяснять retrieval-пайплайн через `query_report`;
-- находить символы и связи через `symbol_lookup_v2`, `symbol_references_v2`, `related_files_v2`;
-- показывать effective scope до индексации через `scope_preview`.
+- индексировать репозиторий в локальную базу `.rmu/index.db`
+- искать по коду лексически и семантически
+- строить короткий обзор проекта через `brief` и `workspace_brief`
+- находить символы, ссылки и связанные файлы
+- показывать, что именно попадёт в индекс, ещё до запуска индексации
+- объяснять, почему retrieval выбрал именно эти файлы
+- поднимать quality-отчёты и hotspots по файлам и директориям
+- отдавать тот же функционал через MCP
 
 ## Когда это полезно
 
-- нужно быстро понять устройство незнакомого репозитория;
-- нужно дать ИИ-агенту короткий и релевантный контекст вместо грубого чтения файлов;
-- нужно искать по смыслу, а не только по точному текстовому совпадению;
-- нужно одинаковое поведение из терминала и из MCP-клиента.
+- нужно быстро разобраться в незнакомом репозитории
+- нужно дать агенту короткий и релевантный стартовый контекст
+- нужен поиск по смыслу, а не только по точному совпадению строки
+- нужно одинаковое поведение из терминала и из MCP-клиента
 
 ## Требования
 
@@ -27,13 +32,11 @@
 
 ## Сборка
 
-Команда одинакова для Linux, macOS и Windows:
-
 ```bash
 cargo build --release -p rmu-cli -p rmu-mcp-server
 ```
 
-После сборки бинарники будут лежать в `target/release/`:
+После сборки бинарники лежат в `target/release/`.
 
 - Linux и macOS:
   - `rmu-cli`
@@ -42,56 +45,68 @@ cargo build --release -p rmu-cli -p rmu-mcp-server
   - `rmu-cli.exe`
   - `rmu-mcp-server.exe`
 
-## Быстрая проверка
+Проверка:
 
 ```bash
 target/release/rmu-cli --help
 target/release/rmu-mcp-server --help
 ```
 
-Если бинарники добавлены в `PATH`, можно вызывать их по имени:
+Если бинарники лежат в `PATH`, можно вызывать их по имени:
 
 ```bash
 rmu-cli --help
 rmu-mcp-server --help
 ```
 
-## Базовый запуск CLI
+## Быстрый старт с CLI
+
+Минимальный сценарий обычно выглядит так:
 
 ```bash
-rmu-cli --project-path . status --json
-rmu-cli --project-path . scope-preview --profile mixed
-rmu-cli --project-path . semantic-index --profile mixed
-rmu-cli --project-path . search --query "attendance" --limit 10
-rmu-cli --project-path . agent --query "где логика авторизации" --semantic --limit 10
+rmu-cli --project-path . --json preflight
+rmu-cli --project-path . --json scope-preview --profile mixed
+rmu-cli --project-path . --json semantic-index --profile mixed
+rmu-cli --project-path . --json brief
+rmu-cli --project-path . --json search --query "attendance" --limit 10
 ```
 
-## Базовый запуск MCP
+Если нужен агентский стартовый пакет:
 
-Минимальный порядок вызовов:
+```bash
+rmu-cli --project-path . --json agent --query "где логика авторизации" --semantic --limit 10
+```
+
+## Быстрый старт с MCP
+
+Обычно порядок такой:
 
 1. `set_project_path`
 2. `workspace_brief` или `agent_bootstrap`
-3. при необходимости `query_report`, `scope_preview` и навигационные `*_v2` tools
+3. при необходимости `query_report`, `scope_preview` и navigation tools
 
-Для summary по репозиторию:
+Что чаще всего используют:
 
-- `workspace_brief` — короткое структурированное описание проекта;
-- `agent_bootstrap` — summary плюс стартовый контекст под конкретный запрос;
-- `query_report` — подробный разбор retrieval-пайплайна и выбранного контекста.
+- `workspace_brief` - короткий снимок проекта
+- `agent_bootstrap` - снимок проекта плюс стартовый контекст под задачу
+- `query_report` - объяснение retrieval-пайплайна
+- `scope_preview` - проверка будущего индекса
+- `symbol_lookup_v2`, `symbol_references_v2`, `related_files_v2` - навигация по коду
+- `rule_violations`, `quality_hotspots` - quality-поверхность
 
-## Пример конфигурации MCP-клиента
+Для navigation tools основной результат лежит в `structuredContent.hits`.
 
-Точный путь к конфигурационному файлу зависит от клиента.
-Ниже только абстрактные примеры блока конфигурации без привязки к домашним каталогам.
+## Пример MCP-конфига
 
-### JSON-вариант
+Ниже только форма блока. Точный путь зависит от клиента и твоего checkout.
+
+### JSON
 
 ```json
 {
   "mcpServers": {
     "rmu-universal": {
-      "command": "<путь-к-rmu-mcp-server>",
+      "command": "<path-to-rmu-mcp-server>",
       "args": [],
       "timeout": 180000
     }
@@ -99,32 +114,32 @@ rmu-cli --project-path . agent --query "где логика авторизаци
 }
 ```
 
-### TOML-вариант
+### TOML
 
 ```toml
 [mcp_servers.rmu-universal]
 enabled = true
-command = "<путь-к-rmu-mcp-server>"
+command = "<path-to-rmu-mcp-server>"
 args = []
 startup_timeout_sec = 180
 tool_timeout_sec = 180
 ```
 
-### Windows fresh-start launcher
+## Windows launcher
 
-На Windows лучше указывать в MCP-конфиге не `rmu-mcp-server.exe` напрямую, а launcher:
+На Windows лучше указывать в MCP-конфиге не `rmu-mcp-server.exe`, а launcher:
 
-- `scripts/rmu-mcp-server-fresh.cmd`
+`scripts/rmu-mcp-server-fresh.cmd`
 
-Этот launcher перед каждым стартом завершает старый `rmu-mcp-server.exe` из этого же checkout и только потом поднимает новый foreground-процесс. Это убирает висящие фоновые экземпляры после rebuild.
+Он перед стартом завершает старый процесс `rmu-mcp-server.exe` из этого же checkout и только потом запускает новый foreground-процесс. Это помогает не держать висящие старые экземпляры после rebuild.
 
-Пример JSON-конфига для Windows:
+Пример:
 
 ```json
 {
   "mcpServers": {
     "rmu-universal": {
-      "command": "D:\\rust и оптимизация\\rust-mcp-universal\\scripts\\rmu-mcp-server-fresh.cmd",
+      "command": "<path-to-checkout>\\scripts\\rmu-mcp-server-fresh.cmd",
       "args": [],
       "timeout": 180000
     }
@@ -132,21 +147,54 @@ tool_timeout_sec = 180
 }
 ```
 
-## Основные MCP tools
+## Полезные команды
 
-- `set_project_path` — привязать сервер к нужному репозиторию;
-- `workspace_brief` — получить summary проекта;
-- `agent_bootstrap` — получить summary и релевантный стартовый контекст под задачу;
-- `search_candidates` — быстрый shortlist файлов;
-- `query_report` — объяснить, почему retrieval выбрал именно эти файлы;
-- `scope_preview` — посмотреть, что реально попадёт в индекс;
-- `symbol_lookup_v2`, `symbol_references_v2`, `related_files_v2` — навигация по коду.
+Общий статус:
 
-Для navigation tools результат нужно читать из `result.structuredContent.hits`.
+```bash
+rmu-cli --project-path . --json status
+rmu-cli --project-path . --json brief
+rmu-cli --project-path . --json preflight
+```
+
+Индексация:
+
+```bash
+rmu-cli --project-path . --json scope-preview --profile mixed
+rmu-cli --project-path . --json semantic-index --profile mixed
+```
+
+Поиск и навигация:
+
+```bash
+rmu-cli --project-path . --json search --query "attendance"
+rmu-cli --project-path . --json semantic-search --query "authorization flow"
+rmu-cli --project-path . --json symbol-lookup --name "AuthService"
+rmu-cli --project-path . --json related-files --path "src/auth/service.ts"
+```
+
+Investigation surface:
+
+```bash
+rmu-cli --project-path . --json symbol-body --seed "src/lib.rs:1" --seed-kind path_line --auto-index
+rmu-cli --project-path . --json route-trace --seed "resolve_origin" --seed-kind query --auto-index
+rmu-cli --project-path . --json constraint-evidence --seed "resolve_origin" --seed-kind query --auto-index
+rmu-cli --project-path . --json divergence-report --seed "resolve_origin" --seed-kind query --auto-index
+```
+
+Quality:
+
+```bash
+rmu-cli --project-path . --json rule-violations
+rmu-cli --project-path . --json quality-hotspots
+rmu-cli --project-path . --json quality-hotspots --aggregation directory
+```
 
 ## Авто `.gitignore`
 
-При первом пользовательском входе через CLI и `set_project_path` сервер теперь автоматически создаёт корневой `.gitignore`, если его ещё нет, и поддерживает в нём короткий RMU-managed block для служебного мусора:
+При первом пользовательском входе через CLI и через `set_project_path` сервер может создать корневой `.gitignore`, если его ещё нет, и поддерживать в нём небольшой RMU-managed блок для служебных каталогов.
+
+Туда обычно попадают:
 
 - `.rmu/`
 - `.codex/`
@@ -156,19 +204,54 @@ tool_timeout_sec = 180
 - `.DS_Store`
 - `Thumbs.db`
 
-Существующие пользовательские правила не удаляются: RMU обновляет только свой помеченный блок.
+Пользовательские правила не удаляются. `RMU` обновляет только свой помеченный блок.
 
 ## Структура проекта
 
-- `crates/core` — ядро индексации, retrieval и ранжирования;
-- `crates/cli` — терминальный интерфейс;
-- `crates/mcp-server` — MCP-сервер поверх того же ядра;
-- `schemas` — JSON-схемы результатов;
-- `scripts` — вспомогательные скрипты проверки.
+- `crates/core` - ядро индексации, retrieval и ранжирования
+- `crates/cli` - терминальный интерфейс
+- `crates/mcp-server` - MCP-сервер поверх того же ядра
+- `schemas` - JSON-схемы результатов
+- `scripts` - служебные скрипты
+- `docs` - документация и рабочие планы
+
+## Разработка
+
+Сборка:
+
+```bash
+cargo build --release -p rmu-cli -p rmu-mcp-server
+```
+
+Тесты:
+
+```bash
+cargo test -p rmu-core -p rmu-cli -p rmu-mcp-server
+```
+
+Линтер:
+
+```bash
+cargo clippy -p rmu-core -p rmu-cli -p rmu-mcp-server --all-targets -- -D warnings
+```
+
+Быстрая локальная проверка:
+
+```bash
+cargo run --locked -p rmu-cli -- --project-path . --json status
+```
+
+## Куда идти дальше
+
+- Investigation surface: [docs/investigation-surface.md](docs/investigation-surface.md)
 
 ## Что важно помнить
 
-- индекс хранится локально в `.rmu/`;
-- проект ориентирован на офлайн-работу;
-- MCP полезнее обычного text-search, когда нужен не просто первый матч, а хороший кодовый контекст;
-- подробные внутренние заметки и stage-артефакты намеренно не вынесены в этот `README`.
+- индекс хранится локально в `.rmu/`
+- проект рассчитан на локальную и в основном офлайн-работу
+- `RMU` не заменяет чтение кода, а помогает быстрее дойти до нужных мест
+- подробные внутренние планы и stage-артефакты намеренно не выносятся в README
+
+## Лицензия
+
+MIT

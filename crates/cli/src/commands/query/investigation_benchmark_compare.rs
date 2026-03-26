@@ -76,7 +76,7 @@ pub(super) fn build_diff_report(
             (Some(baseline_tool), Some(current_tool)) => {
                 let mut metrics = Vec::new();
                 for (metric, baseline_value, current_value, expectation) in
-                    metric_samples(*baseline_tool, *current_tool)
+                    metric_samples(baseline_tool, current_tool)
                 {
                     let Some(baseline_value) = baseline_value else {
                         continue;

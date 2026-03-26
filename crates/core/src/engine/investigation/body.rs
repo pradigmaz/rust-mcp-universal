@@ -275,9 +275,10 @@ fn extract_python_block(
     while start > 0 && lines[start - 1].trim_start().starts_with('@') {
         start -= 1;
     }
+    let header_end = python_header_end(lines, start)?;
     let base_indent = indentation(lines[start].as_str());
     let mut end = lines.len() - 1;
-    for (index, raw) in lines.iter().enumerate().skip(start + 1) {
+    for (index, raw) in lines.iter().enumerate().skip(header_end + 1) {
         let raw = raw.as_str();
         if raw.trim().is_empty() {
             continue;
@@ -288,6 +289,19 @@ fn extract_python_block(
         }
     }
     build_body(lines, start, end)
+}
+
+fn python_header_end(lines: &[String], start: usize) -> Option<usize> {
+    let mut paren_balance = 0_i32;
+    for (index, raw) in lines.iter().enumerate().skip(start).take(16) {
+        let line = raw.as_str();
+        paren_balance += line.matches('(').count() as i32;
+        paren_balance -= line.matches(')').count() as i32;
+        if paren_balance <= 0 && line.trim_end().ends_with(':') {
+            return Some(index);
+        }
+    }
+    None
 }
 
 fn extract_js_ts_block(

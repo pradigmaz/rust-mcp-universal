@@ -274,6 +274,7 @@ fn investigation_result_schemas_accept_expected_shapes_and_reject_invalid_values
     );
 
     let divergence_payload = json!({
+        "surface_kind": "divergence_explainability",
         "seed": {"seed": "resolve_origin", "seed_kind": "query"},
         "variants": [
             {
@@ -302,10 +303,14 @@ fn investigation_result_schemas_accept_expected_shapes_and_reject_invalid_values
             {
                 "severity": "likely_expected",
                 "axis": "constraints",
+                "evidence_strength": "weak",
+                "classification_reason": "difference is limited to non-authoritative constraint evidence",
                 "summary": "constraint evidence differs",
                 "variant_ids": ["variant-1"]
             }
         ],
+        "overall_severity": "likely_expected",
+        "manual_review_required": false,
         "summary": "1 variants, 1 divergence axes; highest severity likely_expected (no material risk axes identified)",
         "shared_evidence": ["validator present"],
         "unknowns": [],

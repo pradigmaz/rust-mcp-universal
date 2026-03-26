@@ -7,6 +7,17 @@ use crate::model::{ConstraintEvidence, InvestigationAnchor};
 
 use super::common::{detect_language, read_source};
 
+#[path = "constraints_noise.rs"]
+mod noise;
+#[path = "constraints_python.rs"]
+mod python;
+#[path = "constraints_rust.rs"]
+mod rust;
+#[path = "constraints_sql.rs"]
+mod sql;
+#[path = "constraints_typescript.rs"]
+mod typescript;
+
 const EXCERPT_MAX_CHARS: usize = 160;
 
 pub(super) fn collect_constraint_evidence(
@@ -27,7 +38,7 @@ pub(super) fn collect_constraint_evidence(
             if normalized_text.is_empty() {
                 continue;
             }
-            if should_ignore_constraint_line(&language, &normalized_text) {
+            if noise::should_ignore_constraint_line(&language, &normalized_text) {
                 continue;
             }
             let Some(adapter_match) = extract_with_adapter(path, &language, &normalized_text)
@@ -79,11 +90,11 @@ struct ConstraintAdapterInput<'a> {
 type ConstraintAdapter = fn(&ConstraintAdapterInput<'_>) -> Option<AdapterMatch>;
 
 const ADAPTERS: [ConstraintAdapter; 5] = [
-    python_adapter,
-    typescript_adapter,
-    rust_adapter,
-    sql_prisma_adapter,
-    generic_weak_fallback_adapter,
+    python::python_adapter,
+    typescript::typescript_adapter,
+    rust::rust_adapter,
+    sql::sql_prisma_adapter,
+    noise::generic_weak_fallback_adapter,
 ];
 
 fn extract_with_adapter(path: &str, language: &str, normalized_line: &str) -> Option<AdapterMatch> {
@@ -94,174 +105,6 @@ fn extract_with_adapter(path: &str, language: &str, normalized_line: &str) -> Op
         lowered_line: normalized_line.to_ascii_lowercase(),
     };
     ADAPTERS.iter().find_map(|adapter| adapter(&input))
-}
-
-fn python_adapter(input: &ConstraintAdapterInput<'_>) -> Option<AdapterMatch> {
-    if input.language != "python" {
-        return None;
-    }
-    if input.lowered_line.contains("op.create_index(") && input.lowered_line.contains("unique") {
-        return Some(strong_match("index_constraint", "index_declaration", 0.95));
-    }
-    if input.lowered_line.contains("op.create_unique_constraint")
-        || input.lowered_line.contains("op.create_foreign_key")
-        || input.lowered_line.contains("foreignkeyconstraint")
-        || input.lowered_line.contains("checkconstraint")
-    {
-        return Some(strong_match(
-            if is_migration_path(input.path) {
-                "migration_constraint"
-            } else {
-                "model_constraint"
-            },
-            if is_migration_path(input.path) {
-                "migration_declaration"
-            } else {
-                "model_declaration"
-            },
-            0.92,
-        ));
-    }
-    if input.lowered_line.contains("uniqueconstraint")
-        || input.lowered_line.contains("foreignkey(")
-        || input.lowered_line.contains(" references ")
-    {
-        return Some(strong_match("model_constraint", "model_declaration", 0.9));
-    }
-    None
-}
-
-fn typescript_adapter(input: &ConstraintAdapterInput<'_>) -> Option<AdapterMatch> {
-    if !matches!(input.language, "typescript" | "javascript") {
-        return None;
-    }
-    if input.lowered_line.contains("createindex(") {
-        return Some(strong_match("index_constraint", "index_declaration", 0.9));
-    }
-    if input.lowered_line.contains("unique: true") || input.lowered_line.contains("@unique") {
-        return Some(strong_match("model_constraint", "model_declaration", 0.86));
-    }
-    if input.lowered_line.contains("references:") || input.lowered_line.contains("foreignkey") {
-        return Some(strong_match("model_constraint", "model_declaration", 0.84));
-    }
-    None
-}
-
-fn rust_adapter(input: &ConstraintAdapterInput<'_>) -> Option<AdapterMatch> {
-    if input.language != "rust" {
-        return None;
-    }
-    if input.lowered_line.contains("table!")
-        || input.lowered_line.contains("joinable!")
-        || input
-            .lowered_line
-            .contains("allow_tables_to_appear_in_same_query!")
-    {
-        return Some(weak_match("ddl_like_hint", "schema_hint", 0.6));
-    }
-    if input.lowered_line.contains("sqlx::query!(")
-        || input.lowered_line.contains("sqlx::query_as!(")
-        || input.lowered_line.contains("query!(")
-        || input.lowered_line.contains("query_as!(")
-    {
-        return Some(weak_match("runtime_guard", "runtime_guard_code", 0.55));
-    }
-    None
-}
-
-fn sql_prisma_adapter(input: &ConstraintAdapterInput<'_>) -> Option<AdapterMatch> {
-    if input.language == "sql" {
-        if input.lowered_line.contains("create unique index")
-            || input.lowered_line.contains("unique index")
-        {
-            return Some(strong_match("index_constraint", "index_declaration", 0.95));
-        }
-        if input.lowered_line.contains("create index") {
-            return Some(strong_match("index_constraint", "index_declaration", 0.88));
-        }
-        if input.lowered_line.contains("add constraint")
-            || input.lowered_line.contains("foreign key")
-            || input.lowered_line.contains(" references ")
-            || input.lowered_line.contains(" check ")
-        {
-            return Some(strong_match(
-                if is_migration_path(input.path) {
-                    "migration_constraint"
-                } else {
-                    "model_constraint"
-                },
-                if is_migration_path(input.path) {
-                    "migration_declaration"
-                } else {
-                    "schema_hint"
-                },
-                0.9,
-            ));
-        }
-    }
-    if input.language == "prisma" {
-        if input.lowered_line.contains("@@index") {
-            return Some(strong_match("index_constraint", "index_declaration", 0.9));
-        }
-        if input.lowered_line.contains("@@unique")
-            || input.lowered_line.contains("@unique")
-            || input.lowered_line.contains("@id")
-            || input.lowered_line.contains("@relation")
-        {
-            return Some(strong_match("model_constraint", "model_declaration", 0.9));
-        }
-    }
-    None
-}
-
-fn generic_weak_fallback_adapter(input: &ConstraintAdapterInput<'_>) -> Option<AdapterMatch> {
-    if !supports_generic_weak_fallback(input) {
-        return None;
-    }
-    if input.lowered_line.contains("validate")
-        || input.lowered_line.contains("assert")
-        || input.lowered_line.contains("ensure")
-        || input.lowered_line.contains("guard")
-    {
-        return Some(weak_match("runtime_guard", "runtime_guard_code", 0.5));
-    }
-    if input.lowered_line.contains("index") || input.lowered_line.contains("constraint") {
-        return Some(if is_schema_like_path(&input.lowered_path) {
-            weak_match("ddl_like_hint", "schema_hint", 0.45)
-        } else {
-            weak_match("runtime_guard", "runtime_guard_code", 0.45)
-        });
-    }
-    None
-}
-
-fn supports_generic_weak_fallback(input: &ConstraintAdapterInput<'_>) -> bool {
-    matches!(
-        input.language,
-        "rust" | "python" | "typescript" | "javascript" | "sql" | "prisma"
-    )
-}
-
-fn should_ignore_constraint_line(language: &str, normalized_line: &str) -> bool {
-    let trimmed = normalized_line.trim_start();
-    match language {
-        "python" => {
-            trimmed.starts_with('#')
-                || trimmed.starts_with("\"\"\"")
-                || trimmed.starts_with("'''")
-                || trimmed.starts_with("revision id:")
-                || trimmed.starts_with("revises:")
-                || trimmed.starts_with("create date:")
-        }
-        "rust" | "typescript" | "javascript" => {
-            trimmed.starts_with("//")
-                || trimmed.starts_with("/*")
-                || trimmed.starts_with('*')
-                || trimmed.starts_with("*/")
-        }
-        "sql" => trimmed.starts_with("--"),
-        _ => false,
-    }
 }
 
 fn strong_match(

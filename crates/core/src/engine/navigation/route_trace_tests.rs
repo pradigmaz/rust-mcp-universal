@@ -1,7 +1,10 @@
 use crate::engine::investigation::common::{classify_route_segment, classify_route_source_kind};
 use crate::model::{RouteSegment, RouteSegmentKind};
 
-use super::{RankedRoute, collapse_route_segments, compare_ranked_routes, route_trace_capability};
+use super::{
+    RankedRoute, compare_ranked_routes, prioritize_start_candidates, route_trace_capability,
+};
+use super::route_trace_build::collapse_route_segments;
 use crate::model::RoutePath;
 
 #[test]
@@ -84,6 +87,7 @@ fn capability_marks_unresolved_routes_as_partial() {
 fn compare_ranked_routes_prefers_higher_weight_paths() {
     let stronger = RankedRoute {
         sequence: vec!["endpoint".to_string(), "crud".to_string()],
+        relevance: 0.9,
         route: RoutePath {
             segments: vec![
                 segment(RouteSegmentKind::Endpoint, "src/routes/origin.rs", "self"),
@@ -97,6 +101,7 @@ fn compare_ranked_routes_prefers_higher_weight_paths() {
     };
     let weaker = RankedRoute {
         sequence: vec!["endpoint".to_string(), "migration".to_string()],
+        relevance: 0.3,
         route: RoutePath {
             segments: vec![
                 segment(RouteSegmentKind::Endpoint, "src/routes/origin.rs", "self"),
@@ -114,6 +119,45 @@ fn compare_ranked_routes_prefers_higher_weight_paths() {
     };
 
     assert!(compare_ranked_routes(&stronger, &weaker).is_lt());
+}
+
+#[test]
+fn query_start_prioritization_prefers_relevant_service_over_lower_value_ui() {
+    use crate::engine::investigation::common::{CandidateFile, CandidateMatchKind};
+    use crate::model::ConceptSeedKind;
+
+    let ordered = prioritize_start_candidates(
+        vec![
+            CandidateFile {
+                path: "frontend/src/app/admin/students/components/types.ts".to_string(),
+                language: "typescript".to_string(),
+                line: None,
+                column: None,
+                symbol: None,
+                symbol_kind: None,
+                source_kind: "search_candidate".to_string(),
+                match_kind: CandidateMatchKind::QuerySearch,
+                score: 0.04,
+            },
+            CandidateFile {
+                path: "backend/app/services/attestation/deadline_validator.py".to_string(),
+                language: "python".to_string(),
+                line: None,
+                column: None,
+                symbol: None,
+                symbol_kind: None,
+                source_kind: "search_candidate".to_string(),
+                match_kind: CandidateMatchKind::QuerySearch,
+                score: 0.18,
+            },
+        ],
+        ConceptSeedKind::Query,
+    );
+
+    assert_eq!(
+        ordered.first().map(|candidate| candidate.path.as_str()),
+        Some("backend/app/services/attestation/deadline_validator.py")
+    );
 }
 
 fn segment(kind: RouteSegmentKind, path: &str, evidence: &str) -> RouteSegment {

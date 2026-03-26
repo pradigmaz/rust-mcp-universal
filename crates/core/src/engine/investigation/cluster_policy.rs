@@ -9,6 +9,7 @@ use crate::model::{
 };
 use crate::vector_rank::SemanticRerankOutcome;
 
+use super::candidate_relevance::retain_query_relevant_candidates;
 use super::common::{CandidateFile, CandidateMatchKind, detect_language};
 use super::path_helpers::display_path;
 
@@ -109,7 +110,12 @@ pub(super) fn collect_expanded_candidates(
         expansion_sources.insert("related_files".to_string());
     }
 
-    let candidates = cap_candidate_pool(dedupe_candidates(candidates), limit.max(1));
+    let candidates = if matches!(seed_kind, ConceptSeedKind::Query) {
+        retain_query_relevant_candidates(seed, dedupe_candidates(candidates), limit.max(1) * 4)
+    } else {
+        dedupe_candidates(candidates)
+    };
+    let candidates = cap_candidate_pool(candidates, limit.max(1));
 
     Ok((
         candidates,

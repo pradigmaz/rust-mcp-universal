@@ -78,6 +78,55 @@ fn python_adapter_emits_model_constraint_shape() -> anyhow::Result<()> {
 }
 
 #[test]
+fn python_adapter_emits_migration_index_constraint_shape() -> anyhow::Result<()> {
+    let (project_dir, engine) = fixture_engine("rmu-investigation-python-index-constraint")?;
+    fs::create_dir_all(project_dir.join("alembic/versions"))?;
+    fs::write(
+        project_dir.join("alembic/versions/001_add_origin_index.py"),
+        "op.create_index('idx_origins_tenant_key', 'origins', ['tenant_id', 'origin_key'])\n",
+    )?;
+
+    let items = collect_constraint_evidence(
+        &engine,
+        &test_anchor(),
+        &[String::from("alembic/versions/001_add_origin_index.py")],
+    )?;
+    let item = items.first().expect("python index evidence");
+    assert_canonical_fields(
+        item,
+        "index_constraint",
+        "index_declaration",
+        "001_add_origin_index.py",
+    );
+    assert_eq!(item.strength, "strong");
+
+    let _ = fs::remove_dir_all(project_dir);
+    Ok(())
+}
+
+#[test]
+fn python_adapter_emits_model_index_constraint_shape() -> anyhow::Result<()> {
+    let (project_dir, engine) = fixture_engine("rmu-investigation-python-model-index")?;
+    fs::create_dir_all(project_dir.join("app/models"))?;
+    fs::write(
+        project_dir.join("app/models/origin.py"),
+        "Index('idx_origins_tenant_key', 'tenant_id', 'origin_key')\n",
+    )?;
+
+    let items = collect_constraint_evidence(
+        &engine,
+        &test_anchor(),
+        &[String::from("app/models/origin.py")],
+    )?;
+    let item = items.first().expect("python model index evidence");
+    assert_canonical_fields(item, "index_constraint", "index_declaration", "origin.py");
+    assert_eq!(item.strength, "strong");
+
+    let _ = fs::remove_dir_all(project_dir);
+    Ok(())
+}
+
+#[test]
 fn typescript_adapter_emits_model_constraint_shape() -> anyhow::Result<()> {
     let (project_dir, engine) = fixture_engine("rmu-investigation-ts-constraint")?;
     fs::create_dir_all(project_dir.join("web"))?;
@@ -250,6 +299,90 @@ fn comment_only_lines_do_not_emit_constraint_noise() -> anyhow::Result<()> {
         &[String::from("migrations/001_comment_only.py")],
     )?;
     assert!(items.is_empty());
+
+    let _ = fs::remove_dir_all(project_dir);
+    Ok(())
+}
+
+#[test]
+fn frontend_jsx_tokens_do_not_emit_constraint_noise() -> anyhow::Result<()> {
+    let (project_dir, engine) = fixture_engine("rmu-investigation-frontend-noise")?;
+    fs::create_dir_all(project_dir.join("frontend/components"))?;
+    fs::write(
+        project_dir.join("frontend/components/lab_view.tsx"),
+        "<div tabIndex={0}>{items.map((item, index) => item.name)}</div>\n",
+    )?;
+
+    let items = collect_constraint_evidence(
+        &engine,
+        &test_anchor(),
+        &[String::from("frontend/components/lab_view.tsx")],
+    )?;
+    assert!(items.is_empty());
+
+    let _ = fs::remove_dir_all(project_dir);
+    Ok(())
+}
+
+#[test]
+fn model_validate_calls_are_not_mistaken_for_runtime_guards() -> anyhow::Result<()> {
+    let (project_dir, engine) = fixture_engine("rmu-investigation-model-validate-noise")?;
+    fs::create_dir_all(project_dir.join("app/api"))?;
+    fs::write(
+        project_dir.join("app/api/admin_labs.py"),
+        "return LabDetailResponse.model_validate(lab)\n",
+    )?;
+
+    let items = collect_constraint_evidence(
+        &engine,
+        &test_anchor(),
+        &[String::from("app/api/admin_labs.py")],
+    )?;
+    assert!(items.is_empty());
+
+    let _ = fs::remove_dir_all(project_dir);
+    Ok(())
+}
+
+#[test]
+fn generic_http_exception_and_presence_guards_do_not_emit_constraint_noise() -> anyhow::Result<()> {
+    let (project_dir, engine) = fixture_engine("rmu-investigation-http-guard-noise")?;
+    fs::create_dir_all(project_dir.join("backend/app/api"))?;
+    fs::write(
+        project_dir.join("backend/app/api/example.py"),
+        "if not student:\n    raise HTTPException(status_code=404, detail=\"Student not found\")\n",
+    )?;
+
+    let items = collect_constraint_evidence(
+        &engine,
+        &test_anchor(),
+        &[String::from("backend/app/api/example.py")],
+    )?;
+    assert!(items.is_empty());
+
+    let _ = fs::remove_dir_all(project_dir);
+    Ok(())
+}
+
+#[test]
+fn validator_guards_with_constraint_keywords_still_emit_runtime_guard() -> anyhow::Result<()> {
+    let (project_dir, engine) = fixture_engine("rmu-investigation-validator-guard")?;
+    fs::create_dir_all(project_dir.join("backend/app/services"))?;
+    fs::write(
+        project_dir.join("backend/app/services/deadline_validator.py"),
+        "if not deadline_limit:\n    raise ValueError(\"deadline limit is required\")\n",
+    )?;
+
+    let items = collect_constraint_evidence(
+        &engine,
+        &test_anchor(),
+        &[String::from("backend/app/services/deadline_validator.py")],
+    )?;
+    assert!(
+        items
+            .iter()
+            .any(|item| item.constraint_kind == "runtime_guard")
+    );
 
     let _ = fs::remove_dir_all(project_dir);
     Ok(())

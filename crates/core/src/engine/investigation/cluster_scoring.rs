@@ -15,47 +15,60 @@ pub(super) struct ClusterScoringSignals {
     pub(super) score_breakdown: VariantScoreBreakdown,
 }
 
+pub(super) struct ClusterScoringInputs<'a> {
+    pub(super) seed: &'a str,
+    pub(super) candidate: &'a CandidateFile,
+    pub(super) route: &'a [RouteSegment],
+    pub(super) strong_constraint_count: usize,
+    pub(super) weak_constraint_count: usize,
+    pub(super) related_tests: &'a [String],
+    pub(super) semantic_state: SemanticState,
+    pub(super) body_unresolved: bool,
+    pub(super) no_constraint_evidence: bool,
+    pub(super) no_test_evidence: bool,
+}
+
 pub(super) fn compute_scoring_signals(
-    seed: &str,
-    candidate: &CandidateFile,
-    route: &[RouteSegment],
-    strong_constraint_count: usize,
-    weak_constraint_count: usize,
-    related_tests: &[String],
-    semantic_state: SemanticState,
-    body_unresolved: bool,
-    no_constraint_evidence: bool,
-    no_test_evidence: bool,
+    inputs: ClusterScoringInputs<'_>,
 ) -> ClusterScoringSignals {
-    let lexical_proximity = lexical_signal(seed, candidate);
-    let semantic_proximity = if candidate.source_kind == "semantic_search_candidate" {
-        candidate.score.clamp(0.0, 1.0)
+    let lexical_proximity = lexical_signal(inputs.seed, inputs.candidate);
+    let semantic_proximity = if inputs.candidate.source_kind == "semantic_search_candidate" {
+        inputs.candidate.score.clamp(0.0, 1.0)
     } else {
         0.0
     };
-    let route_centrality = route_signal(route);
-    let symbol_overlap = symbol_signal(seed, candidate, route);
-    let constraint_overlap = ((strong_constraint_count as f32 * 0.5)
-        + (weak_constraint_count as f32 * 0.25))
-        .clamp(0.0, 1.0);
-    let test_adjacency = if related_tests.is_empty() {
+    let route_centrality = route_signal(inputs.route);
+    let symbol_overlap = symbol_signal(inputs.seed, inputs.candidate, inputs.route);
+    let strong_constraint_signal =
+        (inputs.strong_constraint_count as f32 * 0.5).clamp(0.0, 1.0);
+    let weak_constraint_signal = if inputs.strong_constraint_count > 0 {
+        (inputs.weak_constraint_count as f32 * 0.08).clamp(0.0, 0.4)
+    } else {
+        (inputs.weak_constraint_count as f32 * 0.04).clamp(0.0, 0.2)
+    };
+    let constraint_overlap = (strong_constraint_signal + weak_constraint_signal).clamp(0.0, 1.0);
+    let test_adjacency = if inputs.related_tests.is_empty() {
         0.0
     } else {
-        (0.5 + (related_tests.len() as f32 * 0.2)).clamp(0.0, 1.0)
+        (0.5 + (inputs.related_tests.len() as f32 * 0.2)).clamp(0.0, 1.0)
     };
     let base = (lexical_proximity * 0.20)
         + (route_centrality * 0.20)
         + (symbol_overlap * 0.15)
         + (constraint_overlap * 0.25)
         + (test_adjacency * 0.20);
-    let semantic_bonus = if semantic_state == SemanticState::Used {
+    let semantic_bonus = if inputs.semantic_state == SemanticState::Used {
         semantic_proximity * 0.10
     } else {
         0.0
     };
-    let penalties = (if body_unresolved { 0.10 } else { 0.0 })
-        + (if no_constraint_evidence { 0.10 } else { 0.0 })
-        + (if no_test_evidence { 0.05 } else { 0.0 });
+    let penalties = (if inputs.body_unresolved { 0.10 } else { 0.0 })
+        + (if inputs.no_constraint_evidence {
+            0.10
+        } else {
+            0.0
+        })
+        + (if inputs.no_test_evidence { 0.05 } else { 0.0 });
     let confidence = (base + semantic_bonus - penalties).clamp(0.0, 1.0);
     ClusterScoringSignals {
         lexical_proximity,
@@ -141,7 +154,7 @@ fn token_overlap(left: &str, right: &str) -> f32 {
 
 fn tokenize(value: &str) -> HashSet<String> {
     value
-        .split(|ch: char| !(ch.is_ascii_alphanumeric() || ch == '_'))
+        .split(|ch: char| !ch.is_ascii_alphanumeric())
         .map(|token| token.trim().to_ascii_lowercase())
         .filter(|token| token.len() >= 3)
         .collect()
