@@ -153,7 +153,7 @@ fn read_meta_u32(conn: &Connection, key: &str) -> Result<Option<u32>> {
 
 fn compatibility_hint() -> String {
     if cfg!(windows) {
-        "use scripts/rmu-mcp-server-fresh.cmd or restart the process with a fresh binary, then re-open the index".to_string()
+        "use scripts/rmu-mcp-server-fresh.cmd so the server is rebuilt/restarted if needed, then re-open the index".to_string()
     } else {
         "restart the process with a fresh binary and re-open the index".to_string()
     }
@@ -311,8 +311,7 @@ fn detect_same_binary_other_pids(binary_path: &str, errors: &mut Vec<String>) ->
 #[cfg(test)]
 mod tests {
     use super::{
-        Engine, PreflightState,
-        RUNNING_BINARY_STALE_GRACE_MS, TEST_BINARY_MODIFIED_AT_MS_ENV,
+        Engine, PreflightState, RUNNING_BINARY_STALE_GRACE_MS, TEST_BINARY_MODIFIED_AT_MS_ENV,
         TEST_PROCESS_STARTED_AT_MS_ENV, is_running_binary_stale, parse_test_timestamp,
         read_running_binary_timestamps, resolve_stale_process_probe_binary_path,
         set_thread_running_binary_timestamps_override_for_tests,

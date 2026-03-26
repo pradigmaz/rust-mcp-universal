@@ -11,7 +11,9 @@ mod query;
 mod report;
 mod workspace;
 
-pub use agent::{AgentBootstrap, AgentQueryBundle};
+pub use agent::{
+    AgentBootstrap, AgentBootstrapIncludeOptions, AgentBootstrapTimings, AgentQueryBundle,
+};
 pub use context::{ContextFile, ContextPackResult, ContextSelection};
 pub use index::{
     DbCheckpointResult, DbMaintenanceOptions, DbMaintenanceResult, DbMaintenanceStats,
@@ -22,7 +24,7 @@ pub use investigation::{
     AxisObservation, ConceptSeed, ConceptSeedKind, ConstraintEvidence, ConstraintEvidenceResult,
     DivergenceAxis, DivergenceReport, DivergenceSignal, InvestigationAnchor, RouteGap, RoutePath,
     RouteSegment, RouteSegmentKind, RouteTraceResult, SourceSpan, SymbolBodyAmbiguityStatus,
-    SymbolBodyItem, SymbolBodyResolutionKind, SymbolBodyResult,
+    SymbolBodyItem, SymbolBodyResolutionKind, SymbolBodyResult, SymbolBodyTimings,
 };
 pub use investigation_cluster::{
     ConceptClusterExpansionPolicy, ConceptClusterResult, ConceptClusterSummary,

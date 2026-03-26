@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use serde_json::json;
 
 use super::*;
+use crate::ServerState;
 
 fn workspace_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -169,6 +170,12 @@ fn preflight_tool_returns_structured_status_payload() {
     assert!(result["structuredContent"]["status"].is_string());
     assert!(result["structuredContent"]["running_binary_version"].is_string());
     assert!(result["structuredContent"]["running_binary_stale"].is_boolean());
+    assert_eq!(result["structuredContent"]["binding_status"], json!("bound"));
+    assert_eq!(result["structuredContent"]["binding_source"], json!("cli"));
+    assert!(result["structuredContent"]["resolved_project_path"].is_string());
+    assert!(result["structuredContent"]["resolved_db_path"].is_string());
+    assert_eq!(result["structuredContent"]["db_pinned"], json!(true));
+    assert!(result["structuredContent"]["binding_errors"].is_array());
     assert!(
         result["structuredContent"]
             .get("stale_process_probe_binary_path")
@@ -180,6 +187,25 @@ fn preflight_tool_returns_structured_status_payload() {
     assert!(result["structuredContent"]["safe_recovery_hint"].is_string());
 
     let _ = fs::remove_dir_all(project_dir);
+}
+
+#[test]
+fn preflight_tool_reports_unbound_binding_without_touching_cwd_project() {
+    let mut state = ServerState::new(None, None);
+    let result = handle_tool_call(
+        Some(json!({
+            "name": "preflight",
+            "arguments": {}
+        })),
+        &mut state,
+    )
+    .expect("preflight should succeed even when unbound");
+
+    assert_eq!(result["isError"], json!(false));
+    assert_eq!(result["structuredContent"]["binding_status"], json!("unbound"));
+    assert!(result["structuredContent"]["resolved_project_path"].is_null());
+    assert!(result["structuredContent"]["resolved_db_path"].is_null());
+    assert!(result["structuredContent"]["binding_errors"].is_array());
 }
 
 #[test]

@@ -15,7 +15,10 @@ pub(crate) fn navigation_schema(arg_name: &str) -> Value {
     json_schema_object(
         &[
             (arg_name, string_schema(description, Some(1))),
-            ("limit", integer_schema("Maximum number of hits to return.", Some(1))),
+            (
+                "limit",
+                integer_schema("Maximum number of hits to return.", Some(1)),
+            ),
             (
                 "auto_index",
                 boolean_schema("Automatically build or refresh the index if needed."),
@@ -30,8 +33,14 @@ pub(crate) fn navigation_schema(arg_name: &str) -> Value {
 pub(crate) fn call_path_schema() -> Value {
     json_schema_object(
         &[
-            ("from", string_schema("Start symbol or file for the path search.", Some(1))),
-            ("to", string_schema("Destination symbol or file for the path search.", Some(1))),
+            (
+                "from",
+                string_schema("Start symbol or file for the path search.", Some(1)),
+            ),
+            (
+                "to",
+                string_schema("Destination symbol or file for the path search.", Some(1)),
+            ),
             (
                 "max_hops",
                 integer_schema("Maximum number of graph hops to explore.", Some(1)),

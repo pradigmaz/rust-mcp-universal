@@ -37,6 +37,20 @@
     },
     "stale_process_suspected": { "type": "boolean" },
     "launcher_recommended": { "type": "string", "minLength": 1 },
+    "binding_status": {
+      "type": "string",
+      "oneOf": [
+        { "const": "bound" },
+        { "const": "unbound" },
+        { "const": "ambiguous" }
+      ]
+    },
+    "binding_source": { "type": "string", "minLength": 1 },
+    "db_pinned": { "type": "boolean" },
+    "binding_errors": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
     "safe_recovery_hint": { "type": "string", "minLength": 1 },
     "errors": {
       "type": "array",

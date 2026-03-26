@@ -173,7 +173,10 @@ fn all_tool_parameters_have_human_readable_descriptions() {
             .unwrap_or_else(|| panic!("tool `{name}` inputSchema should define properties"));
 
         for (property_name, schema) in properties {
-            let description = schema.get("description").and_then(Value::as_str).unwrap_or("");
+            let description = schema
+                .get("description")
+                .and_then(Value::as_str)
+                .unwrap_or("");
             assert!(
                 !description.trim().is_empty(),
                 "tool `{name}` parameter `{property_name}` should have a description"

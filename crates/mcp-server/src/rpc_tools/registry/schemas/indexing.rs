@@ -119,7 +119,10 @@ pub(crate) fn db_maintenance_schema() -> Value {
                 "checkpoint",
                 boolean_schema("Checkpoint the WAL into the main database file."),
             ),
-            ("vacuum", boolean_schema("Compact the database file with VACUUM.")),
+            (
+                "vacuum",
+                boolean_schema("Compact the database file with VACUUM."),
+            ),
             (
                 "analyze",
                 boolean_schema("Refresh SQLite planner statistics with ANALYZE."),

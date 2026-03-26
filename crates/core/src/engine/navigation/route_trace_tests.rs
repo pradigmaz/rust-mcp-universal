@@ -1,10 +1,10 @@
 use crate::engine::investigation::common::{classify_route_segment, classify_route_source_kind};
 use crate::model::{RouteSegment, RouteSegmentKind};
 
+use super::route_trace_build::collapse_route_segments;
 use super::{
     RankedRoute, compare_ranked_routes, prioritize_start_candidates, route_trace_capability,
 };
-use super::route_trace_build::collapse_route_segments;
 use crate::model::RoutePath;
 
 #[test]

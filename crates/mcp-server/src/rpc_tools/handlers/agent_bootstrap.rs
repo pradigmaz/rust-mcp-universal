@@ -2,8 +2,8 @@ use anyhow::Result;
 use serde_json::Value;
 
 use rmu_core::{
-    Engine, MigrationMode, PrivacyMode, RolloutPhase, SemanticFailMode, decide_semantic_rollout,
-    sanitize_value_for_privacy,
+    AgentBootstrapIncludeOptions, Engine, MigrationMode, PrivacyMode, RolloutPhase,
+    SemanticFailMode, decide_semantic_rollout, sanitize_value_for_privacy,
 };
 
 use crate::ServerState;
@@ -34,6 +34,8 @@ pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<V
             "migration_mode",
             "max_chars",
             "max_tokens",
+            "include_report",
+            "include_investigation_summary",
         ],
     )?;
     let query = parse_optional_non_empty_string(args, "agent_bootstrap", "query")?;
@@ -55,6 +57,14 @@ pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<V
         parse_optional_usize_with_min(args, "agent_bootstrap", "max_chars", 256, 12_000)?;
     let max_tokens =
         parse_optional_usize_with_min(args, "agent_bootstrap", "max_tokens", 64, 3_000)?;
+    let include_report =
+        parse_optional_bool(args, "agent_bootstrap", "include_report")?.unwrap_or(false);
+    let include_investigation_summary = parse_optional_bool(
+        args,
+        "agent_bootstrap",
+        "include_investigation_summary",
+    )?
+    .unwrap_or(false);
 
     let semantic_effective = query
         .as_deref()
@@ -69,7 +79,7 @@ pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<V
     if auto_index {
         ensure_query_index_ready(&engine, true)?;
     }
-    let payload = engine.agent_bootstrap_with_auto_index_and_mode(
+    let payload = engine.agent_bootstrap_with_auto_index_and_options(
         query.as_deref(),
         limit,
         semantic_effective,
@@ -78,6 +88,10 @@ pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<V
         max_chars,
         max_tokens,
         false,
+        AgentBootstrapIncludeOptions {
+            include_report,
+            include_investigation_summary,
+        },
     )?;
     let mut payload = serde_json::to_value(payload)?;
     sanitize_value_for_privacy(privacy_mode, &mut payload);

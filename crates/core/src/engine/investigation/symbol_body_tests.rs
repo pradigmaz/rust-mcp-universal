@@ -39,6 +39,8 @@ fn symbol_body_extracts_rust_function_body() -> anyhow::Result<()> {
             .iter()
             .all(|item| item.resolution_kind == SymbolBodyResolutionKind::ExactSymbolSpan)
     );
+    assert!(result.timings.total_ms >= result.timings.candidate_collection_ms);
+    assert!(result.timings.total_ms >= result.timings.source_read_ms);
 
     let _ = fs::remove_dir_all(project_dir);
     Ok(())
@@ -63,6 +65,8 @@ fn symbol_body_path_seed_uses_chunk_excerpt_anchor_for_typescript_files() -> any
         item.anchor.path == "web/origin_client.ts"
             && item.resolution_kind == SymbolBodyResolutionKind::ChunkExcerptAnchor
     }));
+    let timings = serde_json::to_value(&result)?["timings"].clone();
+    assert!(timings["chunk_excerpt_ms"].is_u64());
 
     let _ = fs::remove_dir_all(project_dir);
     Ok(())
@@ -161,7 +165,10 @@ fn symbol_body_marks_partial_only_when_exact_match_is_absent() -> anyhow::Result
     let result = engine.symbol_body("resolve", ConceptSeedKind::Symbol, 5)?;
 
     assert_eq!(result.capability_status, "supported");
-    assert_eq!(result.ambiguity_status, SymbolBodyAmbiguityStatus::PartialOnly);
+    assert_eq!(
+        result.ambiguity_status,
+        SymbolBodyAmbiguityStatus::PartialOnly
+    );
     assert!(result.items.iter().any(|item| {
         item.anchor.symbol.as_deref() == Some("resolve_origin")
             && item.resolution_kind == SymbolBodyResolutionKind::ExactSymbolSpan

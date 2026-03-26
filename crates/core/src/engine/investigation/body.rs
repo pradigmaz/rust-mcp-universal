@@ -1,10 +1,12 @@
+use std::time::Instant;
+
 use anyhow::Result;
 use rusqlite::{OptionalExtension, params};
 
 use crate::engine::Engine;
 use crate::model::{
     ConceptSeedKind, SourceSpan, SymbolBodyAmbiguityStatus, SymbolBodyItem,
-    SymbolBodyResolutionKind, SymbolBodyResult,
+    SymbolBodyResolutionKind, SymbolBodyResult, SymbolBodyTimings,
 };
 
 use super::common::{
@@ -19,15 +21,29 @@ pub(super) fn symbol_body(
     seed_kind: ConceptSeedKind,
     limit: usize,
 ) -> Result<SymbolBodyResult> {
+    let started = Instant::now();
+    let phase_started = Instant::now();
     let (seed, candidates, _) = collect_candidates(engine, seed, seed_kind, limit)?;
+    let candidate_collection_ms = elapsed_ms(phase_started);
     let (selected_candidates, ambiguity_status) =
         select_symbol_body_candidates(seed_kind, candidates);
     let unsupported_sources = collect_unsupported_sources(&selected_candidates);
-    let items = selected_candidates
-        .iter()
-        .filter_map(|candidate| extract_body_for_candidate(engine, candidate).ok().flatten())
-        .take(limit.max(1))
-        .collect::<Vec<_>>();
+    let mut source_read_ms = 0_u64;
+    let mut chunk_excerpt_ms = 0_u64;
+    let mut items = Vec::new();
+    for candidate in &selected_candidates {
+        if let Some(item) = extract_body_for_candidate_with_timings(
+            engine,
+            candidate,
+            &mut source_read_ms,
+            &mut chunk_excerpt_ms,
+        )? {
+            items.push(item);
+            if items.len() >= limit.max(1) {
+                break;
+            }
+        }
+    }
     let capability_status =
         capability_status(items.len(), selected_candidates.len(), &unsupported_sources);
     let confidence = if items.is_empty() {
@@ -42,6 +58,12 @@ pub(super) fn symbol_body(
         unsupported_sources,
         ambiguity_status,
         confidence,
+        timings: SymbolBodyTimings {
+            candidate_collection_ms,
+            source_read_ms,
+            chunk_excerpt_ms,
+            total_ms: elapsed_ms(started),
+        },
     })
 }
 
@@ -91,11 +113,29 @@ pub(super) fn extract_body_for_candidate(
     engine: &Engine,
     candidate: &CandidateFile,
 ) -> Result<Option<SymbolBodyItem>> {
+    let mut source_read_ms = 0_u64;
+    let mut chunk_excerpt_ms = 0_u64;
+    extract_body_for_candidate_with_timings(
+        engine,
+        candidate,
+        &mut source_read_ms,
+        &mut chunk_excerpt_ms,
+    )
+}
+
+fn extract_body_for_candidate_with_timings(
+    engine: &Engine,
+    candidate: &CandidateFile,
+    source_read_ms: &mut u64,
+    chunk_excerpt_ms: &mut u64,
+) -> Result<Option<SymbolBodyItem>> {
     if !is_supported_language(&candidate.language, &candidate.path) {
         return Ok(None);
     }
 
+    let phase_started = Instant::now();
     let source = read_source(&engine.project_root, &candidate.path)?;
+    add_elapsed_ms(source_read_ms, phase_started);
     let lines = source.lines().map(str::to_string).collect::<Vec<_>>();
     if lines.is_empty() {
         return Ok(None);
@@ -108,10 +148,10 @@ pub(super) fn extract_body_for_candidate(
                 .map(|fields| (fields, SymbolBodyResolutionKind::NearestIndexedLines))
         })
         .or_else(|| {
-            extract_chunk_excerpt(engine, candidate)
-                .ok()
-                .flatten()
-                .map(|fields| (fields, SymbolBodyResolutionKind::ChunkExcerptAnchor))
+            let phase_started = Instant::now();
+            let excerpt = extract_chunk_excerpt(engine, candidate).ok().flatten();
+            add_elapsed_ms(chunk_excerpt_ms, phase_started);
+            excerpt.map(|fields| (fields, SymbolBodyResolutionKind::ChunkExcerptAnchor))
         });
 
     Ok(extracted.map(
@@ -416,4 +456,12 @@ fn looks_like_js_ts_declaration(line: &str) -> bool {
     }
 
     false
+}
+
+fn elapsed_ms(started: Instant) -> u64 {
+    u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX)
+}
+
+fn add_elapsed_ms(accumulator: &mut u64, started: Instant) {
+    *accumulator = accumulator.saturating_add(elapsed_ms(started));
 }

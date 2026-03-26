@@ -9,7 +9,10 @@ use crate::rpc_tools::registry::helpers::json_schema_object;
 pub(crate) fn rule_violations_schema() -> Value {
     json_schema_object(
         &[
-            ("limit", integer_schema("Maximum number of entries to return.", Some(1))),
+            (
+                "limit",
+                integer_schema("Maximum number of entries to return.", Some(1)),
+            ),
             (
                 "path_prefix",
                 string_schema("Only include files under this path prefix.", Some(1)),
@@ -28,13 +31,21 @@ pub(crate) fn rule_violations_schema() -> Value {
             ),
             (
                 "sort_metric_id",
-                string_schema("Metric identifier to use when sorting by metric_value.", Some(1)),
+                string_schema(
+                    "Metric identifier to use when sorting by metric_value.",
+                    Some(1),
+                ),
             ),
             (
                 "sort_by",
                 enum_schema(
                     "How to sort returned violations.",
-                    &["violation_count", "size_bytes", "non_empty_lines", "metric_value"],
+                    &[
+                        "violation_count",
+                        "size_bytes",
+                        "non_empty_lines",
+                        "metric_value",
+                    ],
                 ),
             ),
             (
@@ -58,7 +69,10 @@ pub(crate) fn quality_hotspots_schema() -> Value {
                     &["file", "directory", "module"],
                 ),
             ),
-            ("limit", integer_schema("Maximum number of buckets to return.", Some(1))),
+            (
+                "limit",
+                integer_schema("Maximum number of buckets to return.", Some(1)),
+            ),
             (
                 "path_prefix",
                 string_schema("Only include hotspots under this path prefix.", Some(1)),

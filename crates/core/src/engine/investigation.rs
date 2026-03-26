@@ -85,14 +85,14 @@ impl Engine {
 }
 
 #[cfg(test)]
+#[path = "investigation/constraint_relevance_tests.rs"]
+mod constraint_relevance_tests;
+#[cfg(test)]
 #[path = "investigation/scoring_tests.rs"]
 mod scoring_tests;
 #[cfg(test)]
 #[path = "investigation/symbol_body_tests.rs"]
 mod symbol_body_tests;
-#[cfg(test)]
-#[path = "investigation/constraint_relevance_tests.rs"]
-mod constraint_relevance_tests;
 #[cfg(test)]
 #[path = "investigation/tests.rs"]
 mod tests;

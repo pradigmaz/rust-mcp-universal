@@ -159,8 +159,35 @@ fn agent_bootstrap_with_query_returns_context_bundle() {
     assert!(bundle.is_object());
     assert!(bundle["hits"].is_array());
     assert!(bundle["context"].is_object());
-    assert!(bundle["report"].is_object());
-    assert!(bundle["report"]["investigation_summary"].is_object());
+    assert!(bundle["report"].is_null());
+    assert!(bundle["investigation_summary"].is_null());
+    assert!(result["structuredContent"]["timings"]["total_ms"].is_u64());
+    assert!(result["structuredContent"]["timings"]["search_ms"].is_u64());
+
+    let detailed = handle_tool_call(
+        Some(json!({
+            "name": "agent_bootstrap",
+            "arguments": {
+                "query": "bootstrap_query_symbol",
+                "limit": 5,
+                "semantic": true,
+                "auto_index": true,
+                "include_report": true,
+                "include_investigation_summary": true
+            }
+        })),
+        &mut state,
+    )
+    .expect("agent_bootstrap with opt-in surfaces should succeed");
+
+    assert_eq!(detailed["isError"], json!(false));
+    let detailed_bundle = &detailed["structuredContent"]["query_bundle"];
+    assert!(detailed_bundle["report"].is_object());
+    assert!(detailed_bundle["investigation_summary"].is_object());
+    assert!(
+        detailed_bundle["report"]["investigation_summary"].is_object()
+            || detailed_bundle["report"]["investigation_summary"].is_null()
+    );
 
     let _ = fs::remove_dir_all(project_dir);
 }

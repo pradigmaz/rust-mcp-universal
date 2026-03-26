@@ -16,7 +16,7 @@ use super::handlers::{
     semantic_search, symbol_body, symbol_lookup, symbol_lookup_v2, symbol_references,
     symbol_references_v2,
 };
-use super::result::tool_compatibility_error_result;
+use super::result::{tool_compatibility_error_result, tool_state_error_result};
 
 pub(super) fn handle_tool_call(params: Option<Value>, state: &mut ServerState) -> Result<Value> {
     let params = params.ok_or_else(|| invalid_params_error("tools/call params are required"))?;
@@ -35,7 +35,21 @@ pub(super) fn handle_tool_call(params: Option<Value>, state: &mut ServerState) -
         None => json!({}),
     };
 
-    if name != "preflight" {
+    if !is_known_tool(name) {
+        return Err(invalid_params_error(format!("unknown tool: {name}")));
+    }
+
+    if tool_requires_bound_project(name) {
+        if let Some(binding_failure) = state.binding_failure() {
+            return Ok(tool_state_error_result(
+                binding_failure.code,
+                binding_failure.message,
+                binding_failure.details,
+            ));
+        }
+    }
+
+    if name != "preflight" && tool_requires_bound_project(name) {
         if let Some(compatibility_error) = runtime_compatibility_guard(state)? {
             return Ok(compatibility_error);
         }
@@ -74,8 +88,49 @@ pub(super) fn handle_tool_call(params: Option<Value>, state: &mut ServerState) -
         "query_report" => query_report(&args, state).map_err(into_tool_error),
         "query_benchmark" => query_benchmark(&args, state).map_err(into_tool_error),
         "db_maintenance" => db_maintenance(&args, state).map_err(into_tool_error),
-        _ => Err(invalid_params_error(format!("unknown tool: {name}"))),
+        _ => unreachable!("known tools are handled before dispatch"),
     }
+}
+
+fn is_known_tool(name: &str) -> bool {
+    matches!(
+        name,
+        "set_project_path"
+            | "install_ignore_rules"
+            | "index_status"
+            | "workspace_brief"
+            | "agent_bootstrap"
+            | "index"
+            | "semantic_index"
+            | "scope_preview"
+            | "delete_index"
+            | "preflight"
+            | "symbol_lookup"
+            | "symbol_lookup_v2"
+            | "symbol_references"
+            | "symbol_references_v2"
+            | "symbol_body"
+            | "related_files"
+            | "related_files_v2"
+            | "call_path"
+            | "route_trace"
+            | "constraint_evidence"
+            | "concept_cluster"
+            | "divergence_report"
+            | "search_candidates"
+            | "semantic_search"
+            | "rule_violations"
+            | "quality_hotspots"
+            | "build_context_under_budget"
+            | "context_pack"
+            | "query_report"
+            | "query_benchmark"
+            | "db_maintenance"
+    )
+}
+
+fn tool_requires_bound_project(name: &str) -> bool {
+    !matches!(name, "set_project_path" | "preflight")
 }
 
 fn runtime_compatibility_guard(state: &ServerState) -> Result<Option<Value>> {

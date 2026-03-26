@@ -8,7 +8,7 @@ use crate::App;
 fn cli_accepts_project_path_flag_without_explicit_value() {
     let app = App::try_parse_from(["rmu-mcp-server", "--project-path"])
         .expect("project path flag without value should default to current dir");
-    assert_eq!(app.project_path, PathBuf::from("."));
+    assert_eq!(app.project_path, Some(PathBuf::from(".")));
 }
 
 #[test]

@@ -28,9 +28,7 @@ pub(super) struct ClusterScoringInputs<'a> {
     pub(super) no_test_evidence: bool,
 }
 
-pub(super) fn compute_scoring_signals(
-    inputs: ClusterScoringInputs<'_>,
-) -> ClusterScoringSignals {
+pub(super) fn compute_scoring_signals(inputs: ClusterScoringInputs<'_>) -> ClusterScoringSignals {
     let lexical_proximity = lexical_signal(inputs.seed, inputs.candidate);
     let semantic_proximity = if inputs.candidate.source_kind == "semantic_search_candidate" {
         inputs.candidate.score.clamp(0.0, 1.0)
@@ -39,8 +37,7 @@ pub(super) fn compute_scoring_signals(
     };
     let route_centrality = route_signal(inputs.route);
     let symbol_overlap = symbol_signal(inputs.seed, inputs.candidate, inputs.route);
-    let strong_constraint_signal =
-        (inputs.strong_constraint_count as f32 * 0.5).clamp(0.0, 1.0);
+    let strong_constraint_signal = (inputs.strong_constraint_count as f32 * 0.5).clamp(0.0, 1.0);
     let weak_constraint_signal = if inputs.strong_constraint_count > 0 {
         (inputs.weak_constraint_count as f32 * 0.08).clamp(0.0, 0.4)
     } else {

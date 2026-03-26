@@ -4,6 +4,9 @@ use anyhow::Result;
 
 #[path = "query/agent.rs"]
 mod agent;
+#[cfg(test)]
+#[path = "query/agent_tests.rs"]
+mod agent_tests;
 #[path = "query/brief.rs"]
 mod brief;
 #[path = "query/chunking.rs"]

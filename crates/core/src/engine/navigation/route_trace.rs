@@ -12,9 +12,7 @@ mod route_trace_ranking;
 use crate::engine::investigation::common::{
     canonical_seed, classify_route_segment, collect_candidates, route_kind_label,
 };
-use crate::model::{
-    ConceptSeedKind, RouteGap, RoutePath, RouteTraceResult,
-};
+use crate::model::{ConceptSeedKind, RouteGap, RoutePath, RouteTraceResult};
 use route_trace_build::{
     dedupe_gaps, fallback_route, route_from_call_path, route_trace_capability,
 };

@@ -81,6 +81,18 @@ pub enum SymbolBodyAmbiguityStatus {
     PartialOnly,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub struct SymbolBodyTimings {
+    #[serde(default)]
+    pub candidate_collection_ms: u64,
+    #[serde(default)]
+    pub source_read_ms: u64,
+    #[serde(default)]
+    pub chunk_excerpt_ms: u64,
+    #[serde(default)]
+    pub total_ms: u64,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum RouteSegmentKind {
@@ -209,6 +221,8 @@ pub struct SymbolBodyResult {
     pub unsupported_sources: Vec<String>,
     pub ambiguity_status: SymbolBodyAmbiguityStatus,
     pub confidence: f32,
+    #[serde(default)]
+    pub timings: SymbolBodyTimings,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

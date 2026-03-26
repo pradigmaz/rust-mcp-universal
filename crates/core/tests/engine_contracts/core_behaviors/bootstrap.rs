@@ -1,4 +1,5 @@
 use super::*;
+use rmu_core::AgentBootstrapIncludeOptions;
 
 #[test]
 fn agent_bootstrap_without_query_returns_workspace_snapshot() -> Result<(), Box<dyn Error>> {
@@ -13,7 +14,8 @@ fn agent_bootstrap_without_query_returns_workspace_snapshot() -> Result<(), Box<
 }
 
 #[test]
-fn agent_bootstrap_with_query_returns_hits_context_and_report() -> Result<(), Box<dyn Error>> {
+fn agent_bootstrap_with_query_returns_hits_context_without_expensive_surfaces_by_default()
+-> Result<(), Box<dyn Error>> {
     let (project_dir, engine) = setup_indexed_project()?;
     let payload = engine.agent_bootstrap(Some("alpha_beta_gamma"), 10, true, 12_000, 3_000)?;
 
@@ -25,8 +27,39 @@ fn agent_bootstrap_with_query_returns_hits_context_and_report() -> Result<(), Bo
             || hit.path == "src/main.rs"
             || hit.path.ends_with("src\\main.rs")
     }));
-    assert!(bundle.report.confidence.overall > 0.0);
-    assert!(bundle.report.investigation_summary.is_some());
+    assert!(bundle.investigation_summary.is_none());
+    assert!(bundle.report.is_none());
+    assert!(payload.timings.total_ms >= payload.timings.search_ms);
+
+    cleanup_project(&project_dir);
+    Ok(())
+}
+
+#[test]
+fn agent_bootstrap_can_opt_into_report_and_investigation_summary() -> Result<(), Box<dyn Error>> {
+    let (project_dir, engine) = setup_indexed_project()?;
+    let payload = engine.agent_bootstrap_with_auto_index_and_options(
+        Some("alpha_beta_gamma"),
+        10,
+        true,
+        SemanticFailMode::FailOpen,
+        PrivacyMode::Off,
+        12_000,
+        3_000,
+        true,
+        AgentBootstrapIncludeOptions {
+            include_report: true,
+            include_investigation_summary: true,
+        },
+    )?;
+
+    let bundle = payload
+        .query_bundle
+        .expect("query bundle should be present");
+    let report = bundle.report.expect("report");
+    assert!(report.confidence.overall > 0.0);
+    assert!(bundle.investigation_summary.is_some());
+    assert!(report.investigation_summary.is_some());
 
     cleanup_project(&project_dir);
     Ok(())

@@ -2,7 +2,9 @@ use std::collections::BTreeMap;
 
 use rmu_core::{InvestigationCaseReport, InvestigationToolMetrics};
 
-pub(super) fn build_tool_metrics(cases: &[InvestigationCaseReport]) -> Vec<InvestigationToolMetrics> {
+pub(super) fn build_tool_metrics(
+    cases: &[InvestigationCaseReport],
+) -> Vec<InvestigationToolMetrics> {
     let mut grouped = BTreeMap::new();
     for case in cases {
         grouped
@@ -65,7 +67,10 @@ pub(super) fn build_tool_metrics(cases: &[InvestigationCaseReport]) -> Vec<Inves
                 .then(|| {
                     ratio(
                         cases.iter().map(|case| case.matched_constraint_count).sum(),
-                        cases.iter().map(|case| case.returned_constraint_count).sum(),
+                        cases
+                            .iter()
+                            .map(|case| case.returned_constraint_count)
+                            .sum(),
                     )
                 })
                 .flatten(),

@@ -34,6 +34,23 @@ pub(super) fn tool_error_result(message: String) -> Value {
     })
 }
 
+pub(super) fn tool_state_error_result(code: &str, message: String, details: Value) -> Value {
+    json!({
+        "content": [
+            {
+                "type": "text",
+                "text": message
+            }
+        ],
+        "structuredContent": {
+            "error": message,
+            "code": code,
+            "details": details
+        },
+        "isError": true
+    })
+}
+
 pub(super) fn tool_compatibility_error_result(
     message: String,
     status: Option<&PreflightStatus>,
@@ -102,7 +119,7 @@ fn is_compatibility_message(message: &str) -> bool {
 
 fn default_safe_recovery_hint() -> &'static str {
     if cfg!(windows) {
-        "use scripts/rmu-mcp-server-fresh.cmd or restart the process with a fresh binary, then re-open the index"
+        "use scripts/rmu-mcp-server-fresh.cmd so the server is rebuilt/restarted if needed, then re-open the index"
     } else {
         "restart the process with a fresh binary and re-open the index"
     }

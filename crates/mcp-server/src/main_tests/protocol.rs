@@ -1,5 +1,4 @@
 use std::fs;
-use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde_json::json;
@@ -14,7 +13,7 @@ fn expect_single_response(raw: &str, state: &mut ServerState) -> RpcResponse {
 }
 
 fn default_state() -> ServerState {
-    ServerState::new(PathBuf::from("."), None)
+    ServerState::new(None, None)
 }
 
 fn initialize_params() -> serde_json::Value {
@@ -28,14 +27,24 @@ fn initialize_params() -> serde_json::Value {
     })
 }
 
+fn initialize_params_with_project(project_path: &str) -> serde_json::Value {
+    let mut params = initialize_params();
+    params["projectPath"] = json!(project_path);
+    params
+}
+
 fn running_state() -> ServerState {
     let mut state = default_state();
+    let project_path = std::env::current_dir()
+        .expect("current dir should exist")
+        .display()
+        .to_string();
     let response = handle_request(
         RpcRequest {
             jsonrpc: Some("2.0".to_string()),
             id: Some(json!(1)),
             method: "initialize".to_string(),
-            params: Some(initialize_params()),
+            params: Some(initialize_params_with_project(&project_path)),
         },
         &mut state,
     );

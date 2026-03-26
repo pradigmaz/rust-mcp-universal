@@ -81,7 +81,7 @@ fn line_json_batch_request_still_returns_invalid_request_code() {
         .expect("must contain message");
     assert_eq!(mode, WireMode::LineJson);
 
-    let mut state = ServerState::new(PathBuf::from("."), None);
+    let mut state = ServerState::new(Some(PathBuf::from(".")), None);
     let response = process_raw_message(&raw, &mut state).expect("response expected");
     assert_eq!(response.error.expect("error expected").code, -32600);
 }
@@ -215,7 +215,7 @@ fn framed_transport_uses_utf8_byte_length() {
 fn run_stdio_server_returns_framed_parse_error_for_header_like_first_line() {
     let mut reader = BufReader::new("trace-id: abc\n".as_bytes());
     let mut writer = Vec::new();
-    let mut state = ServerState::new(PathBuf::from("."), None);
+    let mut state = ServerState::new(Some(PathBuf::from(".")), None);
 
     run_stdio_server(&mut reader, &mut writer, &mut state).expect("stdio server should return");
     let output = String::from_utf8(writer).expect("writer should be utf-8");
@@ -238,7 +238,7 @@ fn run_stdio_server_keeps_recoverable_framed_parse_errors_framed() {
     );
     let mut reader = BufReader::new(stream.as_bytes());
     let mut writer = Vec::new();
-    let mut state = ServerState::new(PathBuf::from("."), None);
+    let mut state = ServerState::new(Some(PathBuf::from(".")), None);
 
     run_stdio_server(&mut reader, &mut writer, &mut state).expect("stdio server should return");
     let output = String::from_utf8(writer).expect("writer should be utf-8");

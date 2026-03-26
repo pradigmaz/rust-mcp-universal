@@ -137,6 +137,8 @@ fn classify_sensitive_key(key: &str) -> Option<SensitiveKind> {
         || lowered == "removed_files"
         || lowered == "project_root"
         || lowered == "db_path"
+        || lowered == "resolved_project_path"
+        || lowered == "resolved_db_path"
     {
         return Some(SensitiveKind::Path);
     }

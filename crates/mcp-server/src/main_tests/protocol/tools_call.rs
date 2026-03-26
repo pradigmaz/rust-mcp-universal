@@ -57,6 +57,138 @@ fn tools_call_argument_validation_errors_use_invalid_params_error() {
 }
 
 #[test]
+fn project_scoped_tools_fail_when_project_is_not_bound() {
+    let mut state = default_state();
+    let _ = handle_request(
+        RpcRequest {
+            jsonrpc: Some("2.0".to_string()),
+            id: Some(json!(1)),
+            method: "initialize".to_string(),
+            params: Some(initialize_params()),
+        },
+        &mut state,
+    );
+    let _ = handle_request(
+        RpcRequest {
+            jsonrpc: Some("2.0".to_string()),
+            id: None,
+            method: "notifications/initialized".to_string(),
+            params: None,
+        },
+        &mut state,
+    );
+
+    let response = expect_single_response(
+        r#"{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"search_candidates","arguments":{"query":"x"}}}"#,
+        &mut state,
+    );
+    assert!(response.error.is_none());
+    let result = response.result.expect("result expected");
+    assert_eq!(result["isError"], json!(true));
+    assert_eq!(
+        result["structuredContent"]["code"],
+        json!("E_PROJECT_NOT_BOUND")
+    );
+}
+
+#[test]
+fn preflight_reports_unbound_project_without_using_fallback_project_path() {
+    let mut state = default_state();
+    let _ = handle_request(
+        RpcRequest {
+            jsonrpc: Some("2.0".to_string()),
+            id: Some(json!(1)),
+            method: "initialize".to_string(),
+            params: Some(initialize_params()),
+        },
+        &mut state,
+    );
+    let _ = handle_request(
+        RpcRequest {
+            jsonrpc: Some("2.0".to_string()),
+            id: None,
+            method: "notifications/initialized".to_string(),
+            params: None,
+        },
+        &mut state,
+    );
+
+    let response = expect_single_response(
+        r#"{"jsonrpc":"2.0","id":81,"method":"tools/call","params":{"name":"preflight","arguments":{}}}"#,
+        &mut state,
+    );
+    assert!(response.error.is_none());
+    let result = response.result.expect("result expected");
+    assert_eq!(result["isError"], json!(false));
+    assert_eq!(
+        result["structuredContent"]["binding_status"],
+        json!("unbound")
+    );
+    assert!(result["structuredContent"]["resolved_project_path"].is_null());
+    assert!(result["structuredContent"]["resolved_db_path"].is_null());
+    assert!(
+        result["structuredContent"]["binding_errors"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty())
+    );
+}
+
+#[test]
+fn project_scoped_tools_fail_when_initialize_roots_are_ambiguous() {
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("clock should be monotonic enough for tests")
+        .as_nanos();
+    let project_a = std::env::temp_dir().join(format!("rmu-mcp-ambiguous-tool-a-{unique}"));
+    let project_b = std::env::temp_dir().join(format!("rmu-mcp-ambiguous-tool-b-{unique}"));
+    fs::create_dir_all(&project_a).expect("create project a");
+    fs::create_dir_all(&project_b).expect("create project b");
+
+    let mut state = default_state();
+    let _ = handle_request(
+        RpcRequest {
+            jsonrpc: Some("2.0".to_string()),
+            id: Some(json!(1)),
+            method: "initialize".to_string(),
+            params: Some(json!({
+                "protocolVersion": PROTOCOL_VERSION,
+                "capabilities": {},
+                "clientInfo": {"name": "test-client", "version": "0.0.1"},
+                "roots": [
+                    {"path": project_a.display().to_string()},
+                    {"path": project_b.display().to_string()}
+                ]
+            })),
+        },
+        &mut state,
+    );
+    let _ = handle_request(
+        RpcRequest {
+            jsonrpc: Some("2.0".to_string()),
+            id: None,
+            method: "notifications/initialized".to_string(),
+            params: None,
+        },
+        &mut state,
+    );
+
+    let response = expect_single_response(
+        r#"{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"workspace_brief","arguments":{}}}"#,
+        &mut state,
+    );
+    assert!(response.error.is_none());
+    let result = response.result.expect("result expected");
+    assert_eq!(result["isError"], json!(true));
+    assert_eq!(
+        result["structuredContent"]["code"],
+        json!("E_PROJECT_AMBIGUOUS")
+    );
+
+    let _ = fs::remove_dir_all(project_a);
+    let _ = fs::remove_dir_all(project_b);
+}
+
+#[test]
 fn tools_call_oversized_limit_uses_invalid_params_error() {
     if usize::BITS < 64 {
         return;
@@ -84,7 +216,10 @@ fn tools_call_runtime_errors_are_sanitized_with_hash_privacy_mode() {
     let baseline_path = project_dir.join("missing-baseline.json");
     let baseline_path_text = baseline_path.display().to_string();
 
-    let mut state = ServerState::new(project_dir.clone(), Some(project_dir.join(".rmu/index.db")));
+    let mut state = ServerState::new(
+        Some(project_dir.clone()),
+        Some(project_dir.join(".rmu/index.db")),
+    );
     let _ = handle_request(
         RpcRequest {
             jsonrpc: Some("2.0".to_string()),
@@ -149,7 +284,10 @@ fn tools_call_set_project_path_accepts_unicode_path_values() {
     )
     .expect("write fixture");
 
-    let mut state = ServerState::new(PathBuf::from("."), Some(project_dir.join(".rmu/index.db")));
+    let mut state = ServerState::new(
+        Some(project_dir.clone()),
+        Some(project_dir.join(".rmu/index.db")),
+    );
     let _ = handle_request(
         RpcRequest {
             jsonrpc: Some("2.0".to_string()),
@@ -232,6 +370,61 @@ fn tools_call_set_project_path_accepts_unicode_path_values() {
 }
 
 #[test]
+fn tools_call_set_project_path_rejects_pinned_db_sessions() {
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("clock should be monotonic enough for tests")
+        .as_nanos();
+    let project_dir = std::env::temp_dir().join(format!("rmu-mcp-pinned-db-{unique}"));
+    fs::create_dir_all(&project_dir).expect("create temp dir");
+
+    let mut state = ServerState::new(None, Some(project_dir.join(".rmu/index.db")));
+    let _ = handle_request(
+        RpcRequest {
+            jsonrpc: Some("2.0".to_string()),
+            id: Some(json!(1)),
+            method: "initialize".to_string(),
+            params: Some(initialize_params()),
+        },
+        &mut state,
+    );
+    let _ = handle_request(
+        RpcRequest {
+            jsonrpc: Some("2.0".to_string()),
+            id: None,
+            method: "notifications/initialized".to_string(),
+            params: None,
+        },
+        &mut state,
+    );
+
+    let response = expect_single_response(
+        &json!({
+            "jsonrpc": "2.0",
+            "id": 602,
+            "method": "tools/call",
+            "params": {
+                "name": "set_project_path",
+                "arguments": {
+                    "project_path": project_dir.display().to_string()
+                }
+            }
+        })
+        .to_string(),
+        &mut state,
+    );
+    assert!(response.error.is_none());
+    let result = response.result.expect("result expected");
+    assert_eq!(result["isError"], json!(true));
+    assert_eq!(
+        result["structuredContent"]["code"],
+        json!("E_DB_PATH_PINNED")
+    );
+
+    let _ = fs::remove_dir_all(project_dir);
+}
+
+#[test]
 fn tools_call_install_ignore_rules_defaults_to_git_info_exclude_and_is_idempotent() {
     let unique = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -241,7 +434,10 @@ fn tools_call_install_ignore_rules_defaults_to_git_info_exclude_and_is_idempoten
         std::env::temp_dir().join(format!("rmu-mcp-tests-install-ignore-default-{unique}"));
     fs::create_dir_all(project_dir.join(".git/info")).expect("create git info dir");
 
-    let mut state = ServerState::new(PathBuf::from("."), Some(project_dir.join(".rmu/index.db")));
+    let mut state = ServerState::new(
+        Some(project_dir.clone()),
+        Some(project_dir.join(".rmu/index.db")),
+    );
     let _ = handle_request(
         RpcRequest {
             jsonrpc: Some("2.0".to_string()),
@@ -329,7 +525,10 @@ fn tools_call_install_ignore_rules_supports_root_gitignore_target() {
         std::env::temp_dir().join(format!("rmu-mcp-tests-install-ignore-root-{unique}"));
     fs::create_dir_all(&project_dir).expect("create temp dir");
 
-    let mut state = ServerState::new(PathBuf::from("."), Some(project_dir.join(".rmu/index.db")));
+    let mut state = ServerState::new(
+        Some(project_dir.clone()),
+        Some(project_dir.join(".rmu/index.db")),
+    );
     let _ = handle_request(
         RpcRequest {
             jsonrpc: Some("2.0".to_string()),
@@ -405,7 +604,10 @@ fn tools_call_set_project_path_rejects_file_paths() {
     let file_path = project_dir.join("single.rs");
     fs::write(&file_path, "fn not_a_directory() {}\n").expect("write fixture");
 
-    let mut state = ServerState::new(PathBuf::from("."), Some(project_dir.join(".rmu/index.db")));
+    let mut state = ServerState::new(
+        Some(project_dir.clone()),
+        Some(project_dir.join(".rmu/index.db")),
+    );
     let _ = handle_request(
         RpcRequest {
             jsonrpc: Some("2.0".to_string()),

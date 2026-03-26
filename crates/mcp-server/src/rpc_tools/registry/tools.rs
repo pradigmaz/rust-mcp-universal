@@ -113,6 +113,20 @@ pub(super) fn tools_list() -> Value {
                                 "minimum": 64,
                                 "description": "Maximum number of tokens allowed in the assembled payload."
                             }),
+                        ),
+                        (
+                            "include_report",
+                            json!({
+                                "type": "boolean",
+                                "description": "Include the expensive query report payload in the bootstrap response."
+                            }),
+                        ),
+                        (
+                            "include_investigation_summary",
+                            json!({
+                                "type": "boolean",
+                                "description": "Include the expensive investigation summary payload in the bootstrap response."
+                            }),
                         )
                     ],
                     &[]

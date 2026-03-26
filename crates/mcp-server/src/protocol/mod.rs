@@ -1,3 +1,4 @@
+mod binding;
 mod parse;
 mod response;
 mod validation;
@@ -64,6 +65,7 @@ pub(crate) fn handle_request(req: RpcRequest, state: &mut ServerState) -> RpcRes
             if let Err(message) = validation::validate_initialize_params(req.params.as_ref()) {
                 return response::invalid_params_response(message, id);
             }
+            binding::apply_initialize_binding(req.params.as_ref(), state);
             state.set_lifecycle(SessionLifecycle::AwaitingInitialized);
             Ok(json!({
                 "protocolVersion": resolve_protocol_version(req.params.as_ref()),

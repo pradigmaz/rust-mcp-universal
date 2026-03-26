@@ -18,7 +18,10 @@ fn tools_call_search_candidates_uses_fallback_path_through_rpc_stack() {
     )
     .expect("write file");
 
-    let mut state = ServerState::new(project_dir.clone(), Some(project_dir.join(".rmu/index.db")));
+    let mut state = ServerState::new(
+        Some(project_dir.clone()),
+        Some(project_dir.join(".rmu/index.db")),
+    );
     let _ = process_raw_message(
         &json!({
             "jsonrpc": "2.0",
@@ -87,7 +90,7 @@ fn tools_call_compatibility_errors_return_structured_details() {
     .expect("insert schema version");
     drop(conn);
 
-    let mut state = ServerState::new(project_dir.clone(), Some(db_path));
+    let mut state = ServerState::new(Some(project_dir.clone()), Some(db_path));
     let _ = process_raw_message(
         &json!({
             "jsonrpc": "2.0",
@@ -156,7 +159,7 @@ fn tools_call_preflight_returns_structured_incompatible_status() {
     .expect("insert schema version");
     drop(conn);
 
-    let mut state = ServerState::new(project_dir.clone(), Some(db_path));
+    let mut state = ServerState::new(Some(project_dir.clone()), Some(db_path));
     let _ = process_raw_message(
         &json!({
             "jsonrpc": "2.0",
@@ -213,7 +216,10 @@ fn tools_call_preflight_and_runtime_guard_report_stale_running_binary() {
     let _override = set_thread_running_binary_timestamps_override_for_tests(1000, 4001);
 
     let project_dir = temp_dir("rmu-mcp-tests-stale-running-binary");
-    let mut state = ServerState::new(project_dir.clone(), Some(project_dir.join(".rmu/index.db")));
+    let mut state = ServerState::new(
+        Some(project_dir.clone()),
+        Some(project_dir.join(".rmu/index.db")),
+    );
     let _ = process_raw_message(
         &json!({
             "jsonrpc": "2.0",

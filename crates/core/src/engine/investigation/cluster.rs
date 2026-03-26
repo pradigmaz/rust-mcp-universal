@@ -15,9 +15,7 @@ use super::cluster_selection::diversify_variants;
 use super::cluster_variants::{
     average_confidence, build_variants, retain_relevant_variants, semantic_state_for_seed,
 };
-use super::common::{
-    capability_status, collect_candidates, normalized_values, route_kind_label,
-};
+use super::common::{capability_status, collect_candidates, normalized_values, route_kind_label};
 use super::constraint_items::normalized_constraint_items;
 
 pub(super) fn concept_cluster(

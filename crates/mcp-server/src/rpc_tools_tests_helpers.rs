@@ -36,7 +36,7 @@ pub(super) fn temp_dir(prefix: &str) -> PathBuf {
 }
 
 pub(super) fn state_for(project_path: PathBuf, db_path: Option<PathBuf>) -> ServerState {
-    ServerState::new(project_path, db_path)
+    ServerState::new(Some(project_path), db_path)
 }
 
 pub(super) use investigation_fixture::{

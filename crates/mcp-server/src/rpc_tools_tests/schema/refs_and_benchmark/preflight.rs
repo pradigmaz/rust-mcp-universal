@@ -23,7 +23,13 @@ fn preflight_status_schema_covers_supported_keywords_and_shapes() {
         "stale_process_suspected": true,
         "launcher_recommended": "scripts/rmu-mcp-server-fresh.cmd",
         "safe_recovery_hint": "use fresh launcher",
-        "errors": ["db newer than binary supported"]
+        "errors": ["db newer than binary supported"],
+        "binding_status": "bound",
+        "binding_source": "cli",
+        "resolved_project_path": "/tmp/project",
+        "resolved_db_path": "/tmp/project/.rmu/index.db",
+        "db_pinned": true,
+        "binding_errors": []
     });
     assert_required_structure(&valid_payload, &schema, "preflight.valid");
 

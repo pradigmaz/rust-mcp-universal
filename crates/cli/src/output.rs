@@ -118,7 +118,7 @@ fn compatibility_details(code: &str, error: &str) -> Option<serde_json::Value> {
         "kind": "compatibility",
         "running_binary_version": RUNNING_BINARY_VERSION,
         "safe_recovery_hint": if cfg!(windows) {
-            "use scripts/rmu-mcp-server-fresh.cmd or restart the process with a fresh binary, then re-open the index"
+            "use scripts/rmu-mcp-server-fresh.cmd so the server is rebuilt/restarted if needed, then re-open the index"
         } else {
             "restart the process with a fresh binary and re-open the index"
         },
