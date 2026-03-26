@@ -243,6 +243,7 @@ cargo run --locked -p rmu-cli -- --project-path . --json status
 
 ## Куда идти дальше
 
+- Какой функционал есть в RMU и когда он нужен: [docs/rmu-functionality-guide-ru.md](docs/rmu-functionality-guide-ru.md)
 - Quality и hotspot-метрики: [docs/quality-metrics-guide-ru.md](docs/quality-metrics-guide-ru.md)
 
 ## Что важно помнить
