@@ -133,7 +133,7 @@ rmu-cli --project-path . --json agent --query "где логика автори�
       "command": "cmd",
       "args": [
         "/c",
-        "D:\\rust и оптимизация\\rust-mcp-universal\\scripts\\rmu-mcp-server-fresh.cmd"
+        "<path-to-checkout>\\scripts\\rmu-mcp-server-fresh.cmd"
       ],
       "disabled": false,
       "alwaysAllow": []
