@@ -3,10 +3,10 @@ use serde_json::{Value, json};
 use super::helpers::{json_schema_object, tool};
 use super::schemas::{
     budget_query_schema, call_path_schema, context_pack_schema, db_maintenance_schema,
-    index_schema, install_ignore_rules_schema, investigation_schema, migration_mode_schema,
-    navigation_schema, preflight_schema, privacy_mode_schema, quality_hotspots_schema,
-    query_benchmark_schema, query_schema, rollout_phase_schema, rule_violations_schema,
-    scope_preview_schema,
+    delete_index_schema, index_schema, install_ignore_rules_schema, investigation_schema,
+    migration_mode_schema, navigation_schema, preflight_schema, privacy_mode_schema,
+    quality_hotspots_schema, query_benchmark_schema, query_schema, rollout_phase_schema,
+    rule_violations_schema, scope_preview_schema,
 };
 
 pub(super) fn tools_list() -> Value {
@@ -16,7 +16,14 @@ pub(super) fn tools_list() -> Value {
                 "set_project_path",
                 "Set active project path for subsequent queries",
                 json_schema_object(
-                    &[("project_path", json!({"type": "string", "minLength": 1}))],
+                    &[(
+                        "project_path",
+                        json!({
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Absolute or relative path to the repository root directory."
+                        }),
+                    )],
                     &["project_path"]
                 )
             ),
@@ -40,14 +47,41 @@ pub(super) fn tools_list() -> Value {
                 "One-shot bootstrap payload for autonomous agents",
                 json_schema_object(
                     &[
-                        ("query", json!({"type": "string", "minLength": 1})),
-                        ("limit", json!({"type": "integer", "minimum": 1})),
-                        ("semantic", json!({"type": "boolean"})),
-                        ("auto_index", json!({"type": "boolean"})),
+                        (
+                            "query",
+                            json!({
+                                "type": "string",
+                                "minLength": 1,
+                                "description": "Task or question the bootstrap payload should support."
+                            }),
+                        ),
+                        (
+                            "limit",
+                            json!({
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Maximum number of candidates to consider."
+                            }),
+                        ),
+                        (
+                            "semantic",
+                            json!({
+                                "type": "boolean",
+                                "description": "Enable semantic reranking for candidate selection."
+                            }),
+                        ),
+                        (
+                            "auto_index",
+                            json!({
+                                "type": "boolean",
+                                "description": "Automatically build or refresh the index if needed."
+                            }),
+                        ),
                         (
                             "semantic_fail_mode",
                             json!({
                                 "type": "string",
+                                "description": "How to behave if semantic search is unavailable.",
                                 "oneOf": [
                                     {"const": "fail_open"},
                                     {"const": "fail_closed"}
@@ -55,11 +89,31 @@ pub(super) fn tools_list() -> Value {
                             }),
                         ),
                         ("privacy_mode", privacy_mode_schema()),
-                        ("vector_layer_enabled", json!({"type": "boolean"})),
+                        (
+                            "vector_layer_enabled",
+                            json!({
+                                "type": "boolean",
+                                "description": "Allow vector-layer retrieval when available."
+                            }),
+                        ),
                         ("rollout_phase", rollout_phase_schema()),
                         ("migration_mode", migration_mode_schema()),
-                        ("max_chars", json!({"type": "integer", "minimum": 256})),
-                        ("max_tokens", json!({"type": "integer", "minimum": 64}))
+                        (
+                            "max_chars",
+                            json!({
+                                "type": "integer",
+                                "minimum": 256,
+                                "description": "Maximum number of characters allowed in the assembled payload."
+                            }),
+                        ),
+                        (
+                            "max_tokens",
+                            json!({
+                                "type": "integer",
+                                "minimum": 64,
+                                "description": "Maximum number of tokens allowed in the assembled payload."
+                            }),
+                        )
                     ],
                     &[]
                 )
@@ -82,13 +136,7 @@ pub(super) fn tools_list() -> Value {
             tool(
                 "delete_index",
                 "Delete index storage files for current project",
-                json_schema_object(
-                    &[
-                        ("confirm", json!({"type": "boolean", "const": true})),
-                        ("migration_mode", migration_mode_schema()),
-                    ],
-                    &["confirm"]
-                )
+                delete_index_schema()
             ),
             tool(
                 "db_maintenance",
