@@ -156,6 +156,24 @@ Fresh launcher:
 
 Сервер принимает `2025-06-18`, `2025-03-26` и `2024-11-05`, чтобы не падать на клиентах с более старым MCP handshake.
 
+### Codex (`~/.codex/bin/rmu-mcp-server`)
+
+Для Codex надёжнее использовать не bridge, а обычный standalone binary, который installer копирует в `~/.codex/bin/rmu-mcp-server`. Это убирает отдельный слой stdio-proxy между Codex и RMU и не требует поиска checkout'а по дискам.
+
+Установка из этого checkout:
+
+- Windows: `powershell -ExecutionPolicy Bypass -File scripts/install-codex-rmu-bridge.ps1`
+- Linux/macOS: `bash scripts/install-codex-rmu-bridge.sh`
+
+Installer берёт свежий binary из этого checkout и копирует его в `~/.codex/bin`, чтобы Codex продолжал работать по стабильному пути из config, но уже без stale binary.
+
+Если installer выводит `pending_restart=true`, это ожидаемо: он не стал перетирать активный `~/.codex/bin/rmu-mcp-server` из живой Codex-сессии. В таком состоянии нужен полный restart Codex app, потом повторный запуск installer; новый чат сам по себе не пересоздаёт app-global MCP transport.
+
+Это убирает две проблемы сразу:
+
+- Codex больше не держится за устаревший глобальный binary
+- Codex не зависит от bridge-перепрыгивания в другой процесс перед MCP handshake
+
 ## Полезные команды
 
 Общий статус:

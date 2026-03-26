@@ -59,12 +59,9 @@ pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<V
         parse_optional_usize_with_min(args, "agent_bootstrap", "max_tokens", 64, 3_000)?;
     let include_report =
         parse_optional_bool(args, "agent_bootstrap", "include_report")?.unwrap_or(false);
-    let include_investigation_summary = parse_optional_bool(
-        args,
-        "agent_bootstrap",
-        "include_investigation_summary",
-    )?
-    .unwrap_or(false);
+    let include_investigation_summary =
+        parse_optional_bool(args, "agent_bootstrap", "include_investigation_summary")?
+            .unwrap_or(false);
 
     let semantic_effective = query
         .as_deref()

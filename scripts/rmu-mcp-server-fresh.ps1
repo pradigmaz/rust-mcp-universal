@@ -5,7 +5,8 @@ $ErrorActionPreference = "Stop"
 $scriptPath = [System.IO.Path]::GetFullPath($MyInvocation.MyCommand.Path)
 $scriptDir = [System.IO.Path]::GetDirectoryName($scriptPath)
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $scriptDir ".."))
-$binaryPath = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "target\\release\\rmu-mcp-server.exe"))
+$releaseBinaryPath = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "target\\release\\rmu-mcp-server.exe"))
+$debugBinaryPath = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "target\\debug\\rmu-mcp-server.exe"))
 
 function Get-LatestSourceWriteTimeUtc {
     param(
@@ -94,24 +95,22 @@ function Stop-StaleServerProcesses {
     throw "stale rmu-mcp-server.exe processes are still running for $BinaryPath (pids: $pids). Use a fresh launcher retry after they exit."
 }
 
-function Invoke-ReleaseBuildIfNeeded {
+function Invoke-BuildIfNeeded {
     param(
         [string]$BinaryPath,
-        [string]$RepositoryRoot
+        [string]$RepositoryRoot,
+        [string[]]$CargoArgs
     )
 
     if (-not (Test-RebuildRequired -BinaryPath $BinaryPath -RepositoryRoot $RepositoryRoot)) {
-        return
+        return $true
     }
 
     Push-Location $RepositoryRoot
     try {
-        $buildOutput = & cargo build --release -p rmu-mcp-server 2>&1
+        & cargo @CargoArgs
         if ($LASTEXITCODE -ne 0) {
-            foreach ($line in $buildOutput) {
-                [Console]::Error.WriteLine($line)
-            }
-            throw "failed to build fresh rmu-mcp-server.exe"
+            return $false
         }
     }
     finally {
@@ -119,12 +118,33 @@ function Invoke-ReleaseBuildIfNeeded {
     }
 
     if (-not (Test-Path -LiteralPath $BinaryPath)) {
-        throw "rmu-mcp-server.exe not found at $BinaryPath after rebuild."
+        return $false
+    }
+    return $true
+}
+
+$runBinaryPath = $null
+
+Stop-StaleServerProcesses -BinaryPath $releaseBinaryPath
+if (
+    (Invoke-BuildIfNeeded -BinaryPath $releaseBinaryPath -RepositoryRoot $repoRoot -CargoArgs @("build", "--release", "-p", "rmu-mcp-server")) -and
+    (Test-Path -LiteralPath $releaseBinaryPath)
+) {
+    $runBinaryPath = $releaseBinaryPath
+}
+else {
+    Stop-StaleServerProcesses -BinaryPath $debugBinaryPath
+    if (
+        (Invoke-BuildIfNeeded -BinaryPath $debugBinaryPath -RepositoryRoot $repoRoot -CargoArgs @("build", "-p", "rmu-mcp-server")) -and
+        (Test-Path -LiteralPath $debugBinaryPath)
+    ) {
+        $runBinaryPath = $debugBinaryPath
     }
 }
 
-Stop-StaleServerProcesses -BinaryPath $binaryPath
-Invoke-ReleaseBuildIfNeeded -BinaryPath $binaryPath -RepositoryRoot $repoRoot
+if (-not $runBinaryPath) {
+    throw "failed to prepare fresh rmu-mcp-server from both release and debug profiles"
+}
 
-& $binaryPath @args
+& $runBinaryPath @args
 exit $LASTEXITCODE

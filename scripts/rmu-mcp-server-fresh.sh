@@ -3,7 +3,8 @@ set -euo pipefail
 
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 repo_root="$(cd -- "$script_dir/.." && pwd -P)"
-binary_path="$repo_root/target/release/rmu-mcp-server"
+release_binary_path="$repo_root/target/release/rmu-mcp-server"
+debug_binary_path="$repo_root/target/debug/rmu-mcp-server"
 
 get_latest_source_mtime() {
   local latest=0
@@ -38,6 +39,7 @@ get_latest_source_mtime() {
 }
 
 rebuild_required() {
+  local binary_path="$1"
   if [[ ! -x "$binary_path" ]]; then
     return 0
   fi
@@ -50,6 +52,7 @@ rebuild_required() {
 }
 
 stop_stale_server_processes() {
+  local binary_path="$1"
   local pid
   local exe_path
   local matched=()
@@ -99,23 +102,40 @@ stop_stale_server_processes() {
   exit 1
 }
 
-build_release_if_needed() {
-  if ! rebuild_required; then
-    return
+build_profile_if_needed() {
+  local binary_path="$1"
+  shift
+
+  if ! rebuild_required "$binary_path"; then
+    return 0
   fi
 
   (
     cd "$repo_root"
-    cargo build --release -p rmu-mcp-server
-  )
+    cargo "$@"
+  ) || return 1
 
   if [[ ! -x "$binary_path" ]]; then
-    printf 'rmu-mcp-server not found at %s after rebuild\n' "$binary_path" >&2
-    exit 1
+    return 1
   fi
+  return 0
 }
 
-stop_stale_server_processes
-build_release_if_needed
+run_binary_path=""
 
-exec "$binary_path" "$@"
+stop_stale_server_processes "$release_binary_path"
+if build_profile_if_needed "$release_binary_path" build --release -p rmu-mcp-server; then
+  run_binary_path="$release_binary_path"
+else
+  stop_stale_server_processes "$debug_binary_path"
+  if build_profile_if_needed "$debug_binary_path" build -p rmu-mcp-server; then
+    run_binary_path="$debug_binary_path"
+  fi
+fi
+
+if [[ -z "$run_binary_path" ]]; then
+  printf 'failed to prepare fresh rmu-mcp-server from both release and debug profiles\n' >&2
+  exit 1
+fi
+
+exec "$run_binary_path" "$@"

@@ -14,8 +14,7 @@ pub(super) fn apply_initialize_binding(params: Option<&Value>, state: &mut Serve
             source: ProjectBindingSource::Cli,
             ..
         }
-    )
-    {
+    ) {
         return;
     }
 

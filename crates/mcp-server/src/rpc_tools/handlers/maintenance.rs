@@ -56,17 +56,15 @@ pub(super) fn preflight(args: &Value, state: &mut ServerState) -> Result<Value> 
     let payload_object = payload
         .as_object_mut()
         .expect("preflight payload must serialize as object");
-    payload_object.insert(
-        "binding_status".to_string(),
-        json!(state.binding_status()),
-    );
-    payload_object.insert(
-        "binding_source".to_string(),
-        json!(state.binding_source()),
-    );
+    payload_object.insert("binding_status".to_string(), json!(state.binding_status()));
+    payload_object.insert("binding_source".to_string(), json!(state.binding_source()));
     payload_object.insert(
         "resolved_project_path".to_string(),
-        json!(state.resolved_project_path().map(|value| value.display().to_string())),
+        json!(
+            state
+                .resolved_project_path()
+                .map(|value| value.display().to_string())
+        ),
     );
     payload_object.insert(
         "resolved_db_path".to_string(),

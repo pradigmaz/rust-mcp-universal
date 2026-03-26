@@ -170,7 +170,10 @@ fn preflight_tool_returns_structured_status_payload() {
     assert!(result["structuredContent"]["status"].is_string());
     assert!(result["structuredContent"]["running_binary_version"].is_string());
     assert!(result["structuredContent"]["running_binary_stale"].is_boolean());
-    assert_eq!(result["structuredContent"]["binding_status"], json!("bound"));
+    assert_eq!(
+        result["structuredContent"]["binding_status"],
+        json!("bound")
+    );
     assert_eq!(result["structuredContent"]["binding_source"], json!("cli"));
     assert!(result["structuredContent"]["resolved_project_path"].is_string());
     assert!(result["structuredContent"]["resolved_db_path"].is_string());
@@ -202,7 +205,10 @@ fn preflight_tool_reports_unbound_binding_without_touching_cwd_project() {
     .expect("preflight should succeed even when unbound");
 
     assert_eq!(result["isError"], json!(false));
-    assert_eq!(result["structuredContent"]["binding_status"], json!("unbound"));
+    assert_eq!(
+        result["structuredContent"]["binding_status"],
+        json!("unbound")
+    );
     assert!(result["structuredContent"]["resolved_project_path"].is_null());
     assert!(result["structuredContent"]["resolved_db_path"].is_null());
     assert!(result["structuredContent"]["binding_errors"].is_array());
