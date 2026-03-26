@@ -1,12 +1,9 @@
 use std::collections::HashSet;
 
-use anyhow::Result;
-
-use crate::engine::Engine;
+use crate::engine::investigation::SharedInvestigationSnapshot;
 use crate::model::{
-    ConceptSeedKind, ConstraintEvidenceResult, DivergenceReport, InvestigationConstraintSummary,
-    InvestigationDivergenceSummary, InvestigationHints, InvestigationRouteSummary,
-    InvestigationSummary, InvestigationTopVariant, RouteTraceResult,
+    InvestigationConstraintSummary, InvestigationDivergenceSummary, InvestigationHints,
+    InvestigationRouteSummary, InvestigationSummary, InvestigationTopVariant,
 };
 
 const MAX_TOP_VARIANTS: usize = 3;
@@ -16,57 +13,43 @@ const EMBEDDED_SURFACE_KIND: &str = "embedded_investigation_hints";
 const DIVERGENCE_PREVIEW_SURFACE_KIND: &str = "divergence_preview";
 const DIVERGENCE_AUTHORITATIVE_TOOL: &str = "divergence_report";
 
-pub(super) fn build_investigation_summary(
-    engine: &Engine,
-    query: &str,
-    limit: usize,
-) -> Result<InvestigationSummary> {
-    let concept_cluster = engine.concept_cluster(query, ConceptSeedKind::Query, limit)?;
-    let route_trace = engine.route_trace(query, ConceptSeedKind::Query, limit)?;
-    let constraint_evidence = engine.constraint_evidence(query, ConceptSeedKind::Query, limit)?;
-    let divergence = if concept_cluster.variants.len() > 1 {
-        Some(engine.divergence_report(query, ConceptSeedKind::Query, limit)?)
-    } else {
-        None
-    };
-
-    Ok(InvestigationSummary {
+pub(super) fn format_investigation_summary(
+    snapshot: &SharedInvestigationSnapshot,
+) -> InvestigationSummary {
+    InvestigationSummary {
         surface_kind: EMBEDDED_SURFACE_KIND.to_string(),
         concept_cluster: crate::model::InvestigationConceptClusterSummary {
-            variant_count: concept_cluster.cluster_summary.variant_count,
-            top_variants: collect_top_variants(&concept_cluster.variants),
+            variant_count: snapshot.concept_cluster.cluster_summary.variant_count,
+            top_variants: collect_top_variants(&snapshot.concept_cluster.variants),
         },
-        route_trace: summarize_route(&route_trace),
-        constraint_evidence: summarize_constraints(&constraint_evidence),
-        divergence: divergence.as_ref().map(summarize_divergence),
-    })
+        route_trace: summarize_route(&snapshot.route_trace),
+        constraint_evidence: summarize_constraints(&snapshot.constraint_evidence),
+        divergence: snapshot.divergence.as_ref().map(summarize_divergence),
+    }
 }
 
-pub(super) fn build_investigation_hints(
-    engine: &Engine,
-    query: &str,
-    limit: usize,
-) -> Result<InvestigationHints> {
-    let concept_cluster = engine.concept_cluster(query, ConceptSeedKind::Query, limit)?;
-    let route_trace = engine.route_trace(query, ConceptSeedKind::Query, limit)?;
-    let constraint_evidence = engine.constraint_evidence(query, ConceptSeedKind::Query, limit)?;
-    let followups = if concept_cluster.variants.len() > 1 {
-        let divergence = engine.divergence_report(query, ConceptSeedKind::Query, limit)?;
-        divergence
-            .recommended_followups
-            .into_iter()
-            .take(MAX_FOLLOWUPS)
-            .collect()
-    } else {
-        Vec::new()
-    };
+pub(super) fn format_investigation_hints(
+    snapshot: &SharedInvestigationSnapshot,
+) -> InvestigationHints {
+    let followups = snapshot
+        .divergence
+        .as_ref()
+        .map(|divergence| {
+            divergence
+                .recommended_followups
+                .iter()
+                .take(MAX_FOLLOWUPS)
+                .cloned()
+                .collect()
+        })
+        .unwrap_or_default();
 
-    Ok(InvestigationHints {
-        top_variants: collect_top_variants(&concept_cluster.variants),
-        route_summary: summarize_route(&route_trace),
-        constraint_keys: summarize_constraints(&constraint_evidence).normalized_keys,
+    InvestigationHints {
+        top_variants: collect_top_variants(&snapshot.concept_cluster.variants),
+        route_summary: summarize_route(&snapshot.route_trace),
+        constraint_keys: summarize_constraints(&snapshot.constraint_evidence).normalized_keys,
         followups,
-    })
+    }
 }
 
 fn collect_top_variants(
@@ -83,7 +66,7 @@ fn collect_top_variants(
         .collect()
 }
 
-fn summarize_route(route_trace: &RouteTraceResult) -> InvestigationRouteSummary {
+fn summarize_route(route_trace: &crate::model::RouteTraceResult) -> InvestigationRouteSummary {
     InvestigationRouteSummary {
         best_route_segment_count: route_trace.best_route.segments.len(),
         alternate_route_count: route_trace.alternate_routes.len(),
@@ -106,7 +89,7 @@ fn summarize_route(route_trace: &RouteTraceResult) -> InvestigationRouteSummary 
 }
 
 fn summarize_constraints(
-    constraint_evidence: &ConstraintEvidenceResult,
+    constraint_evidence: &crate::model::ConstraintEvidenceResult,
 ) -> InvestigationConstraintSummary {
     let strong = constraint_evidence
         .items
@@ -141,7 +124,9 @@ fn summarize_constraints(
     }
 }
 
-fn summarize_divergence(report: &DivergenceReport) -> InvestigationDivergenceSummary {
+fn summarize_divergence(
+    report: &crate::model::DivergenceReport,
+) -> InvestigationDivergenceSummary {
     InvestigationDivergenceSummary {
         surface_kind: DIVERGENCE_PREVIEW_SURFACE_KIND.to_string(),
         authoritative_tool: DIVERGENCE_AUTHORITATIVE_TOOL.to_string(),

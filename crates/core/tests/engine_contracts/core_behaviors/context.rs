@@ -90,9 +90,18 @@ fn context_pack_design_mode_returns_docs_first() -> Result<(), Box<dyn Error>> {
         .investigation_hints
         .as_ref()
         .expect("embedded investigation hints should be present");
+    let timings = pack
+        .timings
+        .as_ref()
+        .expect("context pack timings should be present");
     assert!(hints.top_variants.len() <= 3);
     assert!(hints.constraint_keys.len() <= 5);
     assert!(hints.followups.len() <= 3);
+    assert!(timings.total_ms >= timings.search_ms);
+    assert!(timings.total_ms >= timings.context_ms);
+    assert!(timings.total_ms >= timings.investigation_ms);
+    assert!(timings.investigation.route_ms <= timings.investigation_ms);
+    assert!(timings.investigation.cluster_ms <= timings.investigation_ms);
 
     cleanup_project(&project_dir);
     Ok(())

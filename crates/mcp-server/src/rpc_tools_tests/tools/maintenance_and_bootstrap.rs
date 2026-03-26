@@ -188,6 +188,9 @@ fn agent_bootstrap_with_query_returns_context_bundle() {
         detailed_bundle["report"]["investigation_summary"].is_object()
             || detailed_bundle["report"]["investigation_summary"].is_null()
     );
+    assert!(detailed_bundle["report"]["timings"].is_object());
+    assert!(detailed_bundle["report"]["timings"]["search_ms"].is_number());
+    assert!(detailed_bundle["report"]["timings"]["investigation"]["route_ms"].is_number());
 
     let _ = fs::remove_dir_all(project_dir);
 }

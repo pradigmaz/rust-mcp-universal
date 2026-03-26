@@ -6,7 +6,8 @@ use crate::engine_brief::index_not_ready_error;
 use crate::engine_quality::load_quality_summary;
 use crate::model::{
     AgentBootstrap, AgentBootstrapIncludeOptions, AgentBootstrapTimings, AgentQueryBundle,
-    IndexTelemetry, PrivacyMode, QueryOptions, SemanticFailMode, WorkspaceBrief,
+    IndexTelemetry, InvestigationPhaseTimings, PrivacyMode, QueryOptions, QuerySurfaceTimings,
+    SemanticFailMode, WorkspaceBrief,
 };
 use crate::report::{QueryReportBuildInput, build_query_report};
 
@@ -159,22 +160,36 @@ impl Engine {
                 timings.context_ms = elapsed_ms(phase_started);
                 let (chunk_coverage, chunk_source) = super::derive_chunk_telemetry(&context);
 
+                let shared_investigation =
+                    if include.include_investigation_summary || include.include_report {
+                        let phase_started = Instant::now();
+                        let snapshot = super::super::investigation::shared_query_investigation_snapshot(
+                            self,
+                            value,
+                            requested_limit,
+                        )?;
+                        timings.investigation_ms = elapsed_ms(phase_started);
+                        Some(snapshot)
+                    } else {
+                        None
+                    };
+
                 let investigation_summary = if include.include_investigation_summary {
-                    let phase_started = Instant::now();
-                    let summary = super::investigation_embed::build_investigation_summary(
-                        self,
-                        value,
-                        requested_limit,
-                    )?;
-                    timings.investigation_ms = elapsed_ms(phase_started);
-                    Some(summary)
+                    shared_investigation
+                        .as_ref()
+                        .map(super::investigation_embed::format_investigation_summary)
                 } else {
                     None
                 };
 
+                let investigation_phase_timings = shared_investigation
+                    .as_ref()
+                    .map(|snapshot| snapshot.timings)
+                    .unwrap_or_else(InvestigationPhaseTimings::default);
+
                 let report = if include.include_report {
                     let phase_started = Instant::now();
-                    let report = build_query_report(
+                    let mut report = build_query_report(
                         &self.project_root,
                         QueryReportBuildInput {
                             shortlist: &execution.hits,
@@ -200,6 +215,18 @@ impl Engine {
                         },
                     )?;
                     timings.report_ms = elapsed_ms(phase_started);
+                    report.timings = Some(QuerySurfaceTimings {
+                        search_ms: timings.search_ms,
+                        context_ms: timings.context_ms,
+                        investigation_ms: timings.investigation_ms,
+                        format_ms: timings.report_ms,
+                        total_ms: timings
+                            .search_ms
+                            .saturating_add(timings.context_ms)
+                            .saturating_add(timings.investigation_ms)
+                            .saturating_add(timings.report_ms),
+                        investigation: investigation_phase_timings,
+                    });
                     Some(report)
                 } else {
                     None

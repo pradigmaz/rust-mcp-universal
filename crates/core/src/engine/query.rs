@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::time::Instant;
 
 use anyhow::Result;
 
@@ -28,9 +29,10 @@ mod support;
 #[path = "query/vector_utils.rs"]
 mod vector_utils;
 
-use super::{Engine, context};
+use super::{Engine, context, investigation};
 use crate::model::{
-    ContextMode, ContextPackResult, ContextSelection, IndexTelemetry, QueryOptions, SearchHit,
+    ContextMode, ContextPackResult, ContextSelection, IndexTelemetry, QueryOptions,
+    QuerySurfaceTimings, SearchHit,
 };
 use crate::report::{
     QueryReportBuildInput, ResultExplainEntry, RetrievalStageCounts, build_query_report,
@@ -85,15 +87,37 @@ impl Engine {
         max_chars: usize,
         max_tokens: usize,
     ) -> Result<ContextPackResult> {
+        let started = Instant::now();
+        let mut timings = QuerySurfaceTimings::default();
         let mut options = options.clone();
         options.context_mode = Some(mode);
-        let context = self.build_context_under_budget(&options, max_chars, max_tokens)?;
-        let investigation_hints =
-            investigation_embed::build_investigation_hints(self, &options.query, options.limit)?;
+        let phase_started = Instant::now();
+        let execution = self.search_with_meta(&options)?;
+        timings.search_ms = elapsed_ms(phase_started);
+        let phase_started = Instant::now();
+        let context = self.context_for_hits_with_chunks(
+            &options.query,
+            &execution.hits,
+            Some(&execution.chunk_by_path),
+            options.context_mode,
+            max_chars,
+            max_tokens,
+        )?;
+        timings.context_ms = elapsed_ms(phase_started);
+        let phase_started = Instant::now();
+        let snapshot =
+            investigation::shared_query_investigation_snapshot(self, &options.query, options.limit)?;
+        timings.investigation_ms = elapsed_ms(phase_started);
+        timings.investigation = snapshot.timings;
+        let phase_started = Instant::now();
+        let investigation_hints = investigation_embed::format_investigation_hints(&snapshot);
+        timings.format_ms = elapsed_ms(phase_started);
+        timings.total_ms = elapsed_ms(started);
         Ok(ContextPackResult {
             mode,
             context,
             investigation_hints: Some(investigation_hints),
+            timings: Some(timings),
         })
     }
 
@@ -103,7 +127,12 @@ impl Engine {
         max_chars: usize,
         max_tokens: usize,
     ) -> Result<crate::model::QueryReport> {
+        let started = Instant::now();
+        let mut timings = QuerySurfaceTimings::default();
+        let phase_started = Instant::now();
         let execution = self.search_with_meta(options)?;
+        timings.search_ms = elapsed_ms(phase_started);
+        let phase_started = Instant::now();
         let context = self.context_for_hits_with_chunks(
             &options.query,
             &execution.hits,
@@ -112,11 +141,17 @@ impl Engine {
             max_chars,
             max_tokens,
         )?;
+        timings.context_ms = elapsed_ms(phase_started);
         let (chunk_coverage, chunk_source) = derive_chunk_telemetry(&context);
         let status = self.index_status()?;
-        let investigation_summary =
-            investigation_embed::build_investigation_summary(self, &options.query, options.limit)?;
-        build_query_report(
+        let phase_started = Instant::now();
+        let snapshot =
+            investigation::shared_query_investigation_snapshot(self, &options.query, options.limit)?;
+        timings.investigation_ms = elapsed_ms(phase_started);
+        timings.investigation = snapshot.timings;
+        let investigation_summary = investigation_embed::format_investigation_summary(&snapshot);
+        let phase_started = Instant::now();
+        let mut report = build_query_report(
             &self.project_root,
             QueryReportBuildInput {
                 shortlist: &execution.hits,
@@ -136,7 +171,11 @@ impl Engine {
                 },
                 investigation_summary: Some(investigation_summary),
             },
-        )
+        )?;
+        timings.format_ms = elapsed_ms(phase_started);
+        timings.total_ms = elapsed_ms(started);
+        report.timings = Some(timings);
+        Ok(report)
     }
 
     pub(super) fn context_for_hits_with_chunks(
@@ -208,6 +247,10 @@ fn derive_chunk_telemetry(context: &ContextSelection) -> (f32, String) {
     };
 
     (chunk_coverage, chunk_source)
+}
+
+fn elapsed_ms(started: Instant) -> u64 {
+    u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX)
 }
 
 #[cfg(test)]

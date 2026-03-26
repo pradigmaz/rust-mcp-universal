@@ -67,6 +67,34 @@ pub struct ConfidenceSignals {
     pub hard_truncated: bool,
 }
 
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+pub struct InvestigationPhaseTimings {
+    #[serde(default)]
+    pub cluster_ms: u64,
+    #[serde(default)]
+    pub route_ms: u64,
+    #[serde(default)]
+    pub constraints_ms: u64,
+    #[serde(default)]
+    pub divergence_ms: u64,
+}
+
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+pub struct QuerySurfaceTimings {
+    #[serde(default)]
+    pub search_ms: u64,
+    #[serde(default)]
+    pub context_ms: u64,
+    #[serde(default)]
+    pub investigation_ms: u64,
+    #[serde(default)]
+    pub format_ms: u64,
+    #[serde(default)]
+    pub total_ms: u64,
+    #[serde(default)]
+    pub investigation: InvestigationPhaseTimings,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct QueryReport {
     pub query_id: String,
@@ -80,6 +108,8 @@ pub struct QueryReport {
     pub index_telemetry: IndexTelemetry,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub investigation_summary: Option<InvestigationSummary>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timings: Option<QuerySurfaceTimings>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -47,6 +47,7 @@ fn query_report_returns_mcp_envelope_with_required_fields() {
     assert!(structured["gaps"].is_array());
     assert!(structured["index_telemetry"].is_object());
     assert!(structured["investigation_summary"].is_object());
+    assert!(structured["timings"].is_object());
     assert_eq!(
         structured["investigation_summary"]["surface_kind"],
         json!("embedded_investigation_hints")
@@ -56,6 +57,13 @@ fn query_report_returns_mcp_envelope_with_required_fields() {
     assert!(structured["index_telemetry"]["last_embedding_cache_misses"].is_number());
     assert!(structured["index_telemetry"]["chunk_coverage"].is_number());
     assert!(structured["index_telemetry"]["chunk_source"].is_string());
+    assert!(structured["timings"]["search_ms"].is_number());
+    assert!(structured["timings"]["context_ms"].is_number());
+    assert!(structured["timings"]["investigation_ms"].is_number());
+    assert!(structured["timings"]["format_ms"].is_number());
+    assert!(structured["timings"]["total_ms"].is_number());
+    assert!(structured["timings"]["investigation"]["route_ms"].is_number());
+    assert!(structured["timings"]["investigation"]["cluster_ms"].is_number());
     if let Some(first_item) = structured["selected_context"]
         .as_array()
         .and_then(|items| items.first())

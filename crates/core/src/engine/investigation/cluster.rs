@@ -3,7 +3,7 @@ use anyhow::Result;
 use crate::engine::Engine;
 use crate::model::{
     ConceptClusterExpansionPolicy, ConceptClusterResult, ConceptClusterSummary, ConceptSeedKind,
-    ConstraintEvidenceResult,
+    ConstraintEvidenceResult, RouteTraceResult,
 };
 
 use super::candidate_relevance::retain_query_relevant_candidates;
@@ -24,6 +24,16 @@ pub(super) fn concept_cluster(
     seed_kind: ConceptSeedKind,
     limit: usize,
 ) -> Result<ConceptClusterResult> {
+    concept_cluster_with_route_trace(engine, seed, seed_kind, limit, None)
+}
+
+pub(super) fn concept_cluster_with_route_trace(
+    engine: &Engine,
+    seed: &str,
+    seed_kind: ConceptSeedKind,
+    limit: usize,
+    prefetched_route_trace: Option<&RouteTraceResult>,
+) -> Result<ConceptClusterResult> {
     let (seed, initial_candidates, unsupported_sources) =
         collect_candidates(engine, seed, seed_kind, limit)?;
     let (mut candidates, mut expansion_sources, semantic_outcome) = collect_expanded_candidates(
@@ -32,6 +42,7 @@ pub(super) fn concept_cluster(
         seed.seed_kind,
         limit,
         initial_candidates,
+        prefetched_route_trace,
     )?;
     let semantic_state = semantic_state_for_seed(seed.seed_kind, semantic_outcome);
     let mut preliminary_failures = Vec::new();
@@ -144,12 +155,18 @@ pub(super) fn constraint_evidence(
     limit: usize,
 ) -> Result<ConstraintEvidenceResult> {
     let cluster = concept_cluster(engine, seed, seed_kind, limit)?;
+    Ok(constraint_evidence_from_cluster(cluster))
+}
+
+pub(super) fn constraint_evidence_from_cluster(
+    cluster: ConceptClusterResult,
+) -> ConstraintEvidenceResult {
     let items = normalized_constraint_items(&cluster.variants);
-    Ok(ConstraintEvidenceResult {
+    ConstraintEvidenceResult {
         seed: cluster.seed,
         items,
         capability_status: cluster.capability_status,
         unsupported_sources: cluster.unsupported_sources,
         confidence: cluster.confidence,
-    })
+    }
 }

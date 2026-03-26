@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::super::ContextMode;
 use super::investigation_embed::InvestigationHints;
+use super::report::QuerySurfaceTimings;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ContextFile {
@@ -32,4 +33,6 @@ pub struct ContextPackResult {
     pub context: ContextSelection,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub investigation_hints: Option<InvestigationHints>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timings: Option<QuerySurfaceTimings>,
 }

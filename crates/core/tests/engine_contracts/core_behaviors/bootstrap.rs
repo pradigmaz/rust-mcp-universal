@@ -60,6 +60,9 @@ fn agent_bootstrap_can_opt_into_report_and_investigation_summary() -> Result<(),
     assert!(report.confidence.overall > 0.0);
     assert!(bundle.investigation_summary.is_some());
     assert!(report.investigation_summary.is_some());
+    let report_timings = report.timings.expect("report timings");
+    assert!(report_timings.total_ms >= report_timings.search_ms);
+    assert!(report_timings.total_ms >= report_timings.investigation_ms);
 
     cleanup_project(&project_dir);
     Ok(())

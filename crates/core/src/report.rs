@@ -134,6 +134,7 @@ pub(crate) fn build_query_report(
         gaps: helpers::gap_reasons(semantic_requested, semantic_outcome),
         index_telemetry,
         investigation_summary,
+        timings: None,
     };
     let mut report_value = serde_json::to_value(&report)?;
     sanitize_value_for_privacy(privacy_mode, &mut report_value);

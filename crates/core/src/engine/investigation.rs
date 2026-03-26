@@ -28,6 +28,8 @@ mod divergence;
 pub(crate) mod path_helpers;
 #[path = "investigation/route.rs"]
 mod route;
+#[path = "investigation/shared_snapshot.rs"]
+mod shared_snapshot;
 
 use anyhow::Result;
 
@@ -35,6 +37,10 @@ use super::Engine;
 use crate::model::{
     ConceptClusterResult, ConceptSeedKind, ConstraintEvidenceResult, DivergenceReport,
     RouteTraceResult, SymbolBodyResult,
+};
+
+pub(crate) use shared_snapshot::{
+    SharedInvestigationSnapshot, shared_query_investigation_snapshot,
 };
 
 impl Engine {

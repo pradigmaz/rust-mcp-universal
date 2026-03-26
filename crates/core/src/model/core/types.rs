@@ -53,8 +53,8 @@ pub use quality::{
 };
 pub use query::{QueryOptions, SearchHit};
 pub use report::{
-    BudgetInfo, ConfidenceInfo, ConfidenceSignals, IndexTelemetry, QueryReport,
-    RankExplainBreakdown, RetrievalStage, SelectedContextItem,
+    BudgetInfo, ConfidenceInfo, ConfidenceSignals, IndexTelemetry, InvestigationPhaseTimings,
+    QueryReport, QuerySurfaceTimings, RankExplainBreakdown, RetrievalStage, SelectedContextItem,
 };
 pub use workspace::{
     WorkspaceBrief, WorkspaceLanguageStat, WorkspaceRepairHint, WorkspaceTopSymbol,

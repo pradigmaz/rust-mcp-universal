@@ -5,7 +5,7 @@ use anyhow::Result;
 use crate::engine::Engine;
 use crate::model::{
     ConceptSeedKind, ImplementationVariant, PrivacyMode, QueryOptions, RouteSegment,
-    RouteSegmentKind, SemanticFailMode,
+    RouteSegmentKind, RouteTraceResult, SemanticFailMode,
 };
 use crate::vector_rank::SemanticRerankOutcome;
 
@@ -19,6 +19,7 @@ pub(super) fn collect_expanded_candidates(
     seed_kind: ConceptSeedKind,
     limit: usize,
     initial_candidates: Vec<CandidateFile>,
+    prefetched_route_trace: Option<&RouteTraceResult>,
 ) -> Result<(
     Vec<CandidateFile>,
     Vec<String>,
@@ -60,7 +61,11 @@ pub(super) fn collect_expanded_candidates(
         }
     }
 
-    if let Ok(route_trace) = engine.route_trace(seed, seed_kind, limit.max(1)) {
+    let route_trace = match prefetched_route_trace.cloned() {
+        Some(route_trace) => Some(route_trace),
+        None => engine.route_trace(seed, seed_kind, limit.max(1)).ok(),
+    };
+    if let Some(route_trace) = route_trace {
         let mut added_route_anchor = false;
         for segment in route_trace.best_route.segments.iter().chain(
             route_trace

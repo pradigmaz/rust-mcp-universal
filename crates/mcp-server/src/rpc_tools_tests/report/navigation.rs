@@ -422,9 +422,14 @@ fn context_pack_design_mode_returns_docs_first() {
         json!("docs/design.md")
     );
     assert!(payload["investigation_hints"].is_object());
+    assert!(payload["timings"].is_object());
     assert!(payload["investigation_hints"]["top_variants"].is_array());
     assert!(payload["investigation_hints"]["constraint_keys"].is_array());
     assert!(payload["investigation_hints"]["followups"].is_array());
+    assert!(payload["timings"]["search_ms"].is_number());
+    assert!(payload["timings"]["context_ms"].is_number());
+    assert!(payload["timings"]["investigation_ms"].is_number());
+    assert!(payload["timings"]["investigation"]["route_ms"].is_number());
 
     let _ = fs::remove_dir_all(project_dir);
 }

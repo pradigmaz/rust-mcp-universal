@@ -222,6 +222,39 @@
           }
         }
       }
+    },
+    "timings": {
+      "type": "object",
+      "required": [
+        "search_ms",
+        "context_ms",
+        "investigation_ms",
+        "format_ms",
+        "total_ms",
+        "investigation"
+      ],
+      "properties": {
+        "search_ms": { "type": "integer", "minimum": 0 },
+        "context_ms": { "type": "integer", "minimum": 0 },
+        "investigation_ms": { "type": "integer", "minimum": 0 },
+        "format_ms": { "type": "integer", "minimum": 0 },
+        "total_ms": { "type": "integer", "minimum": 0 },
+        "investigation": {
+          "type": "object",
+          "required": [
+            "cluster_ms",
+            "route_ms",
+            "constraints_ms",
+            "divergence_ms"
+          ],
+          "properties": {
+            "cluster_ms": { "type": "integer", "minimum": 0 },
+            "route_ms": { "type": "integer", "minimum": 0 },
+            "constraints_ms": { "type": "integer", "minimum": 0 },
+            "divergence_ms": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
     }
   }
 }

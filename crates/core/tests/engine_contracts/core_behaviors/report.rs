@@ -169,10 +169,19 @@ pub fn render_worker() {
         .investigation_summary
         .as_ref()
         .expect("embedded investigation summary should be present");
+    let timings = report
+        .timings
+        .as_ref()
+        .expect("report timings should be present");
     assert_eq!(investigation.surface_kind, "embedded_investigation_hints");
     assert!(investigation.concept_cluster.variant_count >= 1);
     assert!(!investigation.concept_cluster.top_variants.is_empty());
     assert!(investigation.route_trace.best_route_segment_count >= 1);
+    assert!(timings.total_ms >= timings.search_ms);
+    assert!(timings.total_ms >= timings.context_ms);
+    assert!(timings.total_ms >= timings.investigation_ms);
+    assert!(timings.investigation.route_ms <= timings.investigation_ms);
+    assert!(timings.investigation.cluster_ms <= timings.investigation_ms);
     assert!(
         investigation.constraint_evidence.total
             >= investigation.constraint_evidence.strong + investigation.constraint_evidence.weak

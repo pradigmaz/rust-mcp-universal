@@ -2,8 +2,8 @@ use anyhow::Result;
 
 use crate::engine::Engine;
 use crate::model::{
-    AxisObservation, ConceptSeedKind, DivergenceAxis, DivergenceReport, DivergenceSignal,
-    ImplementationVariant, RouteSegmentKind,
+    AxisObservation, ConceptClusterResult, ConceptSeedKind, DivergenceAxis, DivergenceReport,
+    DivergenceSignal, ImplementationVariant, RouteSegmentKind,
 };
 
 use super::cluster::concept_cluster;
@@ -16,6 +16,10 @@ pub(super) fn divergence_report(
     limit: usize,
 ) -> Result<DivergenceReport> {
     let cluster = concept_cluster(engine, seed, seed_kind, limit)?;
+    Ok(divergence_report_from_cluster(cluster))
+}
+
+pub(super) fn divergence_report_from_cluster(cluster: ConceptClusterResult) -> DivergenceReport {
     let variants = cluster.variants.clone();
     let mut consensus_axes = Vec::new();
     let mut divergence_axes = Vec::new();
@@ -81,7 +85,7 @@ pub(super) fn divergence_report(
         &missing_evidence,
         &divergence_signals,
     );
-    Ok(DivergenceReport {
+    DivergenceReport {
         surface_kind: SURFACE_KIND.to_string(),
         seed: cluster.seed,
         variants,
@@ -98,7 +102,7 @@ pub(super) fn divergence_report(
         overall_confidence: cluster.confidence,
         capability_status: cluster.capability_status,
         unsupported_sources: cluster.unsupported_sources,
-    })
+    }
 }
 
 const AXES: [&str; 7] = [
