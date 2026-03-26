@@ -243,7 +243,7 @@ cargo run --locked -p rmu-cli -- --project-path . --json status
 
 ## Куда идти дальше
 
-- Investigation surface: [docs/investigation-surface.md](docs/investigation-surface.md)
+- Quality и hotspot-метрики: [docs/quality-metrics-guide-ru.md](docs/quality-metrics-guide-ru.md)
 
 ## Что важно помнить
 
