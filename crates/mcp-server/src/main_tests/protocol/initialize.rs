@@ -23,14 +23,33 @@ fn initialize_response_contains_protocol_version() {
 }
 
 #[test]
-fn initialize_rejects_mismatched_client_protocol_version() {
+fn initialize_accepts_supported_legacy_client_protocol_version() {
     let mut state = default_state();
     let req = RpcRequest {
         jsonrpc: Some("2.0".to_string()),
         id: Some(json!(1)),
         method: "initialize".to_string(),
         params: Some(json!({
-            "protocolVersion": "2024-11-05",
+            "protocolVersion": "2025-03-26",
+            "capabilities": {},
+            "clientInfo": {"name": "probe", "version": "0.0.1"}
+        })),
+    };
+
+    let response = handle_request(req, &mut state);
+    let result = response.result.expect("initialize must succeed");
+    assert_eq!(result["protocolVersion"], json!("2025-03-26"));
+}
+
+#[test]
+fn initialize_rejects_unknown_client_protocol_version() {
+    let mut state = default_state();
+    let req = RpcRequest {
+        jsonrpc: Some("2.0".to_string()),
+        id: Some(json!(1)),
+        method: "initialize".to_string(),
+        params: Some(json!({
+            "protocolVersion": "2099-01-01",
             "capabilities": {},
             "clientInfo": {"name": "probe", "version": "0.0.1"}
         })),

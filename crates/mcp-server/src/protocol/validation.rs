@@ -1,7 +1,7 @@
 use rmu_core::PrivacyMode;
 use serde_json::Value;
 
-use super::PROTOCOL_VERSION;
+use super::SUPPORTED_PROTOCOL_VERSIONS;
 
 pub(super) fn validate_tools_call_params(
     params: Option<&Value>,
@@ -51,10 +51,11 @@ pub(super) fn validate_initialize_params(
         .ok_or_else(|| "initialize params must be object".to_string())?;
 
     match object.get("protocolVersion") {
-        Some(Value::String(version)) if version == PROTOCOL_VERSION => {}
+        Some(Value::String(version)) if SUPPORTED_PROTOCOL_VERSIONS.contains(&version.as_str()) => {}
         Some(Value::String(_)) => {
             return Err(format!(
-                "initialize `protocolVersion` must be `{PROTOCOL_VERSION}`"
+                "initialize `protocolVersion` must be one of: {}",
+                SUPPORTED_PROTOCOL_VERSIONS.join(", ")
             ));
         }
         _ => return Err("initialize requires string field `protocolVersion`".to_string()),
