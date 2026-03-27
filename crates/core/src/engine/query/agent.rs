@@ -12,6 +12,7 @@ use crate::model::{
 use crate::report::{QueryReportBuildInput, build_query_report};
 
 use super::super::Engine;
+use super::intent::SearchIntent;
 
 impl Engine {
     pub fn agent_bootstrap(
@@ -147,6 +148,8 @@ impl Engine {
                 let phase_started = Instant::now();
                 let execution = self.search_with_meta(&options)?;
                 timings.search_ms = elapsed_ms(phase_started);
+                let followups =
+                    SearchIntent::from_query(value).bootstrap_followups(&execution.hits);
 
                 let phase_started = Instant::now();
                 let context = self.context_for_hits_with_chunks(
@@ -163,11 +166,12 @@ impl Engine {
                 let shared_investigation =
                     if include.include_investigation_summary || include.include_report {
                         let phase_started = Instant::now();
-                        let snapshot = super::super::investigation::shared_query_investigation_snapshot(
-                            self,
-                            value,
-                            requested_limit,
-                        )?;
+                        let snapshot =
+                            super::super::investigation::shared_query_investigation_snapshot(
+                                self,
+                                value,
+                                requested_limit,
+                            )?;
                         timings.investigation_ms = elapsed_ms(phase_started);
                         Some(snapshot)
                     } else {
@@ -240,6 +244,7 @@ impl Engine {
                     max_tokens,
                     hits: execution.hits,
                     context,
+                    followups,
                     investigation_summary,
                     report,
                 })

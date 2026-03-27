@@ -41,6 +41,8 @@ pub struct AgentQueryBundle {
     pub max_tokens: usize,
     pub hits: Vec<SearchHit>,
     pub context: ContextSelection,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub followups: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub investigation_summary: Option<InvestigationSummary>,
     #[serde(skip_serializing_if = "Option::is_none")]

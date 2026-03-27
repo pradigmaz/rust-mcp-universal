@@ -139,3 +139,74 @@ pub fn render_worker() {
     cleanup_project(&project_dir);
     Ok(())
 }
+
+#[test]
+fn search_plain_tests_query_prefers_real_test_files_over_non_test_mentions()
+-> Result<(), Box<dyn Error>> {
+    let project_dir = temp_project_dir("rmu-core-tests-search-tests-surface");
+    fs::create_dir_all(project_dir.join("src/world/generation/runtime"))?;
+    fs::create_dir_all(project_dir.join("src/world/generation"))?;
+
+    fs::write(
+        project_dir.join("src/world/generation/runtime/GenerateChunk.test.ts"),
+        r#"
+import { describe, it, expect } from "vitest";
+
+describe("GenerateChunk", () => {
+    it("keeps runtime tests visible", () => {
+        expect("tests").toBe("tests");
+    });
+});
+"#,
+    )?;
+    fs::write(
+        project_dir.join("src/world/generation/ChunkGenerator.test.ts"),
+        r#"
+import { describe, it, expect } from "vitest";
+
+describe("ChunkGenerator", () => {
+    it("keeps generator tests visible", () => {
+        expect("tests").toBe("tests");
+    });
+});
+"#,
+    )?;
+    fs::write(
+        project_dir.join("src/world/generation/StructureGenerator.ts"),
+        r#"
+/**
+ * Legacy structure generator used only by legacy decorators/tests.
+ */
+export class StructureGenerator {}
+"#,
+    )?;
+
+    let engine = Engine::new(project_dir.clone(), Some(project_dir.join(".rmu/index.db")))?;
+    engine.index_path()?;
+
+    let hits = engine.search(&QueryOptions {
+        query: "tests".to_string(),
+        limit: 5,
+        detailed: false,
+        semantic: false,
+        semantic_fail_mode: SemanticFailMode::FailOpen,
+        privacy_mode: PrivacyMode::Off,
+        context_mode: None,
+    })?;
+
+    let top_paths = hits
+        .iter()
+        .take(3)
+        .map(|hit| hit.path.as_str())
+        .collect::<Vec<_>>();
+    assert!(
+        top_paths
+            .iter()
+            .take(2)
+            .all(|path| path.ends_with(".test.ts") || path.ends_with(".test.tsx")),
+        "plain tests query should put real test files ahead of non-test mentions: {top_paths:?}"
+    );
+
+    cleanup_project(&project_dir);
+    Ok(())
+}

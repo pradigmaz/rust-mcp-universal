@@ -124,6 +124,8 @@ fn agent_bootstrap_without_query_returns_workspace_only() {
     assert_eq!(result["isError"], json!(false));
     assert!(result["structuredContent"]["brief"]["index_status"]["files"].is_number());
     assert!(result["structuredContent"]["query_bundle"].is_null());
+    assert!(!project_dir.join(".rmu/index.db").exists());
+    assert!(!project_dir.join(".rmu").exists());
 
     let _ = fs::remove_dir_all(project_dir);
 }

@@ -8,10 +8,13 @@ mod explain;
 mod lexical;
 #[path = "pipeline/shortlist.rs"]
 mod shortlist;
+#[path = "pipeline/supplement.rs"]
+mod supplement;
 
 use explain::{build_explain_entries, resolve_semantic_outcome};
 use lexical::build_lexical_by_path;
 use shortlist::{build_pre_chunk_hits, compute_chunk_seed_limit, sort_hits_desc};
+use supplement::load_supplemental_hits;
 
 use super::chunking::chunk_pool_for_hits;
 use super::fusion::{FusionInputs, fuse_candidate_pools};
@@ -149,6 +152,7 @@ pub(super) fn search_with_meta(engine: &Engine, options: &QueryOptions) -> Resul
         search_intent.apply_to_hits(&mut pre_graph_hits, options.context_mode);
     }
     sort_hits_desc(&mut pre_graph_hits);
+    search_intent.diversify_hits(&mut pre_graph_hits, options.context_mode);
     pre_graph_hits.truncate(candidate_limit);
     let fused_candidates = pre_graph_hits.len();
 
@@ -172,7 +176,7 @@ pub(super) fn search_with_meta(engine: &Engine, options: &QueryOptions) -> Resul
     } else {
         lexical_hits.clone()
     };
-    if !semantic_enabled && graph_pool.is_empty() {
+    if !semantic_enabled {
         search_intent.apply_to_hits(&mut hits, options.context_mode);
     }
 
@@ -192,6 +196,35 @@ pub(super) fn search_with_meta(engine: &Engine, options: &QueryOptions) -> Resul
     );
 
     sort_hits_desc(&mut hits);
+    let supplemental_hits = load_supplemental_hits(
+        &engine.project_root,
+        &conn,
+        &search_intent,
+        &options.query,
+        requested_limit,
+        options.context_mode,
+        &hits,
+    )?;
+    if !supplemental_hits.is_empty() {
+        let mut hit_index_by_path = hits
+            .iter()
+            .enumerate()
+            .map(|(idx, hit)| (hit.path.clone(), idx))
+            .collect::<HashMap<_, _>>();
+        for hit in supplemental_hits {
+            if let Some(existing_idx) = hit_index_by_path.get(&hit.path).copied() {
+                if hit.score > hits[existing_idx].score {
+                    hits[existing_idx] = hit;
+                }
+            } else {
+                let next_idx = hits.len();
+                hit_index_by_path.insert(hit.path.clone(), next_idx);
+                hits.push(hit);
+            }
+        }
+        sort_hits_desc(&mut hits);
+    }
+    search_intent.diversify_hits(&mut hits, options.context_mode);
     hits.truncate(requested_limit);
     let shortlist_candidates = hits.len();
 

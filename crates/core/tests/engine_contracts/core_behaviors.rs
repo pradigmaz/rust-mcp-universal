@@ -16,6 +16,12 @@ pub(super) use crate::common::{cleanup_project, setup_indexed_project, temp_proj
 mod benchmark;
 #[path = "core_behaviors/bootstrap.rs"]
 mod bootstrap;
+#[path = "core_behaviors/bootstrap_broad.rs"]
+mod bootstrap_broad;
+#[path = "core_behaviors/bootstrap_broad_mod.rs"]
+mod bootstrap_broad_mod;
+#[path = "core_behaviors/bootstrap_broad_shared.rs"]
+mod bootstrap_broad_shared;
 #[path = "core_behaviors/context.rs"]
 mod context;
 #[path = "core_behaviors/maintenance.rs"]
@@ -28,6 +34,8 @@ mod report;
 mod search;
 #[path = "core_behaviors/search_mixed.rs"]
 mod search_mixed;
+#[path = "core_behaviors/search_mod.rs"]
+mod search_mod;
 #[path = "core_behaviors/status.rs"]
 mod status;
 

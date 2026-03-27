@@ -124,9 +124,7 @@ fn summarize_constraints(
     }
 }
 
-fn summarize_divergence(
-    report: &crate::model::DivergenceReport,
-) -> InvestigationDivergenceSummary {
+fn summarize_divergence(report: &crate::model::DivergenceReport) -> InvestigationDivergenceSummary {
     InvestigationDivergenceSummary {
         surface_kind: DIVERGENCE_PREVIEW_SURFACE_KIND.to_string(),
         authoritative_tool: DIVERGENCE_AUTHORITATIVE_TOOL.to_string(),

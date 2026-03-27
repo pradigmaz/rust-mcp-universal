@@ -105,8 +105,11 @@ impl Engine {
         )?;
         timings.context_ms = elapsed_ms(phase_started);
         let phase_started = Instant::now();
-        let snapshot =
-            investigation::shared_query_investigation_snapshot(self, &options.query, options.limit)?;
+        let snapshot = investigation::shared_query_investigation_snapshot(
+            self,
+            &options.query,
+            options.limit,
+        )?;
         timings.investigation_ms = elapsed_ms(phase_started);
         timings.investigation = snapshot.timings;
         let phase_started = Instant::now();
@@ -145,8 +148,11 @@ impl Engine {
         let (chunk_coverage, chunk_source) = derive_chunk_telemetry(&context);
         let status = self.index_status()?;
         let phase_started = Instant::now();
-        let snapshot =
-            investigation::shared_query_investigation_snapshot(self, &options.query, options.limit)?;
+        let snapshot = investigation::shared_query_investigation_snapshot(
+            self,
+            &options.query,
+            options.limit,
+        )?;
         timings.investigation_ms = elapsed_ms(phase_started);
         timings.investigation = snapshot.timings;
         let investigation_summary = investigation_embed::format_investigation_summary(&snapshot);

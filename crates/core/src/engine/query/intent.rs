@@ -2,16 +2,26 @@ use crate::model::{ContextMode, SearchHit};
 
 #[path = "intent/aliases.rs"]
 mod aliases;
+#[path = "intent/bootstrap.rs"]
+mod bootstrap;
+#[path = "intent/limits.rs"]
+mod limits;
 #[path = "intent/roles.rs"]
 mod roles;
+#[path = "intent/scoring.rs"]
+mod scoring;
 
 use aliases::{
-    API_ALIASES, BACKEND_ALIASES, BATCH_ALIASES, COMPONENT_ALIASES, DB_ALIASES, DEADLINE_ALIASES,
-    ENDPOINT_ALIASES, FRONTEND_ALIASES, GRADING_ALIASES, HOOK_ALIASES, JOURNAL_ALIASES,
-    MIGRATION_ALIASES, PAGE_ALIASES, ROUTER_ALIASES, SCHEMA_ALIASES, SERVICE_ALIASES, SQL_ALIASES,
-    VALIDATOR_ALIASES, VISIBILITY_ALIASES,
+    API_ALIASES, ARCHITECTURE_ALIASES, AUTH_ALIASES, BACKEND_ALIASES, BATCH_ALIASES,
+    COMPONENT_ALIASES, CONFIG_ALIASES, DB_ALIASES, DEADLINE_ALIASES, DOMAIN_ALIASES,
+    ENDPOINT_ALIASES, ENTRYPOINT_ALIASES, FRONTEND_ALIASES, GRADING_ALIASES, HOOK_ALIASES,
+    JOURNAL_ALIASES, MIGRATION_ALIASES, MIXIN_ALIASES, MODULE_ALIASES, ORCHESTRATION_ALIASES,
+    PAGE_ALIASES, ROUTER_ALIASES, RULE_ALIASES, RUNTIME_ALIASES, SCHEMA_ALIASES, SERVICE_ALIASES,
+    SQL_ALIASES, TEST_ALIASES, VALIDATOR_ALIASES, VISIBILITY_ALIASES,
 };
-use roles::{BackendLayer, FileDomain, FileRole, NormalizedText, collect_groups, count_matches};
+use roles::{
+    BackendLayer, FileDomain, FileRole, NormalizedText, collect_groups, count_matches, is_test_path,
+};
 
 #[derive(Debug, Clone)]
 pub(super) struct SearchIntent {
@@ -24,8 +34,14 @@ pub(super) struct SearchIntent {
     wants_hook: bool,
     wants_page: bool,
     wants_component: bool,
+    wants_mod_runtime: bool,
     wants_migration: bool,
+    wants_architecture: bool,
+    wants_entrypoints: bool,
+    wants_auth_boundary: bool,
+    wants_tests: bool,
     code_first: bool,
+    token_count: usize,
     coverage_groups: Vec<&'static [&'static str]>,
     workload_groups: Vec<&'static [&'static str]>,
 }
@@ -33,19 +49,31 @@ pub(super) struct SearchIntent {
 impl SearchIntent {
     pub(super) fn from_query(query: &str) -> Self {
         let normalized = NormalizedText::new(query, "");
+        let token_count = normalized.token_count();
         let explicit_backend = normalized.matches_any(BACKEND_ALIASES);
         let explicit_frontend = normalized.matches_any(FRONTEND_ALIASES);
         let explicit_database = normalized.matches_any(MIGRATION_ALIASES)
             || normalized.matches_any(SCHEMA_ALIASES)
             || normalized.matches_any(SQL_ALIASES)
             || normalized.matches_any(DB_ALIASES);
+        let wants_architecture = normalized.matches_any(ARCHITECTURE_ALIASES);
+        let wants_entrypoints = normalized.matches_any(ENTRYPOINT_ALIASES);
+        let wants_auth_boundary = normalized.matches_any(AUTH_ALIASES);
+        let wants_tests = normalized.matches_any(TEST_ALIASES);
         let wants_api_surface = normalized.matches_any(API_ALIASES)
             || normalized.matches_any(ENDPOINT_ALIASES)
             || normalized.matches_any(ROUTER_ALIASES);
-        let wants_service = normalized.matches_any(SERVICE_ALIASES);
+        let wants_service = normalized.matches_any(SERVICE_ALIASES)
+            || normalized.matches_any(DOMAIN_ALIASES)
+            || normalized.matches_any(ORCHESTRATION_ALIASES)
+            || normalized.matches_any(RULE_ALIASES);
         let wants_hook = normalized.matches_any(HOOK_ALIASES);
         let wants_page = normalized.matches_any(PAGE_ALIASES);
         let wants_component = normalized.matches_any(COMPONENT_ALIASES);
+        let wants_mod_runtime = normalized.matches_any(MODULE_ALIASES)
+            || normalized.matches_any(MIXIN_ALIASES)
+            || normalized.matches_any(CONFIG_ALIASES)
+            || normalized.matches_any(RUNTIME_ALIASES);
         let wants_batch = normalized.matches_any(BATCH_ALIASES);
         let wants_validator = normalized.matches_any(VALIDATOR_ALIASES);
         let wants_deadline = normalized.matches_any(DEADLINE_ALIASES);
@@ -67,11 +95,22 @@ impl SearchIntent {
         };
 
         let prefers_backend = explicit_backend || wants_api_surface || wants_service || wants_batch;
-        let prefers_frontend = explicit_frontend || wants_hook || wants_page || wants_component;
+        let prefers_frontend = explicit_frontend
+            || wants_page
+            || wants_component
+            || (wants_hook && !wants_mod_runtime);
         let prefers_database = explicit_database;
         let wants_service_layer =
             wants_service || wants_batch || wants_validator || wants_deadline || wants_visibility;
-        let code_first = prefers_backend || prefers_frontend || prefers_database || has_workload;
+        let code_first = prefers_backend
+            || prefers_frontend
+            || prefers_database
+            || wants_architecture
+            || wants_entrypoints
+            || wants_auth_boundary
+            || wants_tests
+            || wants_mod_runtime
+            || has_workload;
 
         Self {
             explicit_domain,
@@ -83,8 +122,14 @@ impl SearchIntent {
             wants_hook,
             wants_page,
             wants_component,
+            wants_mod_runtime,
             wants_migration,
+            wants_architecture,
+            wants_entrypoints,
+            wants_auth_boundary,
+            wants_tests,
             code_first,
+            token_count,
             coverage_groups: collect_groups(
                 &normalized,
                 &[
@@ -94,6 +139,13 @@ impl SearchIntent {
                     ENDPOINT_ALIASES,
                     ROUTER_ALIASES,
                     SERVICE_ALIASES,
+                    DOMAIN_ALIASES,
+                    ORCHESTRATION_ALIASES,
+                    RULE_ALIASES,
+                    MODULE_ALIASES,
+                    MIXIN_ALIASES,
+                    CONFIG_ALIASES,
+                    RUNTIME_ALIASES,
                     HOOK_ALIASES,
                     PAGE_ALIASES,
                     COMPONENT_ALIASES,
@@ -145,11 +197,23 @@ impl SearchIntent {
         let haystack = NormalizedText::new(path, preview);
         let coverage = count_matches(&haystack, &self.coverage_groups);
         let workload_matches = count_matches(&haystack, &self.workload_groups);
+        let plain_test_intent = self.wants_tests
+            && self.coverage_groups.len() == 1
+            && !self.prefers_backend
+            && !self.prefers_frontend
+            && !self.prefers_database
+            && !self.wants_architecture
+            && !self.wants_entrypoints
+            && !self.wants_auth_boundary
+            && !self.wants_service_layer
+            && !self.wants_api_surface
+            && !self.wants_mod_runtime;
         let mut score = 0.0_f32;
 
         score += self.domain_score(role.domain);
         score += self.backend_layer_score(&role);
         score += self.frontend_role_score(&role);
+        score += self.mod_runtime_score(&role);
         score += self.database_score(&role);
         score += self.support_artifact_penalty(&role);
 
@@ -167,6 +231,29 @@ impl SearchIntent {
         }
         if role.schema_like && self.prefers_database {
             score += 0.012;
+        }
+        if self.wants_entrypoints
+            && role.domain == FileDomain::Backend
+            && role.backend_layer == BackendLayer::ApiSurface
+        {
+            score += 0.060;
+        }
+        if self.wants_entrypoints && role.mod_entrypoint_like {
+            score += 0.070;
+        }
+        if self.wants_auth_boundary && role.domain == FileDomain::Backend {
+            score += 0.020;
+        }
+        if self.wants_tests && is_test_path(path) {
+            score += 0.034;
+            if plain_test_intent {
+                score += 0.090;
+            }
+            if self.wants_auth_boundary {
+                score += 0.030;
+            }
+        } else if plain_test_intent {
+            score -= 0.050;
         }
 
         if coverage > 1 {
@@ -192,133 +279,15 @@ impl SearchIntent {
         score.clamp(-0.220, 0.400)
     }
 
-    pub(super) fn lexical_candidate_limit(&self, requested_limit: usize) -> usize {
-        let requested_limit = requested_limit.max(1);
-        if self.code_first && self.coverage_groups.len() >= 2 {
-            return requested_limit.saturating_mul(4).clamp(40, 320);
-        }
-        requested_limit.saturating_mul(2).min(200)
+    pub(crate) fn expects_test_surface(&self) -> bool {
+        self.wants_tests
     }
 
-    pub(super) fn pre_rerank_candidate_limit(
-        &self,
-        requested_limit: usize,
-        semantic_enabled: bool,
-    ) -> usize {
-        let requested_limit = requested_limit.max(1);
-        if semantic_enabled {
-            return requested_limit.saturating_mul(3).min(240);
-        }
-        if self.code_first && self.coverage_groups.len() >= 2 {
-            return requested_limit.saturating_mul(2).clamp(20, 80);
-        }
-        requested_limit
+    pub(crate) fn expects_service_surface(&self) -> bool {
+        self.wants_service_layer
     }
 
-    fn domain_score(&self, domain: FileDomain) -> f32 {
-        match self.explicit_domain {
-            Some(FileDomain::Backend) => match domain {
-                FileDomain::Backend => 0.060,
-                FileDomain::Frontend => -0.060,
-                FileDomain::Database => -0.070,
-                _ => 0.0,
-            },
-            Some(FileDomain::Frontend) => match domain {
-                FileDomain::Frontend => 0.070,
-                FileDomain::Backend => -0.080,
-                FileDomain::Database => -0.055,
-                _ => 0.0,
-            },
-            Some(FileDomain::Database) => match domain {
-                FileDomain::Database => 0.054,
-                FileDomain::Backend | FileDomain::Frontend => -0.030,
-                _ => 0.0,
-            },
-            _ => 0.0,
-        }
-    }
-
-    fn backend_layer_score(&self, role: &FileRole) -> f32 {
-        let mut score = 0.0_f32;
-        if self.prefers_backend {
-            if role.domain == FileDomain::Backend {
-                score += 0.020;
-            } else if role.domain == FileDomain::Frontend
-                && self.explicit_domain != Some(FileDomain::Frontend)
-            {
-                score -= 0.016;
-            }
-        }
-
-        if self.prefers_backend_service_layer() {
-            match role.backend_layer {
-                BackendLayer::ServiceWork => score += 0.095,
-                BackendLayer::ApiSurface => score -= 0.090,
-                BackendLayer::Other => {}
-            }
-        } else if self.prefers_backend_api_surface() {
-            match role.backend_layer {
-                BackendLayer::ApiSurface => score += 0.085,
-                BackendLayer::ServiceWork => score -= 0.028,
-                BackendLayer::Other => {}
-            }
-        }
-
-        score
-    }
-
-    fn frontend_role_score(&self, role: &FileRole) -> f32 {
-        let mut score = 0.0_f32;
-        if self.prefers_frontend {
-            if role.domain == FileDomain::Frontend {
-                score += 0.024;
-                if role.hook_like || role.page_like || role.component_like {
-                    score += 0.032;
-                }
-            } else if role.domain == FileDomain::Backend {
-                score -= 0.024;
-                if role.backend_layer == BackendLayer::ApiSurface {
-                    score -= 0.080;
-                }
-            }
-        }
-        score
-    }
-
-    fn database_score(&self, role: &FileRole) -> f32 {
-        if self.prefers_database {
-            if role.domain == FileDomain::Database {
-                0.018
-            } else {
-                0.0
-            }
-        } else if self.code_first && role.domain == FileDomain::Database {
-            if self.prefers_backend || self.prefers_frontend {
-                -0.100
-            } else {
-                -0.040
-            }
-        } else {
-            0.0
-        }
-    }
-
-    fn support_artifact_penalty(&self, role: &FileRole) -> f32 {
-        if !self.code_first || !role.support_artifact_like {
-            return 0.0;
-        }
-        let mut score = -0.100;
-        if self.prefers_backend || self.prefers_frontend {
-            score -= 0.040;
-        }
-        score
-    }
-
-    fn prefers_backend_service_layer(&self) -> bool {
-        self.prefers_backend && self.wants_service_layer && !self.wants_api_surface
-    }
-
-    fn prefers_backend_api_surface(&self) -> bool {
-        self.prefers_backend && self.wants_api_surface
+    pub(crate) fn expects_mod_runtime_surface(&self) -> bool {
+        self.wants_mod_runtime
     }
 }

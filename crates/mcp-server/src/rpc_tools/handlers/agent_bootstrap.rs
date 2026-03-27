@@ -68,11 +68,19 @@ pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<V
         .map(|value| decide_semantic_rollout(semantic, vector_layer_enabled, rollout_phase, value))
         .map(|decision| decision.enabled)
         .unwrap_or(false);
-    let engine = Engine::new_with_migration_mode(
-        state.project_path.clone(),
-        state.db_path.clone(),
-        migration_mode,
-    )?;
+    let engine = if query.is_none() && !auto_index {
+        Engine::new_read_only_with_migration_mode(
+            state.project_path.clone(),
+            state.db_path.clone(),
+            migration_mode,
+        )?
+    } else {
+        Engine::new_with_migration_mode(
+            state.project_path.clone(),
+            state.db_path.clone(),
+            migration_mode,
+        )?
+    };
     if auto_index {
         ensure_query_index_ready(&engine, true)?;
     }
