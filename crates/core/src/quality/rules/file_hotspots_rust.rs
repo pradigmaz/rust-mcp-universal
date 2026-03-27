@@ -9,12 +9,7 @@ pub(super) fn analyze(source: &str) -> HotspotFacts {
     let lines = source.lines().collect::<Vec<_>>();
     let mut facts = HotspotFacts::default();
     let line_index = LineIndex::new(source);
-    let mut offset = 0_usize;
-    let mut line_offsets = Vec::with_capacity(lines.len());
-    for line in &lines {
-        line_offsets.push(offset);
-        offset += line.len() + 1;
-    }
+    let line_offsets = line_offsets(source);
 
     let mut idx = 0_usize;
     while idx < lines.len() {
@@ -62,6 +57,19 @@ pub(super) fn analyze(source: &str) -> HotspotFacts {
         QualitySource::ParserLight,
     ));
     facts
+}
+
+fn line_offsets(source: &str) -> Vec<usize> {
+    let mut offsets = Vec::new();
+    let mut next = 0_usize;
+    for line in source.split_inclusive('\n') {
+        offsets.push(next);
+        next += line.len();
+    }
+    if !source.is_empty() && !source.ends_with('\n') {
+        offsets.push(next);
+    }
+    offsets
 }
 
 struct RustFunction {

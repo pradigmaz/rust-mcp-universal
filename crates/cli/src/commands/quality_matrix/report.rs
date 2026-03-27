@@ -48,6 +48,7 @@ pub(crate) struct QualityMatrixTopHotFiles {
     pub(crate) size_bytes: Vec<String>,
     pub(crate) non_empty_lines: Vec<String>,
     pub(crate) metric_graph_edge_out_count: Vec<String>,
+    pub(crate) metric_max_cognitive_complexity: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -67,6 +68,7 @@ pub(crate) struct QualityMatrixLatencySummary {
     pub(crate) size_bytes_ms: u128,
     pub(crate) non_empty_lines_ms: u128,
     pub(crate) metric_graph_edge_out_count_ms: u128,
+    pub(crate) metric_max_cognitive_complexity_ms: u128,
     pub(crate) file_hotspots_ms: u128,
     pub(crate) directory_hotspots_ms: u128,
     pub(crate) module_hotspots_ms: u128,
@@ -104,6 +106,7 @@ pub(crate) struct QualityMatrixArtifactPaths {
     pub(crate) violations_by_size_bytes: String,
     pub(crate) violations_by_non_empty_lines: String,
     pub(crate) violations_by_metric_graph_edge_out_count: String,
+    pub(crate) violations_by_metric_max_cognitive_complexity: String,
     pub(crate) file_hotspots: String,
     pub(crate) directory_hotspots: String,
     pub(crate) module_hotspots: String,

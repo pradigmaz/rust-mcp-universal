@@ -118,8 +118,7 @@ impl<'s> JsHotspotCollector<'s> {
                     QualitySource::Ast,
                 ),
             );
-            let nesting_source =
-                &self.source[body_start.min(self.source.len())..body_end.min(self.source.len())];
+            let nesting_source = safe_function_body_slice(self.source, body_start, body_end);
             update_max(
                 &mut self.max_nesting_depth,
                 observed(
@@ -154,8 +153,11 @@ impl<'a> Visit<'a> for JsHotspotCollector<'_> {
                 .map(|body| usize::try_from(body.span.start).unwrap_or(0))
                 .unwrap_or(usize::try_from(it.span.start).unwrap_or(0)),
             usize::try_from(end).unwrap_or(self.source.len()),
-            &self.source[usize::try_from(it.params.span.start).unwrap_or(0)
-                ..usize::try_from(it.params.span.end).unwrap_or(self.source.len())],
+            safe_slice(
+                self.source,
+                usize::try_from(it.params.span.start).unwrap_or(0),
+                usize::try_from(it.params.span.end).unwrap_or(self.source.len()),
+            ),
         );
         walk::walk_function(self, it, flags);
     }
@@ -165,8 +167,11 @@ impl<'a> Visit<'a> for JsHotspotCollector<'_> {
             usize::try_from(it.span.start).unwrap_or(0),
             usize::try_from(it.body.span.start).unwrap_or(0),
             usize::try_from(it.body.span.end).unwrap_or(self.source.len()),
-            &self.source[usize::try_from(it.params.span.start).unwrap_or(0)
-                ..usize::try_from(it.params.span.end).unwrap_or(self.source.len())],
+            safe_slice(
+                self.source,
+                usize::try_from(it.params.span.start).unwrap_or(0),
+                usize::try_from(it.params.span.end).unwrap_or(self.source.len()),
+            ),
         );
         walk::walk_arrow_function_expression(self, it);
     }
@@ -197,4 +202,24 @@ impl<'a> Visit<'a> for JsHotspotCollector<'_> {
         );
         walk::walk_class(self, it);
     }
+}
+
+fn safe_function_body_slice(source: &str, body_start: usize, body_end: usize) -> &str {
+    let body = safe_slice(source, body_start, body_end);
+    let trimmed = body.trim();
+    if trimmed.starts_with('{') && trimmed.ends_with('}') && body.len() >= 2 {
+        let inner_start = body.find('{').map(|idx| idx + 1).unwrap_or(0);
+        let inner_end = body.rfind('}').unwrap_or(body.len());
+        return &body[inner_start.min(inner_end)..inner_end];
+    }
+    body
+}
+
+fn safe_slice(source: &str, start: usize, end: usize) -> &str {
+    let clamped_start = start.min(source.len());
+    let clamped_end = end.min(source.len());
+    if clamped_start >= clamped_end {
+        return "";
+    }
+    &source[clamped_start..clamped_end]
 }

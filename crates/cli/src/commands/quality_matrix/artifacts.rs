@@ -41,6 +41,10 @@ pub(super) fn write_repo_artifacts(
         &outcome.by_metric_graph_edge_out_count,
     )?;
     write_json_file(
+        &repo_output_root.join("violations.by_metric_max_cognitive_complexity.json"),
+        &outcome.by_metric_max_cognitive_complexity,
+    )?;
+    write_json_file(
         &repo_output_root.join("hotspots.file.json"),
         &outcome.file_hotspots,
     )?;

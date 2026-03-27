@@ -31,6 +31,7 @@ pub(super) struct RepoRunOutcome {
     pub(super) by_size_bytes: RuleViolationsResult,
     pub(super) by_non_empty_lines: RuleViolationsResult,
     pub(super) by_metric_graph_edge_out_count: RuleViolationsResult,
+    pub(super) by_metric_max_cognitive_complexity: RuleViolationsResult,
     pub(super) file_hotspots: QualityHotspotsResult,
     pub(super) directory_hotspots: QualityHotspotsResult,
     pub(super) module_hotspots: QualityHotspotsResult,

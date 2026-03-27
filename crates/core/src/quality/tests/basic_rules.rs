@@ -6,8 +6,8 @@ use crate::quality::{
 
 #[test]
 fn quality_constants_are_stable() {
-    assert_eq!(QUALITY_RULESET_ID, "quality-core-v5");
-    assert_eq!(CURRENT_QUALITY_RULESET_VERSION, 5);
+    assert_eq!(QUALITY_RULESET_ID, "quality-core-v6");
+    assert_eq!(CURRENT_QUALITY_RULESET_VERSION, 6);
 }
 
 #[test]

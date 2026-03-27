@@ -142,11 +142,11 @@ fn try_load_rule_violations(
         .sort_metric_id
         .as_deref()
         .or_else(|| options.metric_ids.first().map(String::as_str));
+    hits.sort_by(|left, right| compare_hits(left, right, options.sort_by, sort_metric_id));
+    hits.truncate(options.limit);
     let suppressed_violations = hits.iter().map(|hit| hit.suppressed_violations.len()).sum();
     let severity_breakdown = build_severity_breakdown(&hits);
     let category_breakdown = build_category_breakdown(&hits);
-    hits.sort_by(|left, right| compare_hits(left, right, options.sort_by, sort_metric_id));
-    hits.truncate(options.limit);
 
     Ok(RuleViolationsResult {
         summary: RuleViolationsSummary {

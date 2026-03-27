@@ -39,6 +39,10 @@ pub(crate) fn default_rule_metadata(rule_id: &str) -> Option<RuleMetadata> {
             severity: QualitySeverity::Medium,
             category: QualityCategory::Maintainability,
         },
+        "max_cyclomatic_complexity" | "max_cognitive_complexity" => RuleMetadata {
+            severity: QualitySeverity::High,
+            category: QualityCategory::Maintainability,
+        },
         "max_todo_count_per_file" | "max_line_length" => RuleMetadata {
             severity: QualitySeverity::Low,
             category: QualityCategory::Style,
@@ -78,6 +82,8 @@ fn known_rule_ids() -> &'static [&'static str] {
         "max_export_count_per_file",
         "max_class_member_count",
         "max_todo_count_per_file",
+        "max_cyclomatic_complexity",
+        "max_cognitive_complexity",
         "max_fan_in_per_file",
         "max_fan_out_per_file",
         "module_cycle_member",

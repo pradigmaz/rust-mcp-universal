@@ -10,7 +10,7 @@ fn quality_hotspots_returns_file_buckets_with_risk_scores() {
     fs::create_dir_all(project_dir.join("src")).expect("create src");
     fs::write(
         project_dir.join("src/lib.rs"),
-        "pub fn noisy() {\n  let _value = \"this line is intentionally very very very very very very very very very very very very very very very very very very very long\";\n}\n",
+        "pub fn noisy(flag: bool, level: i32) -> i32 {\n  if flag {\n    if level > 0 {\n      return 1;\n    }\n  }\n  if level < 0 {\n    return -1;\n  }\n  return 0;\n}\n",
     )
     .expect("write rust source");
 
@@ -36,6 +36,12 @@ fn quality_hotspots_returns_file_buckets_with_risk_scores() {
         result["structuredContent"]["buckets"][0]["risk_score"]["score"]
             .as_f64()
             .is_some()
+    );
+    assert!(
+        result["structuredContent"]["buckets"][0]["risk_score"]["components"]["complexity"]
+            .as_f64()
+            .unwrap_or_default()
+            > 0.0
     );
 
     let _ = fs::remove_dir_all(project_dir);

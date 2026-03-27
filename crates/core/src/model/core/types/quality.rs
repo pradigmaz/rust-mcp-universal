@@ -232,6 +232,7 @@ pub struct QualityRiskScoreWeights {
     pub size: f64,
     pub nesting: f64,
     pub function_length: f64,
+    pub complexity: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, Default)]
@@ -243,6 +244,7 @@ pub struct QualityRiskScoreComponents {
     pub size: f64,
     pub nesting: f64,
     pub function_length: f64,
+    pub complexity: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

@@ -80,6 +80,8 @@ pub(crate) struct QualityThresholds {
     pub(crate) max_todo_count_per_file: i64,
     pub(crate) max_fan_in_per_file: i64,
     pub(crate) max_fan_out_per_file: i64,
+    pub(crate) max_cyclomatic_complexity: i64,
+    pub(crate) max_cognitive_complexity: i64,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -188,6 +190,8 @@ pub(crate) fn default_quality_policy() -> QualityPolicy {
             max_todo_count_per_file: super::metrics::MAX_TODO_COUNT_PER_FILE,
             max_fan_in_per_file: super::metrics::MAX_FAN_IN_PER_FILE,
             max_fan_out_per_file: super::metrics::MAX_FAN_OUT_PER_FILE,
+            max_cyclomatic_complexity: super::metrics::MAX_CYCLOMATIC_COMPLEXITY,
+            max_cognitive_complexity: super::metrics::MAX_COGNITIVE_COMPLEXITY,
         },
         quality_scope: QualityScopePolicy::default(),
         structural: None,
@@ -373,6 +377,12 @@ fn apply_threshold_overrides(
     }
     if let Some(value) = overrides.max_fan_out_per_file {
         thresholds.max_fan_out_per_file = value;
+    }
+    if let Some(value) = overrides.max_cyclomatic_complexity {
+        thresholds.max_cyclomatic_complexity = value;
+    }
+    if let Some(value) = overrides.max_cognitive_complexity {
+        thresholds.max_cognitive_complexity = value;
     }
 }
 

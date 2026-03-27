@@ -152,6 +152,16 @@ fn quality_matrix_single_repo_writes_canonical_summary_without_absolute_repo_pat
     assert_eq!(canonical["manifest_version"], json!(1));
     assert_eq!(canonical["repos"].as_array().map(Vec::len), Some(1));
     assert!(canonical["generated_at_utc"].is_string());
+    assert_eq!(
+        aggregate["repos"][0]["artifacts"]["violations_by_metric_max_cognitive_complexity"],
+        json!("violations.by_metric_max_cognitive_complexity.json")
+    );
+    assert!(
+        aggregate["repos"][0]["latency_summary"]["metric_max_cognitive_complexity_ms"]
+            .as_u64()
+            .is_some()
+    );
+    assert!(aggregate["repos"][0]["top_hot_files"]["metric_max_cognitive_complexity"].is_array());
     assert!(!canonical_raw.contains(&repo.display().to_string()));
     assert!(!canonical_raw.contains(&matrix_root.path().display().to_string()));
 }

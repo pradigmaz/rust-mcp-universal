@@ -22,6 +22,8 @@ pub(super) const MAX_CLASS_MEMBER_COUNT: i64 = 20;
 pub(super) const MAX_TODO_COUNT_PER_FILE: i64 = 8;
 pub(super) const MAX_FAN_IN_PER_FILE: i64 = 20;
 pub(super) const MAX_FAN_OUT_PER_FILE: i64 = 20;
+pub(super) const MAX_CYCLOMATIC_COMPLEXITY: i64 = 12;
+pub(super) const MAX_COGNITIVE_COMPLEXITY: i64 = 18;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum FileKind {
@@ -37,6 +39,10 @@ pub(crate) fn build_indexed_quality_facts(
     _source_mtime_unix_ms: Option<i64>,
     full_text: &str,
 ) -> QualityCandidateFacts {
+    let mut hotspots = super::rules::analyze_hotspots(rel_path, language, full_text);
+    hotspots.merge_from(super::complexity::analyze_complexity(
+        rel_path, language, full_text,
+    ));
     QualityCandidateFacts {
         rel_path: rel_path.to_string(),
         size_bytes: i64::try_from(size_bytes).unwrap_or(i64::MAX),
@@ -48,7 +54,7 @@ pub(crate) fn build_indexed_quality_facts(
         max_line_length_location: max_line_length_location(full_text),
         quality_mode: QualityMode::Indexed,
         file_kind: classify_file_kind(rel_path),
-        hotspots: super::rules::analyze_hotspots(rel_path, language, full_text),
+        hotspots,
         structural: super::StructuralFacts::default(),
     }
 }

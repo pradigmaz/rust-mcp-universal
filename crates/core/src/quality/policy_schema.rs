@@ -47,6 +47,8 @@ pub(crate) struct QualityThresholdOverrides {
     pub(crate) max_todo_count_per_file: Option<i64>,
     pub(crate) max_fan_in_per_file: Option<i64>,
     pub(crate) max_fan_out_per_file: Option<i64>,
+    pub(crate) max_cyclomatic_complexity: Option<i64>,
+    pub(crate) max_cognitive_complexity: Option<i64>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]

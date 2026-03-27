@@ -24,7 +24,7 @@ fn indexing_persists_quality_snapshot_and_workspace_summary() -> anyhow::Result<
     assert!(stored.is_some());
 
     let brief = engine.workspace_brief()?;
-    assert_eq!(brief.quality_summary.ruleset_id, "quality-core-v5");
+    assert_eq!(brief.quality_summary.ruleset_id, "quality-core-v6");
     assert_eq!(brief.quality_summary.status.as_str(), "ready");
     assert_eq!(brief.quality_summary.evaluated_files, 1);
     assert_eq!(brief.quality_summary.violating_files, 1);
@@ -234,6 +234,45 @@ fn rule_violations_keep_suppressed_entries_auditable() -> anyhow::Result<()> {
     assert_eq!(risk_score.components.violation_count, 0.0);
     assert_eq!(risk_score.components.severity, 0.0);
     assert_eq!(result.summary.suppressed_violations, 1);
+
+    let _ = std::fs::remove_dir_all(root);
+    Ok(())
+}
+
+#[test]
+fn rule_violations_summary_tracks_the_returned_slice() -> anyhow::Result<()> {
+    let root = temp_dir("rmu-quality-summary-returned-slice");
+    std::fs::create_dir_all(&root)?;
+    write_project_file(&root, "src/a.rs", &repeated_lines("line_a", 301))?;
+    write_project_file(&root, "src/b.rs", &repeated_lines("line_b", 302))?;
+
+    let engine = Engine::new(root.clone(), Some(root.join(".rmu/index.db")))?;
+    engine.index_path()?;
+
+    let result = engine.rule_violations(&RuleViolationsOptions {
+        limit: 1,
+        sort_by: crate::model::RuleViolationsSortBy::NonEmptyLines,
+        ..RuleViolationsOptions::default()
+    })?;
+
+    let severity_total = result
+        .summary
+        .severity_breakdown
+        .iter()
+        .map(|entry| entry.violations)
+        .sum::<usize>();
+    let category_total = result
+        .summary
+        .category_breakdown
+        .iter()
+        .map(|entry| entry.violations)
+        .sum::<usize>();
+
+    assert_eq!(result.summary.evaluated_files, 2);
+    assert_eq!(result.hits.len(), 1);
+    assert_eq!(result.summary.violating_files, 1);
+    assert_eq!(severity_total, result.summary.total_violations);
+    assert_eq!(category_total, result.summary.total_violations);
 
     let _ = std::fs::remove_dir_all(root);
     Ok(())

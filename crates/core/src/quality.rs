@@ -3,6 +3,8 @@ use crate::model::{
     SuppressedQualityViolationEntry,
 };
 
+#[path = "quality/complexity.rs"]
+mod complexity;
 #[path = "quality/evaluate.rs"]
 mod evaluate;
 #[path = "quality/location.rs"]
@@ -20,8 +22,8 @@ mod rules;
 #[path = "quality/scoring.rs"]
 mod scoring;
 
-pub(crate) const QUALITY_RULESET_ID: &str = "quality-core-v5";
-pub(crate) const CURRENT_QUALITY_RULESET_VERSION: i64 = 5;
+pub(crate) const QUALITY_RULESET_ID: &str = "quality-core-v6";
+pub(crate) const CURRENT_QUALITY_RULESET_VERSION: i64 = 6;
 
 #[derive(Debug, Clone)]
 pub(crate) struct QualityMetricEntry {
@@ -46,6 +48,46 @@ pub(crate) struct HotspotFacts {
     pub(crate) max_export_count_per_file: Option<ObservedMetric>,
     pub(crate) max_class_member_count: Option<ObservedMetric>,
     pub(crate) max_todo_count_per_file: Option<ObservedMetric>,
+    pub(crate) max_cyclomatic_complexity: Option<ObservedMetric>,
+    pub(crate) max_cognitive_complexity: Option<ObservedMetric>,
+    pub(crate) max_branch_count: Option<ObservedMetric>,
+    pub(crate) max_early_return_count: Option<ObservedMetric>,
+}
+
+impl HotspotFacts {
+    pub(crate) fn merge_from(&mut self, other: Self) {
+        merge_observed_metric(&mut self.max_function_lines, other.max_function_lines);
+        merge_observed_metric(&mut self.max_nesting_depth, other.max_nesting_depth);
+        merge_observed_metric(
+            &mut self.max_parameters_per_function,
+            other.max_parameters_per_function,
+        );
+        merge_observed_metric(
+            &mut self.max_export_count_per_file,
+            other.max_export_count_per_file,
+        );
+        merge_observed_metric(
+            &mut self.max_class_member_count,
+            other.max_class_member_count,
+        );
+        merge_observed_metric(
+            &mut self.max_todo_count_per_file,
+            other.max_todo_count_per_file,
+        );
+        merge_observed_metric(
+            &mut self.max_cyclomatic_complexity,
+            other.max_cyclomatic_complexity,
+        );
+        merge_observed_metric(
+            &mut self.max_cognitive_complexity,
+            other.max_cognitive_complexity,
+        );
+        merge_observed_metric(&mut self.max_branch_count, other.max_branch_count);
+        merge_observed_metric(
+            &mut self.max_early_return_count,
+            other.max_early_return_count,
+        );
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -171,6 +213,14 @@ pub(crate) fn suppressed_violations_hash(violations: &[SuppressedQualityViolatio
         bytes.push(b'\n');
     }
     crate::utils::hash_bytes(&bytes)
+}
+
+fn merge_observed_metric(slot: &mut Option<ObservedMetric>, candidate: Option<ObservedMetric>) {
+    match (slot.as_ref(), candidate) {
+        (_, None) => {}
+        (Some(current), Some(candidate)) if current.metric_value >= candidate.metric_value => {}
+        (_, Some(candidate)) => *slot = Some(candidate),
+    }
 }
 
 #[cfg(test)]

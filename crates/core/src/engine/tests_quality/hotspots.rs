@@ -1,4 +1,4 @@
-use super::{Engine, RuleViolationsOptions, temp_dir, write_project_file};
+use super::{Engine, RuleViolationsOptions, repeated_lines, temp_dir, write_project_file};
 use crate::model::{
     QualityHotspotAggregation, QualityHotspotsOptions, QualitySource, RuleViolationsSortBy,
 };
@@ -129,6 +129,85 @@ fn quality_hotspots_file_mode_reuses_file_risk_scores() -> anyhow::Result<()> {
 }
 
 #[test]
+fn rule_violations_and_hotspots_expose_complexity_contract() -> anyhow::Result<()> {
+    let root = temp_dir("rmu-quality-complexity-contract");
+    std::fs::create_dir_all(&root)?;
+    write_project_file(
+        &root,
+        "rmu-quality-policy.json",
+        r#"{"version":2,"thresholds":{"max_cyclomatic_complexity":2,"max_cognitive_complexity":2}}"#,
+    )?;
+    write_project_file(
+        &root,
+        "src/lib.rs",
+        "pub fn noisy(flag: bool, level: i32) -> i32 {\n    if flag {\n        if level > 0 {\n            return 1;\n        }\n    }\n    if level < 0 {\n        return -1;\n    }\n    return 0;\n}\n",
+    )?;
+
+    let engine = Engine::new(root.clone(), Some(root.join(".rmu/index.db")))?;
+    engine.index_path()?;
+
+    let violations = engine.rule_violations(&RuleViolationsOptions {
+        metric_ids: vec![
+            "max_cyclomatic_complexity".to_string(),
+            "max_cognitive_complexity".to_string(),
+            "max_branch_count".to_string(),
+            "max_early_return_count".to_string(),
+        ],
+        sort_metric_id: Some("max_cognitive_complexity".to_string()),
+        sort_by: RuleViolationsSortBy::MetricValue,
+        ..RuleViolationsOptions::default()
+    })?;
+    let hotspots = engine.quality_hotspots(&QualityHotspotsOptions::default())?;
+
+    let hit = violations
+        .hits
+        .iter()
+        .find(|hit| hit.path == "src/lib.rs")
+        .expect("complexity file hit should exist");
+    let bucket = hotspots
+        .buckets
+        .iter()
+        .find(|bucket| bucket.bucket_id == "src/lib.rs")
+        .expect("complexity hotspot bucket should exist");
+    let metric_ids = hit
+        .metrics
+        .iter()
+        .map(|metric| metric.metric_id.as_str())
+        .collect::<Vec<_>>();
+    let violation_ids = hit
+        .violations
+        .iter()
+        .map(|violation| violation.rule_id.as_str())
+        .collect::<Vec<_>>();
+    let risk_score = hit.risk_score.expect("risk_score should exist");
+    let bucket_risk = bucket.risk_score.expect("bucket risk score should exist");
+
+    assert!(metric_ids.contains(&"max_cyclomatic_complexity"));
+    assert!(metric_ids.contains(&"max_cognitive_complexity"));
+    assert!(metric_ids.contains(&"max_branch_count"));
+    assert!(metric_ids.contains(&"max_early_return_count"));
+    assert!(violation_ids.contains(&"max_cyclomatic_complexity"));
+    assert!(violation_ids.contains(&"max_cognitive_complexity"));
+    assert!(!violation_ids.contains(&"max_branch_count"));
+    assert!(!violation_ids.contains(&"max_early_return_count"));
+    assert_eq!(
+        hit.metrics
+            .iter()
+            .find(|metric| metric.metric_id == "max_cyclomatic_complexity")
+            .and_then(|metric| metric.source),
+        Some(QualitySource::ParserLight)
+    );
+    assert!(risk_score.components.complexity > 0.0);
+    assert_eq!(
+        bucket_risk.components.complexity,
+        risk_score.components.complexity
+    );
+
+    let _ = std::fs::remove_dir_all(root);
+    Ok(())
+}
+
+#[test]
 fn quality_hotspots_directory_and_module_modes_group_deterministically() -> anyhow::Result<()> {
     let root = temp_dir("rmu-quality-hotspots-aggregate");
     std::fs::create_dir_all(&root)?;
@@ -196,6 +275,48 @@ fn quality_hotspots_directory_and_module_modes_group_deterministically() -> anyh
             .iter()
             .any(|bucket| bucket.bucket_id == "unmatched")
     );
+
+    let _ = std::fs::remove_dir_all(root);
+    Ok(())
+}
+
+#[test]
+fn complexity_can_outrank_long_linear_files_in_hotspots() -> anyhow::Result<()> {
+    let root = temp_dir("rmu-quality-hotspots-complexity-ranking");
+    std::fs::create_dir_all(&root)?;
+    write_project_file(
+        &root,
+        "rmu-quality-policy.json",
+        r#"{
+            "version":2,
+            "thresholds":{
+                "max_non_empty_lines_default":50,
+                "max_cyclomatic_complexity":2,
+                "max_cognitive_complexity":2
+            }
+        }"#,
+    )?;
+    write_project_file(
+        &root,
+        "src/branchy.rs",
+        "pub fn branchy(flag: bool, level: i32) -> i32 {\n    if flag {\n        if level > 10 {\n            return 1;\n        }\n    }\n    if level < 0 {\n        return -1;\n    }\n    return 0;\n}\n",
+    )?;
+    write_project_file(
+        &root,
+        "src/linear.rs",
+        &repeated_lines("let value = 1;", 80),
+    )?;
+
+    let engine = Engine::new(root.clone(), Some(root.join(".rmu/index.db")))?;
+    engine.index_path()?;
+
+    let hotspots = engine.quality_hotspots(&QualityHotspotsOptions::default())?;
+    let top_bucket = hotspots
+        .buckets
+        .first()
+        .expect("at least one hotspot bucket should exist");
+
+    assert_eq!(top_bucket.bucket_id, "src/branchy.rs");
 
     let _ = std::fs::remove_dir_all(root);
     Ok(())

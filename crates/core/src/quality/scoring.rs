@@ -13,6 +13,7 @@ impl Default for QualityRiskScoreWeights {
             size: 1.0,
             nesting: 1.0,
             function_length: 1.0,
+            complexity: 1.25,
         }
     }
 }
@@ -27,7 +28,8 @@ pub(crate) fn compute_file_risk_score(
         + components.fan_out * weights.fan_out
         + components.size * weights.size
         + components.nesting * weights.nesting
-        + components.function_length * weights.function_length;
+        + components.function_length * weights.function_length
+        + components.complexity * weights.complexity;
     QualityRiskScoreBreakdown {
         score,
         components,
@@ -49,9 +51,16 @@ pub(crate) fn compute_hit_risk_score(hit: &RuleViolationFileHit) -> QualityRiskS
             size: hit.non_empty_lines.unwrap_or(0) as f64 / 100.0,
             nesting: metric_value(hit, "max_nesting_depth"),
             function_length: metric_value(hit, "max_function_lines") / 50.0,
+            complexity: complexity_component(hit),
         },
         QualityRiskScoreWeights::default(),
     )
+}
+
+fn complexity_component(hit: &RuleViolationFileHit) -> f64 {
+    let cyclomatic = metric_value(hit, "max_cyclomatic_complexity") / 6.0;
+    let cognitive = metric_value(hit, "max_cognitive_complexity") / 10.0;
+    cyclomatic.max(cognitive)
 }
 
 fn metric_value(hit: &RuleViolationFileHit, metric_id: &str) -> f64 {

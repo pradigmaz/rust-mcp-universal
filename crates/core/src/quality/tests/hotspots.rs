@@ -40,6 +40,14 @@ fn javascript_hotspots_emit_locations_and_sources() {
         .find(|metric| metric.metric_id == "max_nesting_depth")
         .expect("typescript nesting hotspot metric should exist");
     assert_eq!(nesting_metric.source, Some(QualitySource::ParserLight));
+
+    let cyclomatic_metric = evaluation
+        .snapshot
+        .metrics
+        .iter()
+        .find(|metric| metric.metric_id == "max_cyclomatic_complexity")
+        .expect("typescript cyclomatic metric should exist");
+    assert_eq!(cyclomatic_metric.source, Some(QualitySource::ParserLight));
 }
 
 #[test]

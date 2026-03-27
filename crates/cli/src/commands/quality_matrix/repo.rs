@@ -41,6 +41,13 @@ pub(super) fn run_repo(
             Some("graph_edge_out_count".to_string()),
         )
     })?;
+    let (by_complexity, complexity_ms) = timed(|| {
+        run_rule_violations(
+            &engine,
+            RuleViolationsSortBy::MetricValue,
+            Some("max_cognitive_complexity".to_string()),
+        )
+    })?;
     let (mut file_hotspots, file_hotspots_ms) =
         timed(|| hotspots::run_quality_hotspots(&engine, QualityHotspotAggregation::File))?;
     let (mut directory_hotspots, directory_hotspots_ms) =
@@ -95,6 +102,7 @@ pub(super) fn run_repo(
         &by_size_bytes,
         &by_non_empty_lines,
         &by_metric,
+        &by_complexity,
         &file_hotspots,
         &directory_hotspots,
         &module_hotspots,
@@ -107,6 +115,7 @@ pub(super) fn run_repo(
         size_bytes_ms,
         non_empty_lines_ms,
         metric_ms,
+        complexity_ms,
         file_hotspots_ms,
         directory_hotspots_ms,
         module_hotspots_ms,
@@ -125,6 +134,7 @@ pub(super) fn run_repo(
         by_size_bytes,
         by_non_empty_lines,
         by_metric_graph_edge_out_count: by_metric,
+        by_metric_max_cognitive_complexity: by_complexity,
         file_hotspots,
         directory_hotspots,
         module_hotspots,
@@ -143,6 +153,7 @@ fn build_repo_report(
     by_size_bytes: &RuleViolationsResult,
     by_non_empty_lines: &RuleViolationsResult,
     by_metric: &RuleViolationsResult,
+    by_complexity: &RuleViolationsResult,
     file_hotspots: &QualityHotspotsResult,
     directory_hotspots: &QualityHotspotsResult,
     module_hotspots: &QualityHotspotsResult,
@@ -155,6 +166,7 @@ fn build_repo_report(
     size_bytes_ms: u128,
     non_empty_lines_ms: u128,
     metric_ms: u128,
+    complexity_ms: u128,
     file_hotspots_ms: u128,
     directory_hotspots_ms: u128,
     module_hotspots_ms: u128,
@@ -196,6 +208,7 @@ fn build_repo_report(
             size_bytes: top_paths(by_size_bytes, 10),
             non_empty_lines: top_paths(by_non_empty_lines, 10),
             metric_graph_edge_out_count: top_paths(by_metric, 10),
+            metric_max_cognitive_complexity: top_paths(by_complexity, 10),
         },
         top_hotspot_buckets: report::QualityMatrixTopHotspotBuckets {
             file: hotspots::top_hotspot_bucket_ids(file_hotspots, 5),
@@ -211,6 +224,7 @@ fn build_repo_report(
             size_bytes_ms,
             non_empty_lines_ms,
             metric_graph_edge_out_count_ms: metric_ms,
+            metric_max_cognitive_complexity_ms: complexity_ms,
             file_hotspots_ms,
             directory_hotspots_ms,
             module_hotspots_ms,
@@ -241,6 +255,8 @@ fn build_repo_report(
             violations_by_non_empty_lines: "violations.by_non_empty_lines.json".to_string(),
             violations_by_metric_graph_edge_out_count:
                 "violations.by_metric_graph_edge_out_count.json".to_string(),
+            violations_by_metric_max_cognitive_complexity:
+                "violations.by_metric_max_cognitive_complexity.json".to_string(),
             file_hotspots: "hotspots.file.json".to_string(),
             directory_hotspots: "hotspots.directory.json".to_string(),
             module_hotspots: "hotspots.module.json".to_string(),
