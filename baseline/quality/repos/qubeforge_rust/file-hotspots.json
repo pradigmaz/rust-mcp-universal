@@ -1,0 +1,1135 @@
+{
+  "version": 1,
+  "repo_id": "qubeforge_rust",
+  "aggregation": "file",
+  "buckets": [
+    {
+      "bucket_id": "crates/qf_sandbox/src/lib.rs",
+      "hotspot_score": 75.31,
+      "active_violation_count": 9,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 75.31,
+        "components": {
+          "violation_count": 9.0,
+          "severity": 23.0,
+          "fan_in": 6.0,
+          "fan_out": 12.0,
+          "size": 10.97,
+          "nesting": 5.0,
+          "function_length": 2.34,
+          "complexity": 5.6
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_import_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_nesting_depth",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_sandbox/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_world/src/world.rs",
+      "hotspot_score": 55.056666666666665,
+      "active_violation_count": 7,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 55.056666666666665,
+        "components": {
+          "violation_count": 7.0,
+          "severity": 17.0,
+          "fan_in": 8.0,
+          "fan_out": 7.0,
+          "size": 7.24,
+          "nesting": 4.0,
+          "function_length": 1.9,
+          "complexity": 2.3333333333333335
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_export_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_world/src/world.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_world/src/mesh.rs",
+      "hotspot_score": 52.4,
+      "active_violation_count": 7,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 52.4,
+        "components": {
+          "violation_count": 7.0,
+          "severity": 17.0,
+          "fan_in": 5.0,
+          "fan_out": 5.0,
+          "size": 3.4,
+          "nesting": 7.0,
+          "function_length": 2.5,
+          "complexity": 4.4
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_nesting_depth",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_world/src/mesh.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_render/src/lib.rs",
+      "hotspot_score": 48.02333333333334,
+      "active_violation_count": 6,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 48.02333333333334,
+        "components": {
+          "violation_count": 6.0,
+          "severity": 18.0,
+          "fan_in": 4.0,
+          "fan_out": 5.0,
+          "size": 6.31,
+          "nesting": 2.0,
+          "function_length": 3.38,
+          "complexity": 2.6666666666666665
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_render/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_content/src/lib.rs",
+      "hotspot_score": 39.94166666666666,
+      "active_violation_count": 6,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 39.94166666666666,
+        "components": {
+          "violation_count": 6.0,
+          "severity": 13.0,
+          "fan_in": 6.0,
+          "fan_out": 6.0,
+          "size": 4.14,
+          "nesting": 2.0,
+          "function_length": 1.76,
+          "complexity": 0.8333333333333334
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_export_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_content/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_platform/src/lib.rs",
+      "hotspot_score": 33.778333333333336,
+      "active_violation_count": 4,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 33.778333333333336,
+        "components": {
+          "violation_count": 4.0,
+          "severity": 14.0,
+          "fan_in": 1.0,
+          "fan_out": 4.0,
+          "size": 2.74,
+          "nesting": 3.0,
+          "function_length": 1.08,
+          "complexity": 3.1666666666666665
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_platform/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_game/src/lib.rs",
+      "hotspot_score": 26.335,
+      "active_violation_count": 4,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 26.335,
+        "components": {
+          "violation_count": 4.0,
+          "severity": 10.0,
+          "fan_in": 3.0,
+          "fan_out": 3.0,
+          "size": 3.77,
+          "nesting": 1.0,
+          "function_length": 0.94,
+          "complexity": 0.5
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_export_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_game/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_save/src/lib.rs",
+      "hotspot_score": 18.806666666666665,
+      "active_violation_count": 2,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 18.806666666666665,
+        "components": {
+          "violation_count": 2.0,
+          "severity": 6.0,
+          "fan_in": 1.0,
+          "fan_out": 3.0,
+          "size": 2.26,
+          "nesting": 2.0,
+          "function_length": 0.88,
+          "complexity": 1.3333333333333333
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_save/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_world/src/generator.rs",
+      "hotspot_score": 17.293333333333333,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 17.293333333333333,
+        "components": {
+          "violation_count": 1.0,
+          "severity": 4.0,
+          "fan_in": 2.0,
+          "fan_out": 4.0,
+          "size": 1.0,
+          "nesting": 4.0,
+          "function_length": 0.46,
+          "complexity": 0.6666666666666666
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_world/src/generator.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_core/src/ids.rs",
+      "hotspot_score": 13.498333333333335,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 13.498333333333335,
+        "components": {
+          "violation_count": 1.0,
+          "severity": 4.0,
+          "fan_in": 6.0,
+          "fan_out": 2.0,
+          "size": 0.23,
+          "nesting": 0.0,
+          "function_length": 0.06,
+          "complexity": 0.16666666666666666
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_core/src/ids.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_core/src/math.rs",
+      "hotspot_score": 11.468333333333334,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 11.468333333333334,
+        "components": {
+          "violation_count": 1.0,
+          "severity": 2.0,
+          "fan_in": 7.0,
+          "fan_out": 0.0,
+          "size": 0.98,
+          "nesting": 0.0,
+          "function_length": 0.28,
+          "complexity": 0.16666666666666666
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_export_count_per_file",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_core/src/math.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_core/src/diagnostics.rs",
+      "hotspot_score": 8.993333333333334,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 8.993333333333334,
+        "components": {
+          "violation_count": 1.0,
+          "severity": 2.0,
+          "fan_in": 3.0,
+          "fan_out": 0.0,
+          "size": 0.74,
+          "nesting": 1.0,
+          "function_length": 0.42,
+          "complexity": 0.6666666666666666
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_export_count_per_file",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_core/src/diagnostics.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "apps/qf_desktop/src/main.rs",
+      "hotspot_score": 8.355,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 8.355,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 1.0,
+          "size": 1.39,
+          "nesting": 3.0,
+          "function_length": 0.84,
+          "complexity": 1.7
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "apps/qf_desktop/src/main.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_core/src/lib.rs",
+      "hotspot_score": 6.12,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 6.12,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 6.0,
+          "size": 0.12,
+          "nesting": 0.0,
+          "function_length": 0.0,
+          "complexity": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_core/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "apps/qf_android/src/lib.rs",
+      "hotspot_score": 5.95,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 5.95,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 1.0,
+          "size": 1.16,
+          "nesting": 2.0,
+          "function_length": 0.54,
+          "complexity": 1.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "apps/qf_android/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_core/src/engine.rs",
+      "hotspot_score": 5.678333333333333,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 5.678333333333333,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 5.0,
+          "fan_out": 0.0,
+          "size": 0.41,
+          "nesting": 0.0,
+          "function_length": 0.06,
+          "complexity": 0.16666666666666666
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_core/src/engine.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_core/src/save.rs",
+      "hotspot_score": 4.698333333333333,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 4.698333333333333,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 4.0,
+          "fan_out": 0.0,
+          "size": 0.29,
+          "nesting": 0.0,
+          "function_length": 0.2,
+          "complexity": 0.16666666666666666
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_core/src/save.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_core/src/config.rs",
+      "hotspot_score": 4.258333333333333,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 4.258333333333333,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 2.0,
+          "fan_out": 0.0,
+          "size": 0.47,
+          "nesting": 1.0,
+          "function_length": 0.58,
+          "complexity": 0.16666666666666666
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_core/src/config.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "tools/content_bake/src/main.rs",
+      "hotspot_score": 3.3466666666666667,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 3.3466666666666667,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 1.0,
+          "size": 0.33,
+          "nesting": 1.0,
+          "function_length": 0.6,
+          "complexity": 0.3333333333333333
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "tools/content_bake/src/main.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_world/src/lib.rs",
+      "hotspot_score": 3.09,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 3.09,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 3.0,
+          "size": 0.09,
+          "nesting": 0.0,
+          "function_length": 0.0,
+          "complexity": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_world/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    }
+  ]
+}

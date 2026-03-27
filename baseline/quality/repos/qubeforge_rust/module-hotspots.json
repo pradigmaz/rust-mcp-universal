@@ -1,0 +1,651 @@
+{
+  "version": 1,
+  "repo_id": "qubeforge_rust",
+  "aggregation": "module",
+  "buckets": [
+    {
+      "bucket_id": "crates/qf_world/src",
+      "hotspot_score": 133.84,
+      "active_violation_count": 15,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 3
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_export_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_nesting_depth",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 3,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_world/src/world.rs",
+        "crates/qf_world/src/mesh.rs",
+        "crates/qf_world/src/generator.rs",
+        "crates/qf_world/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_sandbox/src",
+      "hotspot_score": 77.31,
+      "active_violation_count": 9,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_import_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_nesting_depth",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_sandbox/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_render/src",
+      "hotspot_score": 50.02333333333334,
+      "active_violation_count": 6,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_render/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_core/src",
+      "hotspot_score": 49.75833333333333,
+      "active_violation_count": 3,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_export_count_per_file",
+          "violations": 2
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_core/src/ids.rs",
+        "crates/qf_core/src/math.rs",
+        "crates/qf_core/src/diagnostics.rs",
+        "crates/qf_core/src/lib.rs",
+        "crates/qf_core/src/engine.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_content/src",
+      "hotspot_score": 41.94166666666666,
+      "active_violation_count": 6,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_export_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_content/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_platform/src",
+      "hotspot_score": 35.778333333333336,
+      "active_violation_count": 4,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_platform/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_game/src",
+      "hotspot_score": 28.335,
+      "active_violation_count": 4,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_export_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_game/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_save/src",
+      "hotspot_score": 20.806666666666665,
+      "active_violation_count": 2,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_save/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "apps/qf_desktop/src",
+      "hotspot_score": 8.355,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "apps/qf_desktop/src/main.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "apps/qf_android/src",
+      "hotspot_score": 5.95,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "apps/qf_android/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "tools/content_bake/src",
+      "hotspot_score": 3.3466666666666667,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "tools/content_bake/src/main.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": ".",
+      "hotspot_score": 0.56,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "Cargo.toml",
+        "rust-toolchain.toml"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_sandbox",
+      "hotspot_score": 0.26,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_sandbox/Cargo.toml"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_render",
+      "hotspot_score": 0.21,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_render/Cargo.toml"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_world",
+      "hotspot_score": 0.19,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_world/Cargo.toml"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "apps/qf_android",
+      "hotspot_score": 0.18,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "apps/qf_android/Cargo.toml"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_save",
+      "hotspot_score": 0.18,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_save/Cargo.toml"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_content",
+      "hotspot_score": 0.17,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_content/Cargo.toml"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "apps/qf_desktop",
+      "hotspot_score": 0.15,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "apps/qf_desktop/Cargo.toml"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_core",
+      "hotspot_score": 0.13,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_core/Cargo.toml"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    }
+  ]
+}

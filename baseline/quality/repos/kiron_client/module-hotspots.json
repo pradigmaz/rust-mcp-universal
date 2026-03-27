@@ -1,0 +1,644 @@
+{
+  "version": 1,
+  "repo_id": "kiron_client",
+  "aggregation": "module",
+  "buckets": [
+    {
+      "bucket_id": "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render",
+      "hotspot_score": 106.84833333333334,
+      "active_violation_count": 9,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 5
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 2
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 5,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleESP.java",
+        "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleXRayClassic.java",
+        "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleTorchHelper.java",
+        "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleXRay.java",
+        "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleFullbright.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/veinmining/src/main/java/org/mine/veinmining/optimized",
+      "hotspot_score": 80.91166666666666,
+      "active_violation_count": 4,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 4
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 4,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/veinmining/src/main/java/org/mine/veinmining/optimized/PositionSet.java",
+        "mods/veinmining/src/main/java/org/mine/veinmining/optimized/TaskScheduler.java",
+        "mods/veinmining/src/main/java/org/mine/veinmining/optimized/BlockCache.java",
+        "mods/veinmining/src/main/java/org/mine/veinmining/optimized/VeinMiningExecutor.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui",
+      "hotspot_score": 66.70666666666666,
+      "active_violation_count": 9,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_line_length",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 2
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 2,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiMain.java",
+        "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiEspColors.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/kiron_client/src/client/java/org/kiron/kiron_client/client",
+      "hotspot_score": 57.001666666666665,
+      "active_violation_count": 3,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 3
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 3,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/ModuleSettingsStore.java",
+        "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/InputHandler.java",
+        "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/KironClient.java",
+        "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/Kiron_clientClient.java",
+        "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/Kiron_clientDataGenerator.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/veinmining/src/main/java/org/mine/veinmining/network/packet",
+      "hotspot_score": 51.483333333333334,
+      "active_violation_count": 4,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 4
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 4,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/veinmining/src/main/java/org/mine/veinmining/network/packet/VeinMineRequestPacket.java",
+        "mods/veinmining/src/main/java/org/mine/veinmining/network/packet/VeinMineResultPacket.java",
+        "mods/veinmining/src/main/java/org/mine/veinmining/network/packet/VeinMiningStatePacket.java",
+        "mods/veinmining/src/main/java/org/mine/veinmining/network/packet/VeinMineStartPacket.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/veinmining/src/main/java/org/mine/veinmining/network/request",
+      "hotspot_score": 48.629999999999995,
+      "active_violation_count": 3,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 3
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 3,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/veinmining/src/main/java/org/mine/veinmining/network/request/VeinMineRequestValidator.java",
+        "mods/veinmining/src/main/java/org/mine/veinmining/network/request/VeinMineRequestHandler.java",
+        "mods/veinmining/src/main/java/org/mine/veinmining/network/request/VeinMineRequestLifecycle.java",
+        "mods/veinmining/src/main/java/org/mine/veinmining/network/request/VeinMineRequestValidationResult.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/veinmining/src/main/java/org/mine/veinmining/util",
+      "hotspot_score": 44.974999999999994,
+      "active_violation_count": 3,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 3
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 3,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/veinmining/src/main/java/org/mine/veinmining/util/ToolValidator.java",
+        "mods/veinmining/src/main/java/org/mine/veinmining/util/OreTagHelper.java",
+        "mods/veinmining/src/main/java/org/mine/veinmining/util/TreeDetectionHelper.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/veinmining/src/main/java/org/mine/veinmining/logic/flow",
+      "hotspot_score": 42.370000000000005,
+      "active_violation_count": 3,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 2,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/veinmining/src/main/java/org/mine/veinmining/logic/flow/TreeChoppingFlow.java",
+        "mods/veinmining/src/main/java/org/mine/veinmining/logic/flow/VeinMiningFlow.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/veinmining/src/main/java/org/mine/veinmining",
+      "hotspot_score": 41.568333333333335,
+      "active_violation_count": 2,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_fan_in_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/veinmining/src/main/java/org/mine/veinmining/VeinMiningMod.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/veinmining/src/main/java/org/mine/veinmining/logic",
+      "hotspot_score": 39.04333333333334,
+      "active_violation_count": 2,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 2
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 2,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/veinmining/src/main/java/org/mine/veinmining/logic/VeinMinerLogic.java",
+        "mods/veinmining/src/main/java/org/mine/veinmining/logic/BlockBreakHandler.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/veinmining/src/main/java/org/mine/veinmining/network/registrar",
+      "hotspot_score": 34.91,
+      "active_violation_count": 3,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 3
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 3,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/veinmining/src/main/java/org/mine/veinmining/network/registrar/PayloadTypeRegistrar.java",
+        "mods/veinmining/src/main/java/org/mine/veinmining/network/registrar/ServerReceiverRegistrar.java",
+        "mods/veinmining/src/main/java/org/mine/veinmining/network/registrar/ClientReceiverRegistrar.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/veinmining/src/client/java/org/mine/veinmining/client/render",
+      "hotspot_score": 31.060000000000002,
+      "active_violation_count": 3,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/veinmining/src/client/java/org/mine/veinmining/client/render/HudRenderer.java",
+        "mods/veinmining/src/client/java/org/mine/veinmining/client/render/ParticleEffects.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/veinmining/src/main/java/org/mine/veinmining/config",
+      "hotspot_score": 30.906666666666666,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/veinmining/src/main/java/org/mine/veinmining/config/VeinMiningConfig.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/veinmining/src/main/java/org/mine/veinmining/logic/search",
+      "hotspot_score": 25.759999999999998,
+      "active_violation_count": 3,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/veinmining/src/main/java/org/mine/veinmining/logic/search/BlockSearchHelper.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules",
+      "hotspot_score": 19.441666666666666,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/Module.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/config",
+      "hotspot_score": 18.68,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/config/EspMobColorStore.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/veinmining/src/client/java/org/mine/veinmining/client",
+      "hotspot_score": 17.564999999999998,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/veinmining/src/client/java/org/mine/veinmining/client/VeinMiningClient.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/veinmining/src/main/java/org/mine/veinmining/logic/processing",
+      "hotspot_score": 15.433333333333334,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/veinmining/src/main/java/org/mine/veinmining/logic/processing/BlockMiningProcessor.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/veinmining/src/main/java/org/mine/veinmining/state",
+      "hotspot_score": 14.785,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/veinmining/src/main/java/org/mine/veinmining/state/PlayerStateManager.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "mods/veinmining/src/main/java/org/mine/veinmining/network",
+      "hotspot_score": 12.518333333333334,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "mods/veinmining/src/main/java/org/mine/veinmining/network/ModNetworking.java"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    }
+  ]
+}

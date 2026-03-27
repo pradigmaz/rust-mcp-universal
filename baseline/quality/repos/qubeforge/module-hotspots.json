@@ -1,0 +1,896 @@
+{
+  "version": 1,
+  "repo_id": "qubeforge",
+  "aggregation": "module",
+  "buckets": [
+    {
+      "bucket_id": "src/world/generation/runtime",
+      "hotspot_score": 195.72833333333332,
+      "active_violation_count": 18,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_function_lines",
+          "violations": 5
+        },
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 4
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 3
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 3
+        },
+        {
+          "rule_id": "max_nesting_depth",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 3,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/world/generation/runtime/GenerateChunk.ts",
+        "src/world/generation/runtime/GenerateChunk.test.ts",
+        "src/world/generation/runtime/BiomeSurfaceRules.ts",
+        "src/world/generation/runtime/BiomeQuality.test.ts",
+        "src/world/generation/runtime/BiomeSampler.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/core",
+      "hotspot_score": 147.12166666666667,
+      "active_violation_count": 14,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 4
+        },
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_class_member_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_fan_out_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_import_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 4,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/core/Game.ts",
+        "src/core/GameUpdate.ts",
+        "src/core/GameLoop.ts",
+        "src/core/GameRender.ts",
+        "src/core/GameToolUse.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/world/generation",
+      "hotspot_score": 132.35666666666665,
+      "active_violation_count": 11,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 4
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 4
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 4,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/world/generation/StructureGenerator.ts",
+        "src/world/generation/TextureAtlas.ts",
+        "src/world/generation/TerrainGenerator.ts",
+        "src/world/generation/TextureSlots.ts",
+        "src/world/generation/ChunkGenerator.test.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/crafting",
+      "hotspot_score": 121.565,
+      "active_violation_count": 10,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_nesting_depth",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_class_member_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/crafting/CraftingSystem.ts",
+        "src/crafting/FurnaceUI.ts",
+        "src/crafting/MobileCraftingList.ts",
+        "src/crafting/FurnaceManager.ts",
+        "src/crafting/CraftingUI.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/mobs",
+      "hotspot_score": 115.04166666666667,
+      "active_violation_count": 9,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_function_lines",
+          "violations": 3
+        },
+        {
+          "rule_id": "max_class_member_count",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/mobs/WildBoar.ts",
+        "src/mobs/Mob.ts",
+        "src/mobs/MobManager.ts",
+        "src/mobs/ChunkErrorMob.ts",
+        "src/mobs/Zombie.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/world/chunks",
+      "hotspot_score": 105.78833333333333,
+      "active_violation_count": 8,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_class_member_count",
+          "violations": 3
+        },
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/world/chunks/ChunkMeshBuilder.ts",
+        "src/world/chunks/ChunkManager.ts",
+        "src/world/chunks/ChunkLoader.ts",
+        "src/world/chunks/ChunkGenerationQueue.ts",
+        "src/world/chunks/ChunkPersistence.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/ui/menus",
+      "hotspot_score": 102.89999999999999,
+      "active_violation_count": 12,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 9
+        },
+        {
+          "rule_id": "max_export_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 9,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/ui/menus/listeners.ts",
+        "src/ui/menus/types.ts",
+        "src/ui/menus/gameStart.ts",
+        "src/ui/menus/worldActions.ts",
+        "src/ui/menus/index.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/player",
+      "hotspot_score": 100.94333333333333,
+      "active_violation_count": 8,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_class_member_count",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/player/PlayerHand.ts",
+        "src/player/PlayerPhysics.ts",
+        "src/player/Player.ts",
+        "src/player/PlayerCombat.ts",
+        "src/player/PlayerHealth.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/ui",
+      "hotspot_score": 87.05,
+      "active_violation_count": 5,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_class_member_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/ui/Menus.ts",
+        "src/ui/CLI.ts",
+        "src/ui/InventoryController.ts",
+        "src/ui/SaveCoordinator.ts",
+        "src/ui/Menus.test.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/contracts",
+      "hotspot_score": 82.66,
+      "active_violation_count": 2,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_fan_in_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/contracts/world.ts",
+        "src/contracts/inventory.ts",
+        "src/contracts/crafting.ts",
+        "src/contracts/controls.ts",
+        "src/contracts/game.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/utils",
+      "hotspot_score": 75.495,
+      "active_violation_count": 4,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_class_member_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/utils/BlockColors.ts",
+        "src/utils/FeatureToggles.ts",
+        "src/utils/Profiler.test.ts",
+        "src/utils/Rng.ts",
+        "src/utils/PerformanceProfiler.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/blocks",
+      "hotspot_score": 75.14166666666668,
+      "active_violation_count": 6,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_class_member_count",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_nesting_depth",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/blocks/BlockInteraction.ts",
+        "src/blocks/BlockBreaking.ts",
+        "src/blocks/BlockCursor.ts",
+        "src/blocks/BlockDropHandler.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/initialization",
+      "hotspot_score": 67.325,
+      "active_violation_count": 6,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_fan_out_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_import_count",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/initialization/GameInitializer.ts",
+        "src/initialization/NoiseGenerator.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/world/perf",
+      "hotspot_score": 65.88499999999999,
+      "active_violation_count": 3,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 3
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 3,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/world/perf/ChunkMeshDataBuilder.bench.ts",
+        "src/world/perf/ChunkGenerator.bench.ts",
+        "src/world/perf/StructureGenerator.bench.ts",
+        "src/world/perf/PerfProfile.ts",
+        "src/world/perf/PerfProfile.test.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/inventory",
+      "hotspot_score": 63.68333333333334,
+      "active_violation_count": 5,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_class_member_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/inventory/InventoryUI.ts",
+        "src/inventory/Inventory.ts",
+        "src/inventory/DragDrop.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/world",
+      "hotspot_score": 62.71333333333334,
+      "active_violation_count": 6,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_class_member_count",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/world/World.ts",
+        "src/world/Environment.ts",
+        "src/world/WorldCreation.test.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/input",
+      "hotspot_score": 53.199999999999996,
+      "active_violation_count": 3,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/input/KeyboardHandler.ts",
+        "src/input/MouseHandler.ts",
+        "src/input/PointerLockHandler.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/inventory/ui",
+      "hotspot_score": 50.775,
+      "active_violation_count": 2,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/inventory/ui/interactions.ts",
+        "src/inventory/ui/visuals.ts",
+        "src/inventory/ui/slots.ts",
+        "src/inventory/ui/types.ts",
+        "src/inventory/ui/index.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/entities",
+      "hotspot_score": 46.01333333333333,
+      "active_violation_count": 2,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 2
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/entities/ItemEntity.ts",
+        "src/entities/ItemPhysics.test.ts",
+        "src/entities/ItemPhysics.ts",
+        "src/entities/ItemRenderer.ts",
+        "src/entities/ItemEntity.test.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/world/generation/decorators",
+      "hotspot_score": 41.833333333333336,
+      "active_violation_count": 2,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_nesting_depth",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/world/generation/decorators/CaveDecorator.ts",
+        "src/world/generation/decorators/StructureDecorator.ts",
+        "src/world/generation/decorators/BiomeDecorator.ts",
+        "src/world/generation/decorators/PostProcessDecorator.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    }
+  ]
+}

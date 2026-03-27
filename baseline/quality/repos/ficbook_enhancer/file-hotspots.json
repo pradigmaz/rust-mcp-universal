@@ -1,0 +1,774 @@
+{
+  "version": 1,
+  "repo_id": "ficbook_enhancer",
+  "aggregation": "file",
+  "buckets": [
+    {
+      "bucket_id": "src/App.jsx",
+      "hotspot_score": 44.346666666666664,
+      "active_violation_count": 5,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 44.346666666666664,
+        "components": {
+          "violation_count": 5.0,
+          "severity": 13.0,
+          "fan_in": 1.0,
+          "fan_out": 3.0,
+          "size": 3.83,
+          "nesting": 3.0,
+          "function_length": 7.6,
+          "complexity": 6.333333333333333
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/App.jsx"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/popup/Popup.jsx",
+      "hotspot_score": 10.629999999999999,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 10.629999999999999,
+        "components": {
+          "violation_count": 1.0,
+          "severity": 2.0,
+          "fan_in": 1.0,
+          "fan_out": 0.0,
+          "size": 1.1,
+          "nesting": 2.0,
+          "function_length": 2.28,
+          "complexity": 1.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/popup/Popup.jsx"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/features/theming.js",
+      "hotspot_score": 9.216666666666667,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 9.216666666666667,
+        "components": {
+          "violation_count": 1.0,
+          "severity": 2.0,
+          "fan_in": 1.0,
+          "fan_out": 0.0,
+          "size": 0.79,
+          "nesting": 1.0,
+          "function_length": 1.76,
+          "complexity": 1.3333333333333333
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/features/theming.js"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/features/storage.js",
+      "hotspot_score": 3.1866666666666665,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 3.1866666666666665,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 1.0,
+          "fan_out": 0.0,
+          "size": 0.45,
+          "nesting": 1.0,
+          "function_length": 0.32,
+          "complexity": 0.3333333333333333
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/features/storage.js"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/features/selectors.js",
+      "hotspot_score": 3.1849999999999996,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 3.1849999999999996,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 1.0,
+          "fan_out": 0.0,
+          "size": 0.3,
+          "nesting": 1.0,
+          "function_length": 0.26,
+          "complexity": 0.5
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/features/selectors.js"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/styles/index.css",
+      "hotspot_score": 3.0,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 3.0,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 0.0,
+          "size": 3.0,
+          "nesting": 0.0,
+          "function_length": 0.0,
+          "complexity": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/styles/index.css"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/content/index.jsx",
+      "hotspot_score": 1.25,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 1.25,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 1.0,
+          "size": 0.25,
+          "nesting": 0.0,
+          "function_length": 0.0,
+          "complexity": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/content/index.jsx"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/popup/main.jsx",
+      "hotspot_score": 1.09,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 1.09,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 1.0,
+          "size": 0.09,
+          "nesting": 0.0,
+          "function_length": 0.0,
+          "complexity": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/popup/main.jsx"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "tailwind.config.js",
+      "hotspot_score": 0.41,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 0.41,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 0.0,
+          "size": 0.41,
+          "nesting": 0.0,
+          "function_length": 0.0,
+          "complexity": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "tailwind.config.js"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "vite.config.js",
+      "hotspot_score": 0.4,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 0.4,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 0.0,
+          "size": 0.4,
+          "nesting": 0.0,
+          "function_length": 0.0,
+          "complexity": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "vite.config.js"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "package.json",
+      "hotspot_score": 0.33,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 0.33,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 0.0,
+          "size": 0.33,
+          "nesting": 0.0,
+          "function_length": 0.0,
+          "complexity": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "package.json"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "eslint.config.js",
+      "hotspot_score": 0.28,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 0.28,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 0.0,
+          "size": 0.28,
+          "nesting": 0.0,
+          "function_length": 0.0,
+          "complexity": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "eslint.config.js"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/manifest.js",
+      "hotspot_score": 0.25,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 0.25,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 0.0,
+          "size": 0.25,
+          "nesting": 0.0,
+          "function_length": 0.0,
+          "complexity": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/manifest.js"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "index.html",
+      "hotspot_score": 0.13,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 0.13,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 0.0,
+          "size": 0.13,
+          "nesting": 0.0,
+          "function_length": 0.0,
+          "complexity": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "index.html"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "src/popup/index.html",
+      "hotspot_score": 0.12,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 0.12,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 0.0,
+          "size": 0.12,
+          "nesting": 0.0,
+          "function_length": 0.0,
+          "complexity": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "src/popup/index.html"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "postcss.config.js",
+      "hotspot_score": 0.06,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 0.06,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 0.0,
+          "fan_out": 0.0,
+          "size": 0.06,
+          "nesting": 0.0,
+          "function_length": 0.0,
+          "complexity": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "postcss.config.js"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    }
+  ]
+}
