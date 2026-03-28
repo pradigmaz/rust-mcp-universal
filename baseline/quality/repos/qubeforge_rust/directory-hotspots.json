@@ -5,13 +5,21 @@
   "buckets": [
     {
       "bucket_id": "crates/qf_world/src",
-      "hotspot_score": 133.84,
-      "active_violation_count": 15,
+      "hotspot_score": 168.79000000000002,
+      "active_violation_count": 19,
       "suppressed_violation_count": 0,
       "rule_counts": [
         {
           "rule_id": "module_cycle_member",
           "violations": 3
+        },
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 2
         },
         {
           "rule_id": "max_function_lines",
@@ -68,8 +76,8 @@
     },
     {
       "bucket_id": "crates/qf_sandbox/src",
-      "hotspot_score": 77.31,
-      "active_violation_count": 9,
+      "hotspot_score": 97.66,
+      "active_violation_count": 11,
       "suppressed_violation_count": 0,
       "rule_counts": [
         {
@@ -78,6 +86,14 @@
         },
         {
           "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
           "violations": 1
         },
         {
@@ -116,6 +132,62 @@
       },
       "top_files": [
         "crates/qf_sandbox/src/lib.rs"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "crates/qf_content/src",
+      "hotspot_score": 58.84166666666666,
+      "active_violation_count": 8,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_export_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "crates/qf_content/src/lib.rs"
       ],
       "delta": {
         "new_violations": 0,
@@ -200,54 +272,6 @@
         "crates/qf_core/src/diagnostics.rs",
         "crates/qf_core/src/lib.rs",
         "crates/qf_core/src/engine.rs"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "crates/qf_content/src",
-      "hotspot_score": 41.94166666666666,
-      "active_violation_count": 6,
-      "suppressed_violation_count": 0,
-      "rule_counts": [
-        {
-          "rule_id": "max_export_count_per_file",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_function_lines",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_line_length",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_non_empty_lines_default",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_ref_count_per_file",
-          "violations": 1
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 1,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "crates/qf_content/src/lib.rs"
       ],
       "delta": {
         "new_violations": 0,

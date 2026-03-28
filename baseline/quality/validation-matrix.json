@@ -17,14 +17,14 @@
       "artifact_bundle": ["default"]
     },
     {
-      "id": "ficbook_enhancer",
-      "role": "browser-extension-js",
-      "path_key": "ficbook_enhancer_path",
+      "id": "manhwa_manager",
+      "role": "python-manager-app",
+      "path_key": "manhwa_manager_path",
       "required": true,
       "profile": "mixed",
       "include_paths": [],
       "exclude_paths": [],
-      "expected_languages": ["javascript"],
+      "expected_languages": ["python"],
       "size_class": "medium",
       "expected_pre_refresh_statuses": ["ready", "stale"],
       "expected_post_refresh_statuses": ["ready"],

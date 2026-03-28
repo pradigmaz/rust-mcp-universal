@@ -4,6 +4,66 @@
   "aggregation": "module",
   "buckets": [
     {
+      "bucket_id": "backend/app/api/v1/endpoints",
+      "hotspot_score": 312.0083333333333,
+      "active_violation_count": 59,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 31
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 8
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 7
+        },
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 6
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 4
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_import_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 7,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "backend/app/api/v1/endpoints/admin_labs.py",
+        "backend/app/api/v1/endpoints/admin_audit.py",
+        "backend/app/api/v1/endpoints/admin_lectures.py",
+        "backend/app/api/v1/endpoints/admin_schedule.py",
+        "backend/app/api/v1/endpoints/admin_lab_queue.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
       "bucket_id": "frontend/src/components/ui",
       "hotspot_score": 305.02166666666665,
       "active_violation_count": 99,
@@ -164,6 +224,114 @@
       }
     },
     {
+      "bucket_id": "frontend/src/components/lectures",
+      "hotspot_score": 255.09499999999997,
+      "active_violation_count": 33,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 11
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 8
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 3
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 3
+        },
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_import_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "frontend/src/components/lectures/CodeBlockComponent.tsx",
+        "frontend/src/components/lectures/CodeBlockViewerComponent.tsx",
+        "frontend/src/components/lectures/LectureEditor.tsx",
+        "frontend/src/components/lectures/SnippetComponent.tsx",
+        "frontend/src/components/lectures/ImageComponent.tsx"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "backend/alembic/versions",
+      "hotspot_score": 232.51833333333335,
+      "active_violation_count": 96,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 74
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 13
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 8
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "backend/alembic/versions/017_add_schedule_and_lessons.py",
+        "backend/alembic/versions/073_add_announcements.py",
+        "backend/alembic/versions/030_add_group_reports.py",
+        "backend/alembic/versions/061_add_rate_limit_warnings.py",
+        "backend/alembic/versions/069_add_feedback_table.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
       "bucket_id": "frontend/src/components/admin",
       "hotspot_score": 228.72666666666666,
       "active_violation_count": 31,
@@ -213,6 +381,102 @@
         "frontend/src/components/admin/AttestationSettingsForm.tsx",
         "frontend/src/components/admin/AddActivityDialog.tsx",
         "frontend/src/components/admin/OnboardingDialog.tsx"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "frontend/src/lib",
+      "hotspot_score": 219.53144999999998,
+      "active_violation_count": 9,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_line_length",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_fan_in_per_file",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "frontend/src/lib/utils.ts",
+        "frontend/src/lib/lectures-api.ts",
+        "frontend/src/lib/schedule-constants.ts",
+        "frontend/src/lib/glass-utils.ts",
+        "frontend/src/lib/get-strict-context.tsx"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "frontend/src/lib/api/types",
+      "hotspot_score": 207.13275,
+      "active_violation_count": 10,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 4
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 3
+        },
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_fan_in_per_file",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 4,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "frontend/src/lib/api/types/reports.ts",
+        "frontend/src/lib/api/types/student.ts",
+        "frontend/src/lib/api/types/labs.ts",
+        "frontend/src/lib/api/types/attestation.ts",
+        "frontend/src/lib/api/types/auth.ts"
       ],
       "delta": {
         "new_violations": 0,
@@ -276,17 +540,29 @@
       }
     },
     {
-      "bucket_id": "frontend/src/lib",
-      "hotspot_score": 182.28499999999997,
-      "active_violation_count": 7,
+      "bucket_id": "backend/app/services",
+      "hotspot_score": 173.63666666666666,
+      "active_violation_count": 38,
       "suppressed_violation_count": 0,
       "rule_counts": [
         {
           "rule_id": "max_graph_edge_out_count",
+          "violations": 24
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 3
+        },
+        {
+          "rule_id": "max_duplicate_block_count",
           "violations": 2
         },
         {
           "rule_id": "max_line_length",
+          "violations": 2
+        },
+        {
+          "rule_id": "module_cycle_member",
           "violations": 2
         },
         {
@@ -298,21 +574,29 @@
           "violations": 1
         },
         {
-          "rule_id": "max_fan_in_per_file",
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_nesting_depth",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
           "violations": 1
         }
       ],
       "structural_signals": {
-        "module_cycle_member": 0,
+        "module_cycle_member": 2,
         "hub_module": 0,
         "cross_layer_dependency": 0
       },
       "top_files": [
-        "frontend/src/lib/utils.ts",
-        "frontend/src/lib/glass-utils.ts",
-        "frontend/src/lib/lectures-api.ts",
-        "frontend/src/lib/schedule-constants.ts",
-        "frontend/src/lib/get-strict-context.tsx"
+        "backend/app/services/lab_service.py",
+        "backend/app/services/submission_service.py",
+        "backend/app/services/import_service.py",
+        "backend/app/services/student_service.py",
+        "backend/app/services/lecture_service.py"
       ],
       "delta": {
         "new_violations": 0,
@@ -324,51 +608,51 @@
       }
     },
     {
-      "bucket_id": "frontend/src/components/lectures",
-      "hotspot_score": 170.29166666666669,
-      "active_violation_count": 28,
+      "bucket_id": "frontend/src/lib/api",
+      "hotspot_score": 168.12833333333333,
+      "active_violation_count": 32,
       "suppressed_violation_count": 0,
       "rule_counts": [
         {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 14
+        },
+        {
           "rule_id": "max_graph_edge_out_count",
-          "violations": 11
+          "violations": 12
         },
         {
-          "rule_id": "max_function_lines",
-          "violations": 8
-        },
-        {
-          "rule_id": "max_line_length",
-          "violations": 3
-        },
-        {
-          "rule_id": "max_cognitive_complexity",
+          "rule_id": "module_cycle_member",
           "violations": 2
         },
         {
-          "rule_id": "max_cyclomatic_complexity",
-          "violations": 2
+          "rule_id": "max_duplicate_block_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_export_count_per_file",
+          "violations": 1
         },
         {
           "rule_id": "max_import_count",
           "violations": 1
         },
         {
-          "rule_id": "max_non_empty_lines_default",
+          "rule_id": "max_line_length",
           "violations": 1
         }
       ],
       "structural_signals": {
-        "module_cycle_member": 0,
+        "module_cycle_member": 2,
         "hub_module": 0,
         "cross_layer_dependency": 0
       },
       "top_files": [
-        "frontend/src/components/lectures/LectureEditor.tsx",
-        "frontend/src/components/lectures/ImageComponent.tsx",
-        "frontend/src/components/lectures/VisualizationSandbox.tsx",
-        "frontend/src/components/lectures/CodeBlockComponent.tsx",
-        "frontend/src/components/lectures/LectureViewer.tsx"
+        "frontend/src/lib/api/audit.ts",
+        "frontend/src/lib/api/backup.ts",
+        "frontend/src/lib/api/labs.ts",
+        "frontend/src/lib/api/activities.ts",
+        "frontend/src/lib/api/student.ts"
       ],
       "delta": {
         "new_violations": 0,
@@ -417,6 +701,150 @@
         "frontend/src/app/report/%u005Bcode%u005D/student/%u005BstudentId%u005D/components/LabSubmissions.tsx",
         "frontend/src/app/report/%u005Bcode%u005D/student/%u005BstudentId%u005D/components/AttendanceHeatmap.tsx",
         "frontend/src/app/report/%u005Bcode%u005D/student/%u005BstudentId%u005D/components/ComparisonChart.tsx"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "backend/app/crud",
+      "hotspot_score": 165.72166666666666,
+      "active_violation_count": 21,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 14
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 3
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 2,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "backend/app/crud/crud_schedule.py",
+        "backend/app/crud/crud_work_submission.py",
+        "backend/app/crud/crud_work.py",
+        "backend/app/crud/crud_report.py",
+        "backend/app/crud/crud_schedule_parser.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "frontend/src/app/admin/journal/hooks",
+      "hotspot_score": 160.54241666666667,
+      "active_violation_count": 17,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 6
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 4
+        },
+        {
+          "rule_id": "max_cyclomatic_complexity",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "frontend/src/app/admin/journal/hooks/useJournalGrades.ts",
+        "frontend/src/app/admin/journal/hooks/useJournalLessons.ts",
+        "frontend/src/app/admin/journal/hooks/useJournalAttendance.ts",
+        "frontend/src/app/admin/journal/hooks/useJournalData.ts",
+        "frontend/src/app/admin/journal/hooks/useJournalFilters.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "backend/app/services/attestation",
+      "hotspot_score": 159.55499999999998,
+      "active_violation_count": 17,
+      "suppressed_violation_count": 0,
+      "rule_counts": [
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 13
+        },
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 2
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 2
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "backend/app/services/attestation/student_score.py",
+        "backend/app/services/attestation/batch.py",
+        "backend/app/services/attestation/settings.py",
+        "backend/app/services/attestation/calculator.py",
+        "backend/app/services/attestation/service.py"
       ],
       "delta": {
         "new_violations": 0,
@@ -524,94 +952,6 @@
       }
     },
     {
-      "bucket_id": "backend/app/api/v1/endpoints",
-      "hotspot_score": 153.20333333333332,
-      "active_violation_count": 45,
-      "suppressed_violation_count": 0,
-      "rule_counts": [
-        {
-          "rule_id": "max_graph_edge_out_count",
-          "violations": 31
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 7
-        },
-        {
-          "rule_id": "max_non_empty_lines_default",
-          "violations": 4
-        },
-        {
-          "rule_id": "max_cyclomatic_complexity",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_import_count",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_line_length",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 7,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "backend/app/api/v1/endpoints/public_reports.py",
-        "backend/app/api/v1/endpoints/user_sessions.py",
-        "backend/app/api/v1/endpoints/admin_lab_schedule.py",
-        "backend/app/api/v1/endpoints/admin_audit.py",
-        "backend/app/api/v1/endpoints/honeypot.py"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "frontend/src/lib/api/types",
-      "hotspot_score": 146.73,
-      "active_violation_count": 5,
-      "suppressed_violation_count": 0,
-      "rule_counts": [
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 4
-        },
-        {
-          "rule_id": "max_fan_in_per_file",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 4,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "frontend/src/lib/api/types/reports.ts",
-        "frontend/src/lib/api/types/attestation.ts",
-        "frontend/src/lib/api/types/labs.ts",
-        "frontend/src/lib/api/types/student.ts",
-        "frontend/src/lib/api/types/auth.ts"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
       "bucket_id": "backend/app/schemas",
       "hotspot_score": 139.04333333333335,
       "active_violation_count": 27,
@@ -705,306 +1045,6 @@
         "frontend/src/app/report/%u005Bcode%u005D/components/ReportSummaryCards.tsx",
         "frontend/src/app/report/%u005Bcode%u005D/components/LabProgressChart.tsx",
         "frontend/src/app/report/%u005Bcode%u005D/components/PinDialog.tsx"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "backend/app/models",
-      "hotspot_score": 135.115,
-      "active_violation_count": 37,
-      "suppressed_violation_count": 0,
-      "rule_counts": [
-        {
-          "rule_id": "max_graph_edge_out_count",
-          "violations": 33
-        },
-        {
-          "rule_id": "max_class_member_count",
-          "violations": 3
-        },
-        {
-          "rule_id": "max_import_count",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 0,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "backend/app/models/attestation_settings.py",
-        "backend/app/models/attendance.py",
-        "backend/app/models/lab.py",
-        "backend/app/models/user.py",
-        "backend/app/models/lesson.py"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "backend/app/services",
-      "hotspot_score": 131.83999999999997,
-      "active_violation_count": 33,
-      "suppressed_violation_count": 0,
-      "rule_counts": [
-        {
-          "rule_id": "max_graph_edge_out_count",
-          "violations": 24
-        },
-        {
-          "rule_id": "max_line_length",
-          "violations": 2
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 2
-        },
-        {
-          "rule_id": "max_cognitive_complexity",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_cyclomatic_complexity",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_function_lines",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_nesting_depth",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_non_empty_lines_default",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 2,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "backend/app/services/import_service.py",
-        "backend/app/services/student_service.py",
-        "backend/app/services/storage.py",
-        "backend/app/services/session_service.py",
-        "backend/app/services/schedule_parser.py"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "frontend/src/components/lectures/admin",
-      "hotspot_score": 129.01333333333332,
-      "active_violation_count": 13,
-      "suppressed_violation_count": 0,
-      "rule_counts": [
-        {
-          "rule_id": "max_graph_edge_out_count",
-          "violations": 4
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 4
-        },
-        {
-          "rule_id": "max_function_lines",
-          "violations": 3
-        },
-        {
-          "rule_id": "max_cognitive_complexity",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_cyclomatic_complexity",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 4,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "frontend/src/components/lectures/admin/LectureEditorHeader.tsx",
-        "frontend/src/components/lectures/admin/useLectures.ts",
-        "frontend/src/components/lectures/admin/LectureCard.tsx",
-        "frontend/src/components/lectures/admin/CreateLectureDialog.tsx",
-        "frontend/src/components/lectures/admin/index.ts"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "frontend/src/app/admin/journal/hooks",
-      "hotspot_score": 126.33166666666668,
-      "active_violation_count": 14,
-      "suppressed_violation_count": 0,
-      "rule_counts": [
-        {
-          "rule_id": "max_graph_edge_out_count",
-          "violations": 6
-        },
-        {
-          "rule_id": "max_function_lines",
-          "violations": 4
-        },
-        {
-          "rule_id": "max_cyclomatic_complexity",
-          "violations": 2
-        },
-        {
-          "rule_id": "max_cognitive_complexity",
-          "violations": 1
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 1,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "frontend/src/app/admin/journal/hooks/useJournalLessons.ts",
-        "frontend/src/app/admin/journal/hooks/useJournalGrades.ts",
-        "frontend/src/app/admin/journal/hooks/useJournalData.ts",
-        "frontend/src/app/admin/journal/hooks/useJournalFilters.ts",
-        "frontend/src/app/admin/journal/hooks/useJournalAttendance.ts"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "frontend/src/app/admin/journal/components",
-      "hotspot_score": 124.14833333333333,
-      "active_violation_count": 15,
-      "suppressed_violation_count": 0,
-      "rule_counts": [
-        {
-          "rule_id": "max_graph_edge_out_count",
-          "violations": 7
-        },
-        {
-          "rule_id": "max_cyclomatic_complexity",
-          "violations": 2
-        },
-        {
-          "rule_id": "max_function_lines",
-          "violations": 2
-        },
-        {
-          "rule_id": "max_cognitive_complexity",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_line_length",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_non_empty_lines_default",
-          "violations": 1
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 1,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "frontend/src/app/admin/journal/components/JournalTable.tsx",
-        "frontend/src/app/admin/journal/components/GradeCell.tsx",
-        "frontend/src/app/admin/journal/components/JournalFilters.tsx",
-        "frontend/src/app/admin/journal/components/AttendanceCell.tsx",
-        "frontend/src/app/admin/journal/components/JournalStats.tsx"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "frontend/src/app/admin/schedule/components",
-      "hotspot_score": 123.69333333333333,
-      "active_violation_count": 15,
-      "suppressed_violation_count": 0,
-      "rule_counts": [
-        {
-          "rule_id": "max_graph_edge_out_count",
-          "violations": 7
-        },
-        {
-          "rule_id": "max_function_lines",
-          "violations": 5
-        },
-        {
-          "rule_id": "max_cyclomatic_complexity",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_line_length",
-          "violations": 1
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 1,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "frontend/src/app/admin/schedule/components/AutoParserSettings.tsx",
-        "frontend/src/app/admin/schedule/components/LectureCard.tsx",
-        "frontend/src/app/admin/schedule/components/ScheduleGrid.tsx",
-        "frontend/src/app/admin/schedule/components/LessonCard.tsx",
-        "frontend/src/app/admin/schedule/components/ConflictResolver.tsx"
       ],
       "delta": {
         "new_violations": 0,

@@ -1,368 +1,93 @@
 {
   "version": 1,
-  "repo_id": "qubeforge_rust",
+  "repo_id": "manhwa_manager",
   "aggregation": "file",
   "buckets": [
     {
-      "bucket_id": "crates/qf_sandbox/src/lib.rs",
-      "hotspot_score": 95.66,
-      "active_violation_count": 11,
+      "bucket_id": "domain/chapter/folder_generator.py",
+      "hotspot_score": 52.931666666666665,
+      "active_violation_count": 5,
       "suppressed_violation_count": 0,
       "risk_score": {
-        "score": 95.66,
+        "score": 52.931666666666665,
         "components": {
-          "violation_count": 11.0,
-          "severity": 31.0,
-          "fan_in": 6.0,
-          "fan_out": 12.0,
-          "size": 10.97,
-          "nesting": 5.0,
-          "function_length": 2.34,
-          "complexity": 5.6,
-          "duplication": 9.0
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25,
-          "duplication": 1.15
-        }
-      },
-      "rule_counts": [
-        {
-          "rule_id": "max_cognitive_complexity",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_cyclomatic_complexity",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_duplicate_block_count",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_duplicate_density_bps",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_function_lines",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_import_count",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_line_length",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_nesting_depth",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_non_empty_lines_default",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_ref_count_per_file",
-          "violations": 1
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 1,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "crates/qf_sandbox/src/lib.rs"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "crates/qf_world/src/world.rs",
-      "hotspot_score": 74.83166666666668,
-      "active_violation_count": 9,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 74.83166666666668,
-        "components": {
-          "violation_count": 9.0,
-          "severity": 25.0,
-          "fan_in": 8.0,
-          "fan_out": 7.0,
-          "size": 7.24,
-          "nesting": 4.0,
-          "function_length": 1.9,
-          "complexity": 2.3333333333333335,
-          "duplication": 8.5
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25,
-          "duplication": 1.15
-        }
-      },
-      "rule_counts": [
-        {
-          "rule_id": "max_cyclomatic_complexity",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_duplicate_block_count",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_duplicate_density_bps",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_export_count_per_file",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_function_lines",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_line_length",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_non_empty_lines_default",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_ref_count_per_file",
-          "violations": 1
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 1,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "crates/qf_world/src/world.rs"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "crates/qf_world/src/mesh.rs",
-      "hotspot_score": 67.575,
-      "active_violation_count": 9,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 67.575,
-        "components": {
-          "violation_count": 9.0,
-          "severity": 25.0,
-          "fan_in": 5.0,
-          "fan_out": 5.0,
-          "size": 3.4,
-          "nesting": 7.0,
-          "function_length": 2.5,
-          "complexity": 4.4,
-          "duplication": 4.5
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25,
-          "duplication": 1.15
-        }
-      },
-      "rule_counts": [
-        {
-          "rule_id": "max_cognitive_complexity",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_duplicate_block_count",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_duplicate_density_bps",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_function_lines",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_line_length",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_nesting_depth",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_non_empty_lines_default",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_ref_count_per_file",
-          "violations": 1
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 1,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "crates/qf_world/src/mesh.rs"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "crates/qf_content/src/lib.rs",
-      "hotspot_score": 56.84166666666666,
-      "active_violation_count": 8,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 56.84166666666666,
-        "components": {
-          "violation_count": 8.0,
-          "severity": 21.0,
-          "fan_in": 6.0,
-          "fan_out": 6.0,
-          "size": 4.14,
-          "nesting": 2.0,
-          "function_length": 1.76,
-          "complexity": 0.8333333333333334,
-          "duplication": 6.0
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25,
-          "duplication": 1.15
-        }
-      },
-      "rule_counts": [
-        {
-          "rule_id": "max_duplicate_block_count",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_duplicate_density_bps",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_export_count_per_file",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_function_lines",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_line_length",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_non_empty_lines_default",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_ref_count_per_file",
-          "violations": 1
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 1,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "crates/qf_content/src/lib.rs"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "crates/qf_render/src/lib.rs",
-      "hotspot_score": 48.02333333333334,
-      "active_violation_count": 6,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 48.02333333333334,
-        "components": {
-          "violation_count": 6.0,
-          "severity": 18.0,
+          "violation_count": 5.0,
+          "severity": 16.0,
           "fan_in": 4.0,
-          "fan_out": 5.0,
-          "size": 6.31,
-          "nesting": 2.0,
-          "function_length": 3.38,
-          "complexity": 2.6666666666666665,
+          "fan_out": 6.0,
+          "size": 7.37,
+          "nesting": 4.0,
+          "function_length": 1.42,
+          "complexity": 1.3333333333333333,
+          "duplication": 6.5
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_ref_count_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "domain/chapter/folder_generator.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "domain/text/txt_to_markdown.py",
+      "hotspot_score": 40.495,
+      "active_violation_count": 5,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 40.495,
+        "components": {
+          "violation_count": 5.0,
+          "severity": 14.0,
+          "fan_in": 2.0,
+          "fan_out": 0.0,
+          "size": 4.86,
+          "nesting": 5.0,
+          "function_length": 2.76,
+          "complexity": 5.5,
           "duplication": 0.0
         },
         "weights": {
@@ -391,25 +116,21 @@
           "violations": 1
         },
         {
+          "rule_id": "max_nesting_depth",
+          "violations": 1
+        },
+        {
           "rule_id": "max_non_empty_lines_default",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_ref_count_per_file",
-          "violations": 1
-        },
-        {
-          "rule_id": "module_cycle_member",
           "violations": 1
         }
       ],
       "structural_signals": {
-        "module_cycle_member": 1,
+        "module_cycle_member": 0,
         "hub_module": 0,
         "cross_layer_dependency": 0
       },
       "top_files": [
-        "crates/qf_render/src/lib.rs"
+        "domain/text/txt_to_markdown.py"
       ],
       "delta": {
         "new_violations": 0,
@@ -421,21 +142,21 @@
       }
     },
     {
-      "bucket_id": "crates/qf_platform/src/lib.rs",
-      "hotspot_score": 33.778333333333336,
-      "active_violation_count": 4,
+      "bucket_id": "domain/ui/startup_manager.py",
+      "hotspot_score": 37.644999999999996,
+      "active_violation_count": 5,
       "suppressed_violation_count": 0,
       "risk_score": {
-        "score": 33.778333333333336,
+        "score": 37.644999999999996,
         "components": {
-          "violation_count": 4.0,
-          "severity": 14.0,
-          "fan_in": 1.0,
-          "fan_out": 4.0,
-          "size": 2.74,
-          "nesting": 3.0,
-          "function_length": 1.08,
-          "complexity": 3.1666666666666665,
+          "violation_count": 5.0,
+          "severity": 11.0,
+          "fan_in": 0.0,
+          "fan_out": 5.0,
+          "size": 6.44,
+          "nesting": 5.0,
+          "function_length": 2.08,
+          "complexity": 2.5,
           "duplication": 0.0
         },
         "weights": {
@@ -456,25 +177,29 @@
           "violations": 1
         },
         {
-          "rule_id": "max_cyclomatic_complexity",
+          "rule_id": "max_function_lines",
           "violations": 1
         },
         {
-          "rule_id": "max_ref_count_per_file",
+          "rule_id": "max_line_length",
           "violations": 1
         },
         {
-          "rule_id": "module_cycle_member",
+          "rule_id": "max_nesting_depth",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
           "violations": 1
         }
       ],
       "structural_signals": {
-        "module_cycle_member": 1,
+        "module_cycle_member": 0,
         "hub_module": 0,
         "cross_layer_dependency": 0
       },
       "top_files": [
-        "crates/qf_platform/src/lib.rs"
+        "domain/ui/startup_manager.py"
       ],
       "delta": {
         "new_violations": 0,
@@ -486,21 +211,21 @@
       }
     },
     {
-      "bucket_id": "crates/qf_game/src/lib.rs",
-      "hotspot_score": 26.335,
+      "bucket_id": "domain/chapter/selector.py",
+      "hotspot_score": 33.53,
       "active_violation_count": 4,
       "suppressed_violation_count": 0,
       "risk_score": {
-        "score": 26.335,
+        "score": 33.53,
         "components": {
           "violation_count": 4.0,
-          "severity": 10.0,
-          "fan_in": 3.0,
-          "fan_out": 3.0,
-          "size": 3.77,
-          "nesting": 1.0,
-          "function_length": 0.94,
-          "complexity": 0.5,
+          "severity": 9.0,
+          "fan_in": 2.0,
+          "fan_out": 5.0,
+          "size": 5.84,
+          "nesting": 3.0,
+          "function_length": 1.94,
+          "complexity": 2.2,
           "duplication": 0.0
         },
         "weights": {
@@ -517,29 +242,29 @@
       },
       "rule_counts": [
         {
-          "rule_id": "max_export_count_per_file",
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_line_length",
           "violations": 1
         },
         {
           "rule_id": "max_non_empty_lines_default",
           "violations": 1
-        },
-        {
-          "rule_id": "max_ref_count_per_file",
-          "violations": 1
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 1
         }
       ],
       "structural_signals": {
-        "module_cycle_member": 1,
+        "module_cycle_member": 0,
         "hub_module": 0,
         "cross_layer_dependency": 0
       },
       "top_files": [
-        "crates/qf_game/src/lib.rs"
+        "domain/chapter/selector.py"
       ],
       "delta": {
         "new_violations": 0,
@@ -551,21 +276,82 @@
       }
     },
     {
-      "bucket_id": "crates/qf_save/src/lib.rs",
-      "hotspot_score": 18.806666666666665,
+      "bucket_id": "domain/chapter/creator.py",
+      "hotspot_score": 32.154999999999994,
+      "active_violation_count": 3,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 32.154999999999994,
+        "components": {
+          "violation_count": 3.0,
+          "severity": 10.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 3.83,
+          "nesting": 3.0,
+          "function_length": 0.9,
+          "complexity": 1.1,
+          "duplication": 7.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "domain/chapter/creator.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "api/routes/project_routes.py",
+      "hotspot_score": 30.545,
       "active_violation_count": 2,
       "suppressed_violation_count": 0,
       "risk_score": {
-        "score": 18.806666666666665,
+        "score": 30.545,
         "components": {
           "violation_count": 2.0,
           "severity": 6.0,
-          "fan_in": 1.0,
-          "fan_out": 3.0,
-          "size": 2.26,
-          "nesting": 2.0,
-          "function_length": 0.88,
-          "complexity": 1.3333333333333333,
+          "fan_in": 0.0,
+          "fan_out": 8.0,
+          "size": 2.46,
+          "nesting": 7.0,
+          "function_length": 0.96,
+          "complexity": 3.3,
           "duplication": 0.0
         },
         "weights": {
@@ -582,7 +368,64 @@
       },
       "rule_counts": [
         {
-          "rule_id": "max_ref_count_per_file",
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_nesting_depth",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "api/routes/project_routes.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "domain/scan/converter.py",
+      "hotspot_score": 30.041666666666668,
+      "active_violation_count": 2,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 30.041666666666668,
+        "components": {
+          "violation_count": 2.0,
+          "severity": 6.0,
+          "fan_in": 8.0,
+          "fan_out": 4.0,
+          "size": 5.02,
+          "nesting": 3.0,
+          "function_length": 0.98,
+          "complexity": 0.8333333333333334,
+          "duplication": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_non_empty_lines_default",
           "violations": 1
         },
         {
@@ -596,7 +439,7 @@
         "cross_layer_dependency": 0
       },
       "top_files": [
-        "crates/qf_save/src/lib.rs"
+        "domain/scan/converter.py"
       ],
       "delta": {
         "new_violations": 0,
@@ -608,20 +451,195 @@
       }
     },
     {
-      "bucket_id": "crates/qf_world/src/generator.rs",
-      "hotspot_score": 17.293333333333333,
-      "active_violation_count": 1,
+      "bucket_id": "domain/ui/menu_handler.py",
+      "hotspot_score": 29.735,
+      "active_violation_count": 2,
       "suppressed_violation_count": 0,
       "risk_score": {
-        "score": 17.293333333333333,
+        "score": 29.735,
         "components": {
-          "violation_count": 1.0,
+          "violation_count": 2.0,
           "severity": 4.0,
-          "fan_in": 2.0,
-          "fan_out": 4.0,
-          "size": 1.0,
+          "fan_in": 0.0,
+          "fan_out": 9.0,
+          "size": 6.33,
           "nesting": 4.0,
-          "function_length": 0.46,
+          "function_length": 2.28,
+          "complexity": 1.7,
+          "duplication": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "domain/ui/menu_handler.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "services/storage_service.py",
+      "hotspot_score": 26.215,
+      "active_violation_count": 2,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 26.215,
+        "components": {
+          "violation_count": 2.0,
+          "severity": 6.0,
+          "fan_in": 7.0,
+          "fan_out": 1.0,
+          "size": 3.07,
+          "nesting": 4.0,
+          "function_length": 1.02,
+          "complexity": 1.7,
+          "duplication": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "services/storage_service.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "api/routes/transfer_routes.py",
+      "hotspot_score": 23.57,
+      "active_violation_count": 3,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 23.57,
+        "components": {
+          "violation_count": 3.0,
+          "severity": 8.0,
+          "fan_in": 0.0,
+          "fan_out": 0.0,
+          "size": 3.35,
+          "nesting": 6.0,
+          "function_length": 0.72,
+          "complexity": 2.0,
+          "duplication": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_nesting_depth",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "api/routes/transfer_routes.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "domain/text/generator.py",
+      "hotspot_score": 22.39333333333333,
+      "active_violation_count": 2,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 22.39333333333333,
+        "components": {
+          "violation_count": 2.0,
+          "severity": 4.0,
+          "fan_in": 4.0,
+          "fan_out": 5.0,
+          "size": 3.86,
+          "nesting": 2.0,
+          "function_length": 0.7,
           "complexity": 0.6666666666666666,
           "duplication": 0.0
         },
@@ -639,113 +657,11 @@
       },
       "rule_counts": [
         {
-          "rule_id": "module_cycle_member",
+          "rule_id": "max_class_member_count",
           "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 1,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "crates/qf_world/src/generator.rs"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "crates/qf_core/src/ids.rs",
-      "hotspot_score": 13.498333333333335,
-      "active_violation_count": 1,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 13.498333333333335,
-        "components": {
-          "violation_count": 1.0,
-          "severity": 4.0,
-          "fan_in": 6.0,
-          "fan_out": 2.0,
-          "size": 0.23,
-          "nesting": 0.0,
-          "function_length": 0.06,
-          "complexity": 0.16666666666666666,
-          "duplication": 0.0
         },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25,
-          "duplication": 1.15
-        }
-      },
-      "rule_counts": [
         {
-          "rule_id": "module_cycle_member",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 1,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "crates/qf_core/src/ids.rs"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "crates/qf_core/src/math.rs",
-      "hotspot_score": 11.468333333333334,
-      "active_violation_count": 1,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 11.468333333333334,
-        "components": {
-          "violation_count": 1.0,
-          "severity": 2.0,
-          "fan_in": 7.0,
-          "fan_out": 0.0,
-          "size": 0.98,
-          "nesting": 0.0,
-          "function_length": 0.28,
-          "complexity": 0.16666666666666666,
-          "duplication": 0.0
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25,
-          "duplication": 1.15
-        }
-      },
-      "rule_counts": [
-        {
-          "rule_id": "max_export_count_per_file",
+          "rule_id": "max_non_empty_lines_default",
           "violations": 1
         }
       ],
@@ -755,7 +671,7 @@
         "cross_layer_dependency": 0
       },
       "top_files": [
-        "crates/qf_core/src/math.rs"
+        "domain/text/generator.py"
       ],
       "delta": {
         "new_violations": 0,
@@ -767,19 +683,288 @@
       }
     },
     {
-      "bucket_id": "crates/qf_core/src/diagnostics.rs",
-      "hotspot_score": 8.993333333333334,
+      "bucket_id": "utils/validators.py",
+      "hotspot_score": 22.349999999999998,
+      "active_violation_count": 2,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 22.349999999999998,
+        "components": {
+          "violation_count": 2.0,
+          "severity": 6.0,
+          "fan_in": 4.0,
+          "fan_out": 2.0,
+          "size": 3.26,
+          "nesting": 3.0,
+          "function_length": 0.84,
+          "complexity": 1.0,
+          "duplication": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "utils/validators.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "domain/image/merger.py",
+      "hotspot_score": 21.925,
       "active_violation_count": 1,
       "suppressed_violation_count": 0,
       "risk_score": {
-        "score": 8.993333333333334,
+        "score": 21.925,
         "components": {
           "violation_count": 1.0,
           "severity": 2.0,
           "fan_in": 3.0,
-          "fan_out": 0.0,
-          "size": 0.74,
+          "fan_out": 5.0,
+          "size": 4.99,
+          "nesting": 3.0,
+          "function_length": 1.06,
+          "complexity": 1.5,
+          "duplication": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
           "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "domain/image/merger.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "domain/project/manager.py",
+      "hotspot_score": 21.560000000000002,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 21.560000000000002,
+        "components": {
+          "violation_count": 1.0,
+          "severity": 2.0,
+          "fan_in": 7.0,
+          "fan_out": 4.0,
+          "size": 3.39,
+          "nesting": 2.0,
+          "function_length": 0.92,
+          "complexity": 1.0,
+          "duplication": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "domain/project/manager.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "core/electron_handler.py",
+      "hotspot_score": 20.5,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 20.5,
+        "components": {
+          "violation_count": 1.0,
+          "severity": 4.0,
+          "fan_in": 0.0,
+          "fan_out": 6.0,
+          "size": 1.93,
+          "nesting": 4.0,
+          "function_length": 0.82,
+          "complexity": 2.2,
+          "duplication": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_cognitive_complexity",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "core/electron_handler.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "api/routes/scan_routes.py",
+      "hotspot_score": 19.439999999999998,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 19.439999999999998,
+        "components": {
+          "violation_count": 1.0,
+          "severity": 2.0,
+          "fan_in": 0.0,
+          "fan_out": 6.0,
+          "size": 3.38,
+          "nesting": 4.0,
+          "function_length": 1.06,
+          "complexity": 1.6,
+          "duplication": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "api/routes/scan_routes.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "utils/ui_helpers.py",
+      "hotspot_score": 18.013333333333332,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 18.013333333333332,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 11.0,
+          "fan_out": 0.0,
+          "size": 2.76,
+          "nesting": 3.0,
           "function_length": 0.42,
           "complexity": 0.6666666666666666,
           "duplication": 0.0
@@ -796,9 +981,105 @@
           "duplication": 1.15
         }
       },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "utils/ui_helpers.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "core/ui_adapter.py",
+      "hotspot_score": 14.815,
+      "active_violation_count": 0,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 14.815,
+        "components": {
+          "violation_count": 0.0,
+          "severity": -0.0,
+          "fan_in": 6.0,
+          "fan_out": 1.0,
+          "size": 1.75,
+          "nesting": 4.0,
+          "function_length": 0.44,
+          "complexity": 1.3,
+          "duplication": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "core/ui_adapter.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "domain/template/manager.py",
+      "hotspot_score": 14.538333333333334,
+      "active_violation_count": 1,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 14.538333333333334,
+        "components": {
+          "violation_count": 1.0,
+          "severity": 2.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 4.68,
+          "nesting": 2.0,
+          "function_length": 1.4,
+          "complexity": 1.1666666666666667,
+          "duplication": 0.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
       "rule_counts": [
         {
-          "rule_id": "max_export_count_per_file",
+          "rule_id": "max_non_empty_lines_default",
           "violations": 1
         }
       ],
@@ -808,7 +1089,7 @@
         "cross_layer_dependency": 0
       },
       "top_files": [
-        "crates/qf_core/src/diagnostics.rs"
+        "domain/template/manager.py"
       ],
       "delta": {
         "new_violations": 0,
@@ -820,117 +1101,21 @@
       }
     },
     {
-      "bucket_id": "apps/qf_desktop/src/main.rs",
-      "hotspot_score": 8.355,
+      "bucket_id": "utils/file_operations.py",
+      "hotspot_score": 13.665000000000001,
       "active_violation_count": 0,
       "suppressed_violation_count": 0,
       "risk_score": {
-        "score": 8.355,
+        "score": 13.665000000000001,
         "components": {
           "violation_count": 0.0,
           "severity": -0.0,
-          "fan_in": 0.0,
-          "fan_out": 1.0,
-          "size": 1.39,
-          "nesting": 3.0,
-          "function_length": 0.84,
-          "complexity": 1.7,
-          "duplication": 0.0
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25,
-          "duplication": 1.15
-        }
-      },
-      "rule_counts": [],
-      "structural_signals": {
-        "module_cycle_member": 0,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "apps/qf_desktop/src/main.rs"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "crates/qf_core/src/lib.rs",
-      "hotspot_score": 6.12,
-      "active_violation_count": 0,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 6.12,
-        "components": {
-          "violation_count": 0.0,
-          "severity": -0.0,
-          "fan_in": 0.0,
-          "fan_out": 6.0,
-          "size": 0.12,
-          "nesting": 0.0,
-          "function_length": 0.0,
-          "complexity": 0.0,
-          "duplication": 0.0
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25,
-          "duplication": 1.15
-        }
-      },
-      "rule_counts": [],
-      "structural_signals": {
-        "module_cycle_member": 0,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "crates/qf_core/src/lib.rs"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "apps/qf_android/src/lib.rs",
-      "hotspot_score": 5.95,
-      "active_violation_count": 0,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 5.95,
-        "components": {
-          "violation_count": 0.0,
-          "severity": -0.0,
-          "fan_in": 0.0,
-          "fan_out": 1.0,
-          "size": 1.16,
+          "fan_in": 9.0,
+          "fan_out": 0.0,
+          "size": 1.72,
           "nesting": 2.0,
-          "function_length": 0.54,
-          "complexity": 1.0,
+          "function_length": 0.32,
+          "complexity": 0.5,
           "duplication": 0.0
         },
         "weights": {
@@ -952,247 +1137,7 @@
         "cross_layer_dependency": 0
       },
       "top_files": [
-        "apps/qf_android/src/lib.rs"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "crates/qf_core/src/engine.rs",
-      "hotspot_score": 5.678333333333333,
-      "active_violation_count": 0,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 5.678333333333333,
-        "components": {
-          "violation_count": 0.0,
-          "severity": -0.0,
-          "fan_in": 5.0,
-          "fan_out": 0.0,
-          "size": 0.41,
-          "nesting": 0.0,
-          "function_length": 0.06,
-          "complexity": 0.16666666666666666,
-          "duplication": 0.0
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25,
-          "duplication": 1.15
-        }
-      },
-      "rule_counts": [],
-      "structural_signals": {
-        "module_cycle_member": 0,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "crates/qf_core/src/engine.rs"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "crates/qf_core/src/save.rs",
-      "hotspot_score": 4.698333333333333,
-      "active_violation_count": 0,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 4.698333333333333,
-        "components": {
-          "violation_count": 0.0,
-          "severity": -0.0,
-          "fan_in": 4.0,
-          "fan_out": 0.0,
-          "size": 0.29,
-          "nesting": 0.0,
-          "function_length": 0.2,
-          "complexity": 0.16666666666666666,
-          "duplication": 0.0
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25,
-          "duplication": 1.15
-        }
-      },
-      "rule_counts": [],
-      "structural_signals": {
-        "module_cycle_member": 0,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "crates/qf_core/src/save.rs"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "crates/qf_core/src/config.rs",
-      "hotspot_score": 4.258333333333333,
-      "active_violation_count": 0,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 4.258333333333333,
-        "components": {
-          "violation_count": 0.0,
-          "severity": -0.0,
-          "fan_in": 2.0,
-          "fan_out": 0.0,
-          "size": 0.47,
-          "nesting": 1.0,
-          "function_length": 0.58,
-          "complexity": 0.16666666666666666,
-          "duplication": 0.0
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25,
-          "duplication": 1.15
-        }
-      },
-      "rule_counts": [],
-      "structural_signals": {
-        "module_cycle_member": 0,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "crates/qf_core/src/config.rs"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "tools/content_bake/src/main.rs",
-      "hotspot_score": 3.3466666666666667,
-      "active_violation_count": 0,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 3.3466666666666667,
-        "components": {
-          "violation_count": 0.0,
-          "severity": -0.0,
-          "fan_in": 0.0,
-          "fan_out": 1.0,
-          "size": 0.33,
-          "nesting": 1.0,
-          "function_length": 0.6,
-          "complexity": 0.3333333333333333,
-          "duplication": 0.0
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25,
-          "duplication": 1.15
-        }
-      },
-      "rule_counts": [],
-      "structural_signals": {
-        "module_cycle_member": 0,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "tools/content_bake/src/main.rs"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "crates/qf_world/src/lib.rs",
-      "hotspot_score": 3.09,
-      "active_violation_count": 0,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 3.09,
-        "components": {
-          "violation_count": 0.0,
-          "severity": -0.0,
-          "fan_in": 0.0,
-          "fan_out": 3.0,
-          "size": 0.09,
-          "nesting": 0.0,
-          "function_length": 0.0,
-          "complexity": 0.0,
-          "duplication": 0.0
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25,
-          "duplication": 1.15
-        }
-      },
-      "rule_counts": [],
-      "structural_signals": {
-        "module_cycle_member": 0,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "crates/qf_world/src/lib.rs"
+        "utils/file_operations.py"
       ],
       "delta": {
         "new_violations": 0,

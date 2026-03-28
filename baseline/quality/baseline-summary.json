@@ -1,200 +1,15 @@
 {
   "manifest_version": 1,
-  "generated_at_utc": "2026-03-27T20:47:30.1219318Z",
+  "generated_at_utc": "2026-03-28T18:55:14.2344596Z",
   "repos": [
-    {
-      "repo_id": "ficbook_enhancer",
-      "profile": "mixed",
-      "pre_refresh_status": "ready",
-      "post_refresh_status": "ready",
-      "evaluated_files": 16,
-      "violating_files": 3,
-      "total_violations": 7,
-      "top_rules": [
-        {
-          "rule_id": "max_function_lines",
-          "files": 3,
-          "violations": 3
-        },
-        {
-          "rule_id": "max_cognitive_complexity",
-          "files": 1,
-          "violations": 1
-        },
-        {
-          "rule_id": "max_cyclomatic_complexity",
-          "files": 1,
-          "violations": 1
-        },
-        {
-          "rule_id": "max_line_length",
-          "files": 1,
-          "violations": 1
-        },
-        {
-          "rule_id": "max_non_empty_lines_default",
-          "files": 1,
-          "violations": 1
-        }
-      ],
-      "top_metrics": [
-        {
-          "metric_id": "size_bytes",
-          "files": 16,
-          "max_value": 20969
-        },
-        {
-          "metric_id": "non_empty_lines",
-          "files": 16,
-          "max_value": 383
-        },
-        {
-          "metric_id": "max_line_length",
-          "files": 16,
-          "max_value": 278
-        },
-        {
-          "metric_id": "ref_count",
-          "files": 16,
-          "max_value": 147
-        },
-        {
-          "metric_id": "graph_edge_out_count",
-          "files": 16,
-          "max_value": 6
-        }
-      ],
-      "top_hot_files": {
-        "violation_count": [
-          "src/App.jsx",
-          "src/popup/Popup.jsx",
-          "src/features/theming.js",
-          "src/styles/index.css",
-          "src/features/storage.js",
-          "tailwind.config.js",
-          "src/features/selectors.js",
-          "vite.config.js",
-          "src/content/index.jsx",
-          "src/manifest.js"
-        ],
-        "size_bytes": [
-          "src/App.jsx",
-          "src/styles/index.css",
-          "src/popup/Popup.jsx",
-          "src/features/theming.js",
-          "src/features/storage.js",
-          "tailwind.config.js",
-          "src/features/selectors.js",
-          "vite.config.js",
-          "src/content/index.jsx",
-          "src/manifest.js"
-        ],
-        "non_empty_lines": [
-          "src/App.jsx",
-          "src/styles/index.css",
-          "src/popup/Popup.jsx",
-          "src/features/theming.js",
-          "src/features/storage.js",
-          "tailwind.config.js",
-          "vite.config.js",
-          "package.json",
-          "src/features/selectors.js",
-          "eslint.config.js"
-        ],
-        "metric_graph_edge_out_count": [
-          "src/App.jsx",
-          "src/content/index.jsx",
-          "src/popup/main.jsx",
-          "src/popup/Popup.jsx",
-          "vite.config.js",
-          "src/manifest.js",
-          "src/styles/index.css",
-          "src/features/theming.js",
-          "src/features/storage.js",
-          "tailwind.config.js"
-        ],
-        "metric_max_cognitive_complexity": [
-          "src/App.jsx",
-          "src/features/theming.js",
-          "src/popup/Popup.jsx",
-          "src/features/selectors.js",
-          "src/features/storage.js",
-          "src/styles/index.css",
-          "tailwind.config.js",
-          "vite.config.js",
-          "src/content/index.jsx",
-          "src/manifest.js"
-        ]
-      },
-      "top_hotspot_buckets": {
-        "file": [
-          "src/App.jsx",
-          "src/popup/Popup.jsx",
-          "src/features/theming.js",
-          "src/features/storage.js",
-          "src/features/selectors.js"
-        ],
-        "directory": [
-          "src",
-          "src/features",
-          "src/popup",
-          "src/styles",
-          "."
-        ],
-        "module": [
-          "src",
-          "src/features",
-          "src/popup",
-          "src/styles",
-          "."
-        ]
-      },
-      "latency_summary": {
-        "index_ms": 0,
-        "brief_before_refresh_ms": 884,
-        "refresh_ms": 52,
-        "brief_after_refresh_ms": 365,
-        "violation_count_ms": 389,
-        "size_bytes_ms": 152,
-        "non_empty_lines_ms": 168,
-        "metric_graph_edge_out_count_ms": 91,
-        "metric_max_cognitive_complexity_ms": 126,
-        "file_hotspots_ms": 466,
-        "directory_hotspots_ms": 184,
-        "module_hotspots_ms": 85
-      },
-      "resource_summary": {
-        "db_size_bytes": 1499136,
-        "wal_size_bytes": 4152,
-        "total_size_bytes": 1536056,
-        "peak_rss_bytes": null,
-        "peak_rss_note": "unsupported_on_host"
-      },
-      "noise_summary": {
-        "violating_file_ratio": 0.1875,
-        "top_rule_share": 0.42857142857142855,
-        "manual_review_required": true,
-        "review_shortlist": [
-          "src/App.jsx",
-          "src/popup/Popup.jsx",
-          "src/features/theming.js",
-          "src/styles/index.css",
-          "src/features/storage.js"
-        ]
-      },
-      "new_violations": 0,
-      "resolved_violations": 0,
-      "risk_score_delta_total": -3.552713678800501e-15,
-      "hotspot_score_delta_total": -3.552713678800501e-15
-    },
     {
       "repo_id": "kiron_client",
       "profile": "mixed",
       "pre_refresh_status": "ready",
       "post_refresh_status": "ready",
       "evaluated_files": 73,
-      "violating_files": 42,
-      "total_violations": 58,
+      "violating_files": 52,
+      "total_violations": 80,
       "top_rules": [
         {
           "rule_id": "module_cycle_member",
@@ -202,24 +17,24 @@
           "violations": 41
         },
         {
+          "rule_id": "max_duplicate_density_bps",
+          "files": 18,
+          "violations": 18
+        },
+        {
           "rule_id": "max_ref_count_per_file",
           "files": 7,
           "violations": 7
         },
         {
-          "rule_id": "max_line_length",
+          "rule_id": "max_duplicate_block_count",
           "files": 4,
           "violations": 4
         },
         {
-          "rule_id": "max_cognitive_complexity",
-          "files": 2,
-          "violations": 2
-        },
-        {
-          "rule_id": "max_non_empty_lines_default",
-          "files": 2,
-          "violations": 2
+          "rule_id": "max_line_length",
+          "files": 4,
+          "violations": 4
         }
       ],
       "top_metrics": [
@@ -227,6 +42,11 @@
           "metric_id": "size_bytes",
           "files": 73,
           "max_value": 18693
+        },
+        {
+          "metric_id": "duplicate_density_bps",
+          "files": 73,
+          "max_value": 10000
         },
         {
           "metric_id": "non_empty_lines",
@@ -239,28 +59,23 @@
           "max_value": 261
         },
         {
-          "metric_id": "max_line_length",
+          "metric_id": "max_duplicate_block_tokens",
           "files": 73,
-          "max_value": 165
-        },
-        {
-          "metric_id": "graph_edge_out_count",
-          "files": 73,
-          "max_value": 51
+          "max_value": 179
         }
       ],
       "top_hot_files": {
         "violation_count": [
           "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiMain.java",
           "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiEspColors.java",
-          "mods/veinmining/src/main/java/org/mine/veinmining/logic/search/BlockSearchHelper.java",
           "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleESP.java",
-          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleTorchHelper.java",
-          "mods/veinmining/src/client/java/org/mine/veinmining/client/render/ParticleEffects.java",
           "mods/veinmining/src/main/java/org/mine/veinmining/logic/flow/TreeChoppingFlow.java",
-          "mods/veinmining/src/main/java/org/mine/veinmining/VeinMiningMod.java",
-          "mods/veinmining/src/client/java/org/mine/veinmining/client/render/HudRenderer.java",
-          "mods/veinmining/src/main/java/org/mine/veinmining/optimized/TaskScheduler.java"
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/search/BlockSearchHelper.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleTorchHelper.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/flow/VeinMiningFlow.java",
+          "mods/veinmining/src/client/java/org/mine/veinmining/client/render/ParticleEffects.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/optimized/TaskScheduler.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/ModuleSettingsStore.java"
         ],
         "size_bytes": [
           "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiEspColors.java",
@@ -309,68 +124,279 @@
           "mods/veinmining/src/main/java/org/mine/veinmining/optimized/TaskScheduler.java",
           "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiEspColors.java",
           "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleESP.java"
+        ],
+        "metric_duplicate_density_bps": [
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/mixin/client/MixinSodiumCullResults.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/mixin/client/MixinSodiumOcclusionCuller.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/mixin/client/MixinSodiumRenderSectionManager.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/mixin/client/MixinSodiumVisibilityData.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/mixin/client/MixinSodiumSectionRenderData.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/mixin/client/MixinSodiumChunkBuilder.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/network/registrar/ServerReceiverRegistrar.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/mixin/client/MixinEntityOutlineColor.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/mixin/client/MixinMinecraftClientOutline.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/mixin/client/MixinBlockOcclusionCache.java"
         ]
       },
       "top_hotspot_buckets": {
         "file": [
-          "mods/veinmining/src/main/java/org/mine/veinmining/VeinMiningMod.java",
           "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiMain.java",
           "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleESP.java",
-          "mods/veinmining/src/main/java/org/mine/veinmining/config/VeinMiningConfig.java",
-          "mods/veinmining/src/main/java/org/mine/veinmining/optimized/PositionSet.java"
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiEspColors.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/flow/TreeChoppingFlow.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/flow/VeinMiningFlow.java"
         ],
         "directory": [
           "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render",
-          "mods/veinmining/src/main/java/org/mine/veinmining/optimized",
           "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui",
-          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client",
-          "mods/veinmining/src/main/java/org/mine/veinmining/network/packet"
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/mixin/client",
+          "mods/veinmining/src/main/java/org/mine/veinmining/optimized",
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/flow"
         ],
         "module": [
           "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render",
-          "mods/veinmining/src/main/java/org/mine/veinmining/optimized",
           "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui",
-          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client",
-          "mods/veinmining/src/main/java/org/mine/veinmining/network/packet"
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/mixin/client",
+          "mods/veinmining/src/main/java/org/mine/veinmining/optimized",
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/flow"
         ]
       },
       "latency_summary": {
         "index_ms": 0,
-        "brief_before_refresh_ms": 319,
-        "refresh_ms": 211,
-        "brief_after_refresh_ms": 305,
-        "violation_count_ms": 234,
-        "size_bytes_ms": 238,
-        "non_empty_lines_ms": 235,
-        "metric_graph_edge_out_count_ms": 232,
-        "metric_max_cognitive_complexity_ms": 236,
-        "file_hotspots_ms": 237,
-        "directory_hotspots_ms": 237,
-        "module_hotspots_ms": 236
+        "brief_before_refresh_ms": 355,
+        "refresh_ms": 233,
+        "brief_after_refresh_ms": 369,
+        "violation_count_ms": 319,
+        "size_bytes_ms": 325,
+        "non_empty_lines_ms": 320,
+        "metric_graph_edge_out_count_ms": 306,
+        "metric_max_cognitive_complexity_ms": 256,
+        "metric_duplicate_density_bps_ms": 270,
+        "file_hotspots_ms": 268,
+        "directory_hotspots_ms": 269,
+        "module_hotspots_ms": 258
       },
       "resource_summary": {
-        "db_size_bytes": 5615616,
+        "db_size_bytes": 5771264,
         "wal_size_bytes": 4152,
-        "total_size_bytes": 5652536,
+        "total_size_bytes": 5808184,
         "peak_rss_bytes": null,
         "peak_rss_note": "unsupported_on_host"
       },
       "noise_summary": {
-        "violating_file_ratio": 0.5753424657534246,
-        "top_rule_share": 0.7068965517241379,
+        "violating_file_ratio": 0.7123287671232876,
+        "top_rule_share": 0.5125,
         "manual_review_required": true,
         "review_shortlist": [
-          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiMain.java",
           "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiEspColors.java",
-          "mods/veinmining/src/main/java/org/mine/veinmining/logic/search/BlockSearchHelper.java",
-          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleESP.java",
-          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/modules/render/ModuleTorchHelper.java"
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/client/gui/GuiMain.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/flow/TreeChoppingFlow.java",
+          "mods/veinmining/src/main/java/org/mine/veinmining/logic/flow/VeinMiningFlow.java",
+          "mods/kiron_client/src/client/java/org/kiron/kiron_client/mixin/client/MixinSodiumChunkBuilder.java"
         ]
       },
       "new_violations": 0,
       "resolved_violations": 0,
-      "risk_score_delta_total": 1.7763568394002505e-15,
-      "hotspot_score_delta_total": 1.7763568394002505e-15
+      "risk_score_delta_total": 0.0,
+      "hotspot_score_delta_total": 0.0
+    },
+    {
+      "repo_id": "manhwa_manager",
+      "profile": "mixed",
+      "pre_refresh_status": "ready",
+      "post_refresh_status": "ready",
+      "evaluated_files": 60,
+      "violating_files": 22,
+      "total_violations": 47,
+      "top_rules": [
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "files": 17,
+          "violations": 17
+        },
+        {
+          "rule_id": "max_cognitive_complexity",
+          "files": 6,
+          "violations": 6
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "files": 6,
+          "violations": 6
+        },
+        {
+          "rule_id": "max_nesting_depth",
+          "files": 5,
+          "violations": 5
+        },
+        {
+          "rule_id": "max_function_lines",
+          "files": 4,
+          "violations": 4
+        }
+      ],
+      "top_metrics": [
+        {
+          "metric_id": "size_bytes",
+          "files": 60,
+          "max_value": 40608
+        },
+        {
+          "metric_id": "duplicate_density_bps",
+          "files": 60,
+          "max_value": 6736
+        },
+        {
+          "metric_id": "non_empty_lines",
+          "files": 60,
+          "max_value": 737
+        },
+        {
+          "metric_id": "duplicate_lines",
+          "files": 60,
+          "max_value": 258
+        },
+        {
+          "metric_id": "ref_count",
+          "files": 60,
+          "max_value": 240
+        }
+      ],
+      "top_hot_files": {
+        "violation_count": [
+          "domain/chapter/folder_generator.py",
+          "domain/ui/startup_manager.py",
+          "domain/text/txt_to_markdown.py",
+          "domain/chapter/selector.py",
+          "domain/chapter/creator.py",
+          "api/routes/transfer_routes.py",
+          "domain/ui/menu_handler.py",
+          "domain/scan/converter.py",
+          "domain/text/generator.py",
+          "utils/validators.py"
+        ],
+        "size_bytes": [
+          "domain/chapter/folder_generator.py",
+          "domain/ui/startup_manager.py",
+          "domain/ui/menu_handler.py",
+          "domain/chapter/selector.py",
+          "domain/scan/converter.py",
+          "domain/image/merger.py",
+          "domain/template/manager.py",
+          "domain/text/txt_to_markdown.py",
+          "domain/text/generator.py",
+          "domain/chapter/creator.py"
+        ],
+        "non_empty_lines": [
+          "domain/chapter/folder_generator.py",
+          "domain/ui/startup_manager.py",
+          "domain/ui/menu_handler.py",
+          "domain/chapter/selector.py",
+          "domain/scan/converter.py",
+          "domain/image/merger.py",
+          "domain/text/txt_to_markdown.py",
+          "domain/template/manager.py",
+          "domain/text/generator.py",
+          "domain/chapter/creator.py"
+        ],
+        "metric_graph_edge_out_count": [
+          "domain/ui/menu_handler.py",
+          "api/routes/scan_routes.py",
+          "api/routes/project_routes.py",
+          "core/electron_handler.py",
+          "domain/chapter/folder_generator.py",
+          "domain/image/merger.py",
+          "domain/scan/converter.py",
+          "domain/text/generator.py",
+          "domain/project/manager.py",
+          "api/routes/chapter_routes.py"
+        ],
+        "metric_max_cognitive_complexity": [
+          "domain/text/txt_to_markdown.py",
+          "api/routes/project_routes.py",
+          "domain/ui/startup_manager.py",
+          "domain/chapter/selector.py",
+          "core/electron_handler.py",
+          "api/routes/transfer_routes.py",
+          "domain/ui/menu_handler.py",
+          "services/storage_service.py",
+          "core/config.py",
+          "api/routes/scan_routes.py"
+        ],
+        "metric_duplicate_density_bps": [
+          "domain/chapter/creator.py",
+          "domain/chapter/folder_generator.py",
+          "domain/ui/startup_manager.py",
+          "domain/ui/menu_handler.py",
+          "domain/chapter/selector.py",
+          "domain/scan/converter.py",
+          "domain/image/merger.py",
+          "domain/template/manager.py",
+          "domain/text/txt_to_markdown.py",
+          "domain/text/generator.py"
+        ]
+      },
+      "top_hotspot_buckets": {
+        "file": [
+          "domain/chapter/folder_generator.py",
+          "domain/text/txt_to_markdown.py",
+          "domain/ui/startup_manager.py",
+          "domain/chapter/selector.py",
+          "domain/chapter/creator.py"
+        ],
+        "directory": [
+          "domain/chapter",
+          "api/routes",
+          "domain/text",
+          "utils",
+          "domain/ui"
+        ],
+        "module": [
+          "domain/chapter",
+          "api/routes",
+          "domain/text",
+          "utils",
+          "domain/ui"
+        ]
+      },
+      "latency_summary": {
+        "index_ms": 0,
+        "brief_before_refresh_ms": 353,
+        "refresh_ms": 74,
+        "brief_after_refresh_ms": 279,
+        "violation_count_ms": 106,
+        "size_bytes_ms": 101,
+        "non_empty_lines_ms": 141,
+        "metric_graph_edge_out_count_ms": 113,
+        "metric_max_cognitive_complexity_ms": 128,
+        "metric_duplicate_density_bps_ms": 114,
+        "file_hotspots_ms": 113,
+        "directory_hotspots_ms": 96,
+        "module_hotspots_ms": 109
+      },
+      "resource_summary": {
+        "db_size_bytes": 4702208,
+        "wal_size_bytes": 4152,
+        "total_size_bytes": 4739128,
+        "peak_rss_bytes": null,
+        "peak_rss_note": "unsupported_on_host"
+      },
+      "noise_summary": {
+        "violating_file_ratio": 0.36666666666666664,
+        "top_rule_share": 0.3617021276595745,
+        "manual_review_required": true,
+        "review_shortlist": [
+          "domain/chapter/creator.py",
+          "domain/chapter/folder_generator.py",
+          "domain/ui/startup_manager.py",
+          "services/storage_service.py",
+          "domain/image/merger.py"
+        ]
+      },
+      "new_violations": 0,
+      "resolved_violations": 0,
+      "risk_score_delta_total": -8.881784197001252e-15,
+      "hotspot_score_delta_total": -8.881784197001252e-15
     },
     {
       "repo_id": "platforma_maga",
@@ -378,8 +404,8 @@
       "pre_refresh_status": "ready",
       "post_refresh_status": "ready",
       "evaluated_files": 770,
-      "violating_files": 654,
-      "total_violations": 1109,
+      "violating_files": 660,
+      "total_violations": 1197,
       "top_rules": [
         {
           "rule_id": "max_graph_edge_out_count",
@@ -402,9 +428,9 @@
           "violations": 87
         },
         {
-          "rule_id": "max_cyclomatic_complexity",
-          "files": 45,
-          "violations": 45
+          "rule_id": "max_duplicate_density_bps",
+          "files": 69,
+          "violations": 69
         }
       ],
       "top_metrics": [
@@ -412,6 +438,11 @@
           "metric_id": "size_bytes",
           "files": 770,
           "max_value": 25597
+        },
+        {
+          "metric_id": "duplicate_density_bps",
+          "files": 770,
+          "max_value": 10000
         },
         {
           "metric_id": "max_line_length",
@@ -424,14 +455,9 @@
           "max_value": 717
         },
         {
-          "metric_id": "graph_edge_out_count",
+          "metric_id": "max_duplicate_block_tokens",
           "files": 770,
-          "max_value": 340
-        },
-        {
-          "metric_id": "ref_count",
-          "files": 770,
-          "max_value": 195
+          "max_value": 511
         }
       ],
       "top_hot_files": {
@@ -494,6 +520,18 @@
           "frontend/src/components/schedule/hooks/useLessonData.ts",
           "frontend/src/components/animate-ui/primitives/texts/sliding-number.tsx",
           "frontend/src/components/admin/AttestationSettingsForm.tsx"
+        ],
+        "metric_duplicate_density_bps": [
+          "backend/alembic/versions/065_autobalance_attestation.py",
+          "backend/alembic/versions/064_refactor_attestation_settings.py",
+          "frontend/src/components/lectures/nodes/CodeBlockNode.ts",
+          "frontend/src/components/lectures/nodes/ImageNode.ts",
+          "backend/alembic/versions/030_add_group_reports.py",
+          "backend/app/api/v1/endpoints/admin_works.py",
+          "frontend/src/components/lectures/nodes/SnippetNode.ts",
+          "backend/app/crud/crud_work_submission.py",
+          "frontend/src/lib/api/labs.ts",
+          "backend/app/services/lecture_service.py"
         ]
       },
       "top_hotspot_buckets": {
@@ -501,55 +539,56 @@
           "frontend/src/lib/utils.ts",
           "frontend/src/components/labs/LabScheduleAttachment.tsx",
           "frontend/src/components/ui/hover-effect.tsx",
-          "frontend/src/app/admin/audit/components/AuditDetailDialog.tsx",
-          "frontend/src/app/admin/students/%u005Bid%u005D/components/StudentProfileCard.tsx"
+          "frontend/src/components/lectures/CodeBlockComponent.tsx",
+          "backend/app/api/v1/endpoints/admin_labs.py"
         ],
         "directory": [
+          "backend/app/api/v1/endpoints",
           "frontend/src/components/ui",
           "frontend/src/app/admin/audit/components",
           "frontend/src/app/admin/students/%u005Bid%u005D/components",
-          "frontend/src/components/admin",
-          "frontend/src/components/lectures/public"
+          "frontend/src/components/lectures"
         ],
         "module": [
+          "backend/app/api/v1/endpoints",
           "frontend/src/components/ui",
           "frontend/src/app/admin/audit/components",
           "frontend/src/app/admin/students/%u005Bid%u005D/components",
-          "frontend/src/components/admin",
-          "frontend/src/components/lectures/public"
+          "frontend/src/components/lectures"
         ]
       },
       "latency_summary": {
         "index_ms": 0,
-        "brief_before_refresh_ms": 1857,
-        "refresh_ms": 1118,
-        "brief_after_refresh_ms": 2110,
-        "violation_count_ms": 1334,
-        "size_bytes_ms": 1532,
-        "non_empty_lines_ms": 1187,
-        "metric_graph_edge_out_count_ms": 1211,
-        "metric_max_cognitive_complexity_ms": 1291,
-        "file_hotspots_ms": 1267,
-        "directory_hotspots_ms": 1224,
-        "module_hotspots_ms": 1345
+        "brief_before_refresh_ms": 1635,
+        "refresh_ms": 1393,
+        "brief_after_refresh_ms": 1593,
+        "violation_count_ms": 1496,
+        "size_bytes_ms": 1458,
+        "non_empty_lines_ms": 1481,
+        "metric_graph_edge_out_count_ms": 1467,
+        "metric_max_cognitive_complexity_ms": 1480,
+        "metric_duplicate_density_bps_ms": 1457,
+        "file_hotspots_ms": 1479,
+        "directory_hotspots_ms": 1507,
+        "module_hotspots_ms": 1481
       },
       "resource_summary": {
-        "db_size_bytes": 100757504,
+        "db_size_bytes": 102023168,
         "wal_size_bytes": 4152,
-        "total_size_bytes": 100794424,
+        "total_size_bytes": 102060088,
         "peak_rss_bytes": null,
         "peak_rss_note": "unsupported_on_host"
       },
       "noise_summary": {
-        "violating_file_ratio": 0.8493506493506493,
-        "top_rule_share": 0.5662759242560865,
+        "violating_file_ratio": 0.8571428571428571,
+        "top_rule_share": 0.5246449456975772,
         "manual_review_required": true,
         "review_shortlist": [
-          "frontend/src/app/admin/journal/components/JournalTable.tsx",
-          "frontend/src/components/labs/LabScheduleAttachment.tsx",
-          "frontend/src/app/report/%u005Bcode%u005D/components/ReportStudentTable.tsx",
-          "frontend/src/components/admin/ActivityManagementSection.tsx",
-          "frontend/src/app/admin/attestation/scores/page.tsx"
+          "backend/alembic/versions/064_refactor_attestation_settings.py",
+          "backend/alembic/versions/065_autobalance_attestation.py",
+          "frontend/src/components/lectures/nodes/ImageNode.ts",
+          "frontend/src/components/lectures/nodes/SnippetNode.ts",
+          "frontend/src/components/lectures/CodeBlockComponent.tsx"
         ]
       },
       "new_violations": 0,
@@ -563,9 +602,14 @@
       "pre_refresh_status": "ready",
       "post_refresh_status": "ready",
       "evaluated_files": 198,
-      "violating_files": 78,
-      "total_violations": 155,
+      "violating_files": 90,
+      "total_violations": 212,
       "top_rules": [
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "files": 41,
+          "violations": 41
+        },
         {
           "rule_id": "max_function_lines",
           "files": 30,
@@ -585,11 +629,6 @@
           "rule_id": "max_cyclomatic_complexity",
           "files": 21,
           "violations": 21
-        },
-        {
-          "rule_id": "max_class_member_count",
-          "files": 19,
-          "violations": 19
         }
       ],
       "top_metrics": [
@@ -599,38 +638,38 @@
           "max_value": 17416
         },
         {
+          "metric_id": "duplicate_density_bps",
+          "files": 198,
+          "max_value": 10000
+        },
+        {
+          "metric_id": "max_duplicate_block_tokens",
+          "files": 198,
+          "max_value": 1433
+        },
+        {
           "metric_id": "non_empty_lines",
           "files": 198,
           "max_value": 517
         },
         {
-          "metric_id": "max_line_length",
+          "metric_id": "duplicate_lines",
           "files": 198,
-          "max_value": 174
-        },
-        {
-          "metric_id": "ref_count",
-          "files": 198,
-          "max_value": 154
-        },
-        {
-          "metric_id": "graph_edge_out_count",
-          "files": 198,
-          "max_value": 86
+          "max_value": 328
         }
       ],
       "top_hot_files": {
         "violation_count": [
           "src/core/Game.ts",
-          "src/initialization/GameInitializer.ts",
           "src/inventory/InventoryUI.ts",
           "src/world/generation/runtime/GenerateChunk.ts",
           "src/player/PlayerHand.ts",
           "src/world/chunks/ChunkMeshBuilder.ts",
           "src/blocks/BlockInteraction.ts",
+          "src/initialization/GameInitializer.ts",
           "src/crafting/FurnaceUI.ts",
-          "src/world/generation/runtime/GenerateChunk.test.ts",
-          "src/mobs/WildBoar.ts"
+          "src/mobs/WildBoar.ts",
+          "src/core/GameUpdate.ts"
         ],
         "size_bytes": [
           "src/inventory/InventoryUI.ts",
@@ -679,68 +718,81 @@
           "src/world/generation/runtime/BiomeSurfaceRules.ts",
           "src/world/generation/StructureGenerator.ts",
           "src/initialization/GameInitializer.ts"
+        ],
+        "metric_duplicate_density_bps": [
+          "src/player/hand/ToolMeshBuilder.ts",
+          "src/inventory/ui/visuals.ts",
+          "src/core/GameToolUse.ts",
+          "src/constants/Blocks.ts",
+          "src/inventory/ui/interactions.ts",
+          "src/crafting/CraftingGridRenderer.ts",
+          "src/blocks/BlockCursor.ts",
+          "src/crafting/CraftingResultRenderer.ts",
+          "src/inventory/ui/slots.ts",
+          "src/mobs/WildBoar.ts"
         ]
       },
       "top_hotspot_buckets": {
         "file": [
           "src/core/Game.ts",
-          "src/initialization/GameInitializer.ts",
           "src/world/generation/runtime/GenerateChunk.ts",
+          "src/initialization/GameInitializer.ts",
           "src/world/chunks/ChunkMeshBuilder.ts",
-          "src/world/generation/runtime/GenerateChunk.test.ts"
+          "src/blocks/BlockInteraction.ts"
         ],
         "directory": [
           "src/world/generation/runtime",
           "src/core",
-          "src/world/generation",
           "src/crafting",
+          "src/world/chunks",
           "src/mobs"
         ],
         "module": [
           "src/world/generation/runtime",
           "src/core",
-          "src/world/generation",
           "src/crafting",
+          "src/world/chunks",
           "src/mobs"
         ]
       },
       "latency_summary": {
         "index_ms": 0,
-        "brief_before_refresh_ms": 830,
-        "refresh_ms": 405,
-        "brief_after_refresh_ms": 919,
-        "violation_count_ms": 516,
-        "size_bytes_ms": 408,
-        "non_empty_lines_ms": 491,
-        "metric_graph_edge_out_count_ms": 377,
-        "metric_max_cognitive_complexity_ms": 539,
-        "file_hotspots_ms": 469,
-        "directory_hotspots_ms": 437,
-        "module_hotspots_ms": 324
+        "brief_before_refresh_ms": 439,
+        "refresh_ms": 300,
+        "brief_after_refresh_ms": 440,
+        "violation_count_ms": 337,
+        "size_bytes_ms": 358,
+        "non_empty_lines_ms": 369,
+        "metric_graph_edge_out_count_ms": 337,
+        "metric_max_cognitive_complexity_ms": 427,
+        "metric_duplicate_density_bps_ms": 342,
+        "file_hotspots_ms": 379,
+        "directory_hotspots_ms": 352,
+        "module_hotspots_ms": 351
       },
       "resource_summary": {
-        "db_size_bytes": 9195520,
+        "db_size_bytes": 9486336,
         "wal_size_bytes": 4152,
-        "total_size_bytes": 9232440,
+        "total_size_bytes": 9523256,
         "peak_rss_bytes": null,
         "peak_rss_note": "unsupported_on_host"
       },
       "noise_summary": {
-        "violating_file_ratio": 0.3939393939393939,
-        "top_rule_share": 0.1935483870967742,
+        "violating_file_ratio": 0.45454545454545453,
+        "top_rule_share": 0.19339622641509435,
         "manual_review_required": true,
         "review_shortlist": [
-          "src/core/Game.ts",
-          "src/initialization/GameInitializer.ts",
-          "src/inventory/InventoryUI.ts",
-          "src/world/generation/runtime/GenerateChunk.ts",
-          "src/player/PlayerHand.ts"
+          "src/player/PlayerHand.ts",
+          "src/player/hand/ToolMeshBuilder.ts",
+          "src/world/chunks/ChunkMeshBuilder.ts",
+          "src/world/mesh/ChunkMeshDataBuilder.ts",
+          "src/inventory/InventoryUI.ts"
         ]
       },
       "new_violations": 0,
       "resolved_violations": 0,
-      "risk_score_delta_total": 1.0658141036401503e-14,
-      "hotspot_score_delta_total": 1.0658141036401503e-14
+      "risk_score_delta_total": -1.4210854715202004e-14,
+      "hotspot_score_delta_total": -1.4210854715202004e-14
     },
     {
       "repo_id": "qubeforge_rust",
@@ -749,7 +801,7 @@
       "post_refresh_status": "ready",
       "evaluated_files": 34,
       "violating_files": 12,
-      "total_violations": 49,
+      "total_violations": 57,
       "top_rules": [
         {
           "rule_id": "module_cycle_member",
@@ -784,6 +836,11 @@
           "max_value": 43891
         },
         {
+          "metric_id": "duplicate_density_bps",
+          "files": 34,
+          "max_value": 2411
+        },
+        {
           "metric_id": "non_empty_lines",
           "files": 34,
           "max_value": 1097
@@ -797,11 +854,6 @@
           "metric_id": "max_line_length",
           "files": 34,
           "max_value": 183
-        },
-        {
-          "metric_id": "symbol_count",
-          "files": 34,
-          "max_value": 74
         }
       ],
       "top_hot_files": {
@@ -809,8 +861,8 @@
           "crates/qf_sandbox/src/lib.rs",
           "crates/qf_world/src/world.rs",
           "crates/qf_world/src/mesh.rs",
-          "crates/qf_render/src/lib.rs",
           "crates/qf_content/src/lib.rs",
+          "crates/qf_render/src/lib.rs",
           "crates/qf_game/src/lib.rs",
           "crates/qf_platform/src/lib.rs",
           "crates/qf_save/src/lib.rs",
@@ -864,6 +916,18 @@
           "apps/qf_android/src/lib.rs",
           "crates/qf_world/src/generator.rs",
           "crates/qf_content/src/lib.rs"
+        ],
+        "metric_duplicate_density_bps": [
+          "crates/qf_world/src/mesh.rs",
+          "crates/qf_world/src/world.rs",
+          "crates/qf_content/src/lib.rs",
+          "crates/qf_sandbox/src/lib.rs",
+          "crates/qf_render/src/lib.rs",
+          "crates/qf_game/src/lib.rs",
+          "crates/qf_platform/src/lib.rs",
+          "crates/qf_save/src/lib.rs",
+          "apps/qf_desktop/src/main.rs",
+          "apps/qf_android/src/lib.rs"
         ]
       },
       "top_hotspot_buckets": {
@@ -871,37 +935,38 @@
           "crates/qf_sandbox/src/lib.rs",
           "crates/qf_world/src/world.rs",
           "crates/qf_world/src/mesh.rs",
-          "crates/qf_render/src/lib.rs",
-          "crates/qf_content/src/lib.rs"
+          "crates/qf_content/src/lib.rs",
+          "crates/qf_render/src/lib.rs"
         ],
         "directory": [
           "crates/qf_world/src",
           "crates/qf_sandbox/src",
+          "crates/qf_content/src",
           "crates/qf_render/src",
-          "crates/qf_core/src",
-          "crates/qf_content/src"
+          "crates/qf_core/src"
         ],
         "module": [
           "crates/qf_world/src",
           "crates/qf_sandbox/src",
+          "crates/qf_content/src",
           "crates/qf_render/src",
-          "crates/qf_core/src",
-          "crates/qf_content/src"
+          "crates/qf_core/src"
         ]
       },
       "latency_summary": {
         "index_ms": 0,
-        "brief_before_refresh_ms": 130,
-        "refresh_ms": 28,
-        "brief_after_refresh_ms": 132,
-        "violation_count_ms": 43,
-        "size_bytes_ms": 42,
-        "non_empty_lines_ms": 44,
-        "metric_graph_edge_out_count_ms": 42,
-        "metric_max_cognitive_complexity_ms": 45,
-        "file_hotspots_ms": 43,
-        "directory_hotspots_ms": 42,
-        "module_hotspots_ms": 41
+        "brief_before_refresh_ms": 179,
+        "refresh_ms": 42,
+        "brief_after_refresh_ms": 187,
+        "violation_count_ms": 64,
+        "size_bytes_ms": 67,
+        "non_empty_lines_ms": 68,
+        "metric_graph_edge_out_count_ms": 63,
+        "metric_max_cognitive_complexity_ms": 70,
+        "metric_duplicate_density_bps_ms": 68,
+        "file_hotspots_ms": 70,
+        "directory_hotspots_ms": 74,
+        "module_hotspots_ms": 67
       },
       "resource_summary": {
         "db_size_bytes": 2859008,
@@ -912,14 +977,14 @@
       },
       "noise_summary": {
         "violating_file_ratio": 0.35294117647058826,
-        "top_rule_share": 0.20408163265306123,
+        "top_rule_share": 0.17543859649122806,
         "manual_review_required": true,
         "review_shortlist": [
-          "crates/qf_sandbox/src/lib.rs",
-          "crates/qf_world/src/world.rs",
           "crates/qf_world/src/mesh.rs",
-          "crates/qf_render/src/lib.rs",
-          "crates/qf_content/src/lib.rs"
+          "crates/qf_world/src/world.rs",
+          "crates/qf_sandbox/src/lib.rs",
+          "crates/qf_content/src/lib.rs",
+          "crates/qf_core/src/config.rs"
         ]
       },
       "new_violations": 0,

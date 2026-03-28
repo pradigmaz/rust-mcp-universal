@@ -18,7 +18,8 @@
           "size": 0.16,
           "nesting": 1.0,
           "function_length": 0.14,
-          "complexity": 0.3333333333333333
+          "complexity": 0.3333333333333333,
+          "duplication": 0.0
         },
         "weights": {
           "violation_count": 1.0,
@@ -28,7 +29,8 @@
           "size": 1.0,
           "nesting": 1.0,
           "function_length": 1.0,
-          "complexity": 1.25
+          "complexity": 1.25,
+          "duplication": 1.15
         }
       },
       "rule_counts": [
@@ -69,7 +71,8 @@
           "size": 2.57,
           "nesting": 1.0,
           "function_length": 4.58,
-          "complexity": 3.1666666666666665
+          "complexity": 3.1666666666666665,
+          "duplication": 0.0
         },
         "weights": {
           "violation_count": 1.0,
@@ -79,7 +82,8 @@
           "size": 1.0,
           "nesting": 1.0,
           "function_length": 1.0,
-          "complexity": 1.25
+          "complexity": 1.25,
+          "duplication": 1.15
         }
       },
       "rule_counts": [
@@ -144,7 +148,8 @@
           "size": 1.15,
           "nesting": 0.0,
           "function_length": 1.22,
-          "complexity": 0.16666666666666666
+          "complexity": 0.16666666666666666,
+          "duplication": 0.0
         },
         "weights": {
           "violation_count": 1.0,
@@ -154,7 +159,8 @@
           "size": 1.0,
           "nesting": 1.0,
           "function_length": 1.0,
-          "complexity": 1.25
+          "complexity": 1.25,
+          "duplication": 1.15
         }
       },
       "rule_counts": [
@@ -189,6 +195,140 @@
       }
     },
     {
+      "bucket_id": "frontend/src/components/lectures/CodeBlockComponent.tsx",
+      "hotspot_score": 73.89666666666666,
+      "active_violation_count": 5,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 73.89666666666666,
+        "components": {
+          "violation_count": 5.0,
+          "severity": 14.0,
+          "fan_in": 1.0,
+          "fan_out": 7.0,
+          "size": 3.16,
+          "nesting": 1.0,
+          "function_length": 4.22,
+          "complexity": 1.8333333333333333,
+          "duplication": 31.5
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "frontend/src/components/lectures/CodeBlockComponent.tsx"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "backend/app/api/v1/endpoints/admin_labs.py",
+      "hotspot_score": 70.92333333333333,
+      "active_violation_count": 4,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 70.92333333333333,
+        "components": {
+          "violation_count": 4.0,
+          "severity": 12.0,
+          "fan_in": 0.0,
+          "fan_out": 6.0,
+          "size": 3.45,
+          "nesting": 3.0,
+          "function_length": 0.24,
+          "complexity": 0.6666666666666666,
+          "duplication": 36.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "backend/app/api/v1/endpoints/admin_labs.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
       "bucket_id": "frontend/src/app/admin/audit/components/AuditDetailDialog.tsx",
       "hotspot_score": 69.86166666666666,
       "active_violation_count": 5,
@@ -203,7 +343,8 @@
           "size": 2.82,
           "nesting": 0.0,
           "function_length": 5.0,
-          "complexity": 0.8333333333333334
+          "complexity": 0.8333333333333334,
+          "duplication": 0.0
         },
         "weights": {
           "violation_count": 1.0,
@@ -213,7 +354,8 @@
           "size": 1.0,
           "nesting": 1.0,
           "function_length": 1.0,
-          "complexity": 1.25
+          "complexity": 1.25,
+          "duplication": 1.15
         }
       },
       "rule_counts": [
@@ -270,7 +412,8 @@
           "size": 1.77,
           "nesting": 1.0,
           "function_length": 2.96,
-          "complexity": 1.6666666666666667
+          "complexity": 1.6666666666666667,
+          "duplication": 0.0
         },
         "weights": {
           "violation_count": 1.0,
@@ -280,7 +423,8 @@
           "size": 1.0,
           "nesting": 1.0,
           "function_length": 1.0,
-          "complexity": 1.25
+          "complexity": 1.25,
+          "duplication": 1.15
         }
       },
       "rule_counts": [
@@ -323,6 +467,136 @@
       }
     },
     {
+      "bucket_id": "backend/app/api/v1/endpoints/admin_audit.py",
+      "hotspot_score": 67.365,
+      "active_violation_count": 4,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 67.365,
+        "components": {
+          "violation_count": 4.0,
+          "severity": 12.0,
+          "fan_in": 0.0,
+          "fan_out": 12.0,
+          "size": 3.14,
+          "nesting": 0.0,
+          "function_length": 0.0,
+          "complexity": 0.0,
+          "duplication": 31.5
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_non_empty_lines_default",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "backend/app/api/v1/endpoints/admin_audit.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
+      "bucket_id": "frontend/src/lib/api/types/reports.ts",
+      "hotspot_score": 66.17999999999999,
+      "active_violation_count": 4,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 66.17999999999999,
+        "components": {
+          "violation_count": 4.0,
+          "severity": 16.0,
+          "fan_in": 24.0,
+          "fan_out": 5.0,
+          "size": 2.23,
+          "nesting": 0.0,
+          "function_length": 0.0,
+          "complexity": 0.0,
+          "duplication": 13.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_fan_in_per_file",
+          "violations": 1
+        },
+        {
+          "rule_id": "module_cycle_member",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 1,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "frontend/src/lib/api/types/reports.ts"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
       "bucket_id": "frontend/src/app/admin/audit/components/ClearLogsDialog.tsx",
       "hotspot_score": 63.975,
       "active_violation_count": 5,
@@ -337,7 +611,8 @@
           "size": 2.0,
           "nesting": 1.0,
           "function_length": 3.6,
-          "complexity": 3.5
+          "complexity": 3.5,
+          "duplication": 0.0
         },
         "weights": {
           "violation_count": 1.0,
@@ -347,7 +622,8 @@
           "size": 1.0,
           "nesting": 1.0,
           "function_length": 1.0,
-          "complexity": 1.25
+          "complexity": 1.25,
+          "duplication": 1.15
         }
       },
       "rule_counts": [
@@ -404,7 +680,8 @@
           "size": 1.55,
           "nesting": 1.0,
           "function_length": 2.58,
-          "complexity": 0.5
+          "complexity": 0.5,
+          "duplication": 0.0
         },
         "weights": {
           "violation_count": 1.0,
@@ -414,7 +691,8 @@
           "size": 1.0,
           "nesting": 1.0,
           "function_length": 1.0,
-          "complexity": 1.25
+          "complexity": 1.25,
+          "duplication": 1.15
         }
       },
       "rule_counts": [
@@ -467,7 +745,8 @@
           "size": 3.24,
           "nesting": 2.0,
           "function_length": 4.18,
-          "complexity": 3.8333333333333335
+          "complexity": 3.8333333333333335,
+          "duplication": 0.0
         },
         "weights": {
           "violation_count": 1.0,
@@ -477,7 +756,8 @@
           "size": 1.0,
           "nesting": 1.0,
           "function_length": 1.0,
-          "complexity": 1.25
+          "complexity": 1.25,
+          "duplication": 1.15
         }
       },
       "rule_counts": [
@@ -538,7 +818,8 @@
           "size": 0.31,
           "nesting": 0.0,
           "function_length": 0.1,
-          "complexity": 0.16666666666666666
+          "complexity": 0.16666666666666666,
+          "duplication": 0.0
         },
         "weights": {
           "violation_count": 1.0,
@@ -548,7 +829,8 @@
           "size": 1.0,
           "nesting": 1.0,
           "function_length": 1.0,
-          "complexity": 1.25
+          "complexity": 1.25,
+          "duplication": 1.15
         }
       },
       "rule_counts": [
@@ -597,7 +879,8 @@
           "size": 3.1,
           "nesting": 2.0,
           "function_length": 5.22,
-          "complexity": 2.8333333333333335
+          "complexity": 2.8333333333333335,
+          "duplication": 0.0
         },
         "weights": {
           "violation_count": 1.0,
@@ -607,7 +890,8 @@
           "size": 1.0,
           "nesting": 1.0,
           "function_length": 1.0,
-          "complexity": 1.25
+          "complexity": 1.25,
+          "duplication": 1.15
         }
       },
       "rule_counts": [
@@ -672,7 +956,8 @@
           "size": 0.87,
           "nesting": 0.0,
           "function_length": 1.42,
-          "complexity": 1.1666666666666667
+          "complexity": 1.1666666666666667,
+          "duplication": 0.0
         },
         "weights": {
           "violation_count": 1.0,
@@ -682,7 +967,8 @@
           "size": 1.0,
           "nesting": 1.0,
           "function_length": 1.0,
-          "complexity": 1.25
+          "complexity": 1.25,
+          "duplication": 1.15
         }
       },
       "rule_counts": [
@@ -735,7 +1021,8 @@
           "size": 3.22,
           "nesting": 2.0,
           "function_length": 6.34,
-          "complexity": 3.3333333333333335
+          "complexity": 3.3333333333333335,
+          "duplication": 0.0
         },
         "weights": {
           "violation_count": 1.0,
@@ -745,7 +1032,8 @@
           "size": 1.0,
           "nesting": 1.0,
           "function_length": 1.0,
-          "complexity": 1.25
+          "complexity": 1.25,
+          "duplication": 1.15
         }
       },
       "rule_counts": [
@@ -792,6 +1080,71 @@
       }
     },
     {
+      "bucket_id": "frontend/src/components/lectures/CodeBlockViewerComponent.tsx",
+      "hotspot_score": 55.148333333333326,
+      "active_violation_count": 4,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 55.148333333333326,
+        "components": {
+          "violation_count": 4.0,
+          "severity": 12.0,
+          "fan_in": 1.0,
+          "fan_out": 7.0,
+          "size": 1.68,
+          "nesting": 1.0,
+          "function_length": 1.76,
+          "complexity": 0.6666666666666666,
+          "duplication": 22.5
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_function_lines",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "frontend/src/components/lectures/CodeBlockViewerComponent.tsx"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
       "bucket_id": "frontend/src/app/report/%u005Bcode%u005D/components/ReportStudentTable.tsx",
       "hotspot_score": 53.37833333333334,
       "active_violation_count": 6,
@@ -806,7 +1159,8 @@
           "size": 3.6,
           "nesting": 1.0,
           "function_length": 4.82,
-          "complexity": 3.1666666666666665
+          "complexity": 3.1666666666666665,
+          "duplication": 0.0
         },
         "weights": {
           "violation_count": 1.0,
@@ -816,7 +1170,8 @@
           "size": 1.0,
           "nesting": 1.0,
           "function_length": 1.0,
-          "complexity": 1.25
+          "complexity": 1.25,
+          "duplication": 1.15
         }
       },
       "rule_counts": [
@@ -863,6 +1218,67 @@
       }
     },
     {
+      "bucket_id": "backend/app/services/attestation/student_score.py",
+      "hotspot_score": 52.478333333333325,
+      "active_violation_count": 3,
+      "suppressed_violation_count": 0,
+      "risk_score": {
+        "score": 52.478333333333325,
+        "components": {
+          "violation_count": 3.0,
+          "severity": 10.0,
+          "fan_in": 1.0,
+          "fan_out": 6.0,
+          "size": 2.29,
+          "nesting": 0.0,
+          "function_length": 0.08,
+          "complexity": 0.16666666666666666,
+          "duplication": 26.0
+        },
+        "weights": {
+          "violation_count": 1.0,
+          "severity": 1.0,
+          "fan_in": 1.0,
+          "fan_out": 1.0,
+          "size": 1.0,
+          "nesting": 1.0,
+          "function_length": 1.0,
+          "complexity": 1.25,
+          "duplication": 1.15
+        }
+      },
+      "rule_counts": [
+        {
+          "rule_id": "max_duplicate_block_count",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_duplicate_density_bps",
+          "violations": 1
+        },
+        {
+          "rule_id": "max_graph_edge_out_count",
+          "violations": 1
+        }
+      ],
+      "structural_signals": {
+        "module_cycle_member": 0,
+        "hub_module": 0,
+        "cross_layer_dependency": 0
+      },
+      "top_files": [
+        "backend/app/services/attestation/student_score.py"
+      ],
+      "delta": {
+        "new_violations": 0,
+        "resolved_violations": 0,
+        "risk_score_delta": 0.0,
+        "hotspot_score_delta": 0.0,
+        "new_hotspot": false,
+        "regressed_rules": []
+      }
+    },
+    {
       "bucket_id": "frontend/src/app/report/%u005Bcode%u005D/page.tsx",
       "hotspot_score": 51.905,
       "active_violation_count": 3,
@@ -877,7 +1293,8 @@
           "size": 2.19,
           "nesting": 3.0,
           "function_length": 2.84,
-          "complexity": 1.5
+          "complexity": 1.5,
+          "duplication": 0.0
         },
         "weights": {
           "violation_count": 1.0,
@@ -887,7 +1304,8 @@
           "size": 1.0,
           "nesting": 1.0,
           "function_length": 1.0,
-          "complexity": 1.25
+          "complexity": 1.25,
+          "duplication": 1.15
         }
       },
       "rule_counts": [
@@ -911,372 +1329,6 @@
       },
       "top_files": [
         "frontend/src/app/report/%u005Bcode%u005D/page.tsx"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "frontend/src/components/lectures/public/LecturePublicSettings.tsx",
-      "hotspot_score": 50.315,
-      "active_violation_count": 4,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 50.315,
-        "components": {
-          "violation_count": 4.0,
-          "severity": 9.0,
-          "fan_in": 15.0,
-          "fan_out": 18.0,
-          "size": 1.25,
-          "nesting": 0.0,
-          "function_length": 2.44,
-          "complexity": 0.5
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25
-        }
-      },
-      "rule_counts": [
-        {
-          "rule_id": "max_function_lines",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_graph_edge_out_count",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_line_length",
-          "violations": 1
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 1,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "frontend/src/components/lectures/public/LecturePublicSettings.tsx"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "frontend/src/app/admin/students/%u005Bid%u005D/components/StudentProgressCard.tsx",
-      "hotspot_score": 49.66833333333334,
-      "active_violation_count": 3,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 49.66833333333334,
-        "components": {
-          "violation_count": 3.0,
-          "severity": 7.0,
-          "fan_in": 17.0,
-          "fan_out": 19.0,
-          "size": 0.77,
-          "nesting": 0.0,
-          "function_length": 1.44,
-          "complexity": 1.1666666666666667
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25
-        }
-      },
-      "rule_counts": [
-        {
-          "rule_id": "max_graph_edge_out_count",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_line_length",
-          "violations": 1
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 1,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "frontend/src/app/admin/students/%u005Bid%u005D/components/StudentProgressCard.tsx"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "frontend/src/app/admin/students/%u005Bid%u005D/components/StudentStatsCards.tsx",
-      "hotspot_score": 49.098333333333336,
-      "active_violation_count": 3,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 49.098333333333336,
-        "components": {
-          "violation_count": 3.0,
-          "severity": 7.0,
-          "fan_in": 17.0,
-          "fan_out": 20.0,
-          "size": 0.67,
-          "nesting": 0.0,
-          "function_length": 1.22,
-          "complexity": 0.16666666666666666
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25
-        }
-      },
-      "rule_counts": [
-        {
-          "rule_id": "max_graph_edge_out_count",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_line_length",
-          "violations": 1
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 1,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "frontend/src/app/admin/students/%u005Bid%u005D/components/StudentStatsCards.tsx"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "frontend/src/components/admin/AttestationSettingsForm.tsx",
-      "hotspot_score": 46.50333333333334,
-      "active_violation_count": 5,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 46.50333333333334,
-        "components": {
-          "violation_count": 5.0,
-          "severity": 13.0,
-          "fan_in": 1.0,
-          "fan_out": 16.0,
-          "size": 1.59,
-          "nesting": 1.0,
-          "function_length": 3.08,
-          "complexity": 4.666666666666667
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25
-        }
-      },
-      "rule_counts": [
-        {
-          "rule_id": "max_cognitive_complexity",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_cyclomatic_complexity",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_function_lines",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_graph_edge_out_count",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_line_length",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 0,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "frontend/src/components/admin/AttestationSettingsForm.tsx"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "frontend/src/app/admin/audit/components/AuditStatsCards.tsx",
-      "hotspot_score": 46.138333333333335,
-      "active_violation_count": 2,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 46.138333333333335,
-        "components": {
-          "violation_count": 2.0,
-          "severity": 6.0,
-          "fan_in": 17.0,
-          "fan_out": 19.0,
-          "size": 0.67,
-          "nesting": 0.0,
-          "function_length": 1.26,
-          "complexity": 0.16666666666666666
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25
-        }
-      },
-      "rule_counts": [
-        {
-          "rule_id": "max_graph_edge_out_count",
-          "violations": 1
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 1,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "frontend/src/app/admin/audit/components/AuditStatsCards.tsx"
-      ],
-      "delta": {
-        "new_violations": 0,
-        "resolved_violations": 0,
-        "risk_score_delta": 0.0,
-        "hotspot_score_delta": 0.0,
-        "new_hotspot": false,
-        "regressed_rules": []
-      }
-    },
-    {
-      "bucket_id": "frontend/src/app/admin/page.tsx",
-      "hotspot_score": 46.068333333333335,
-      "active_violation_count": 4,
-      "suppressed_violation_count": 0,
-      "risk_score": {
-        "score": 46.068333333333335,
-        "components": {
-          "violation_count": 4.0,
-          "severity": 12.0,
-          "fan_in": 12.0,
-          "fan_out": 7.0,
-          "size": 2.26,
-          "nesting": 2.0,
-          "function_length": 4.1,
-          "complexity": 2.1666666666666665
-        },
-        "weights": {
-          "violation_count": 1.0,
-          "severity": 1.0,
-          "fan_in": 1.0,
-          "fan_out": 1.0,
-          "size": 1.0,
-          "nesting": 1.0,
-          "function_length": 1.0,
-          "complexity": 1.25
-        }
-      },
-      "rule_counts": [
-        {
-          "rule_id": "max_cyclomatic_complexity",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_function_lines",
-          "violations": 1
-        },
-        {
-          "rule_id": "max_graph_edge_out_count",
-          "violations": 1
-        },
-        {
-          "rule_id": "module_cycle_member",
-          "violations": 1
-        }
-      ],
-      "structural_signals": {
-        "module_cycle_member": 1,
-        "hub_module": 0,
-        "cross_layer_dependency": 0
-      },
-      "top_files": [
-        "frontend/src/app/admin/page.tsx"
       ],
       "delta": {
         "new_violations": 0,
