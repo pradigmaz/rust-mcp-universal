@@ -11,6 +11,9 @@ use crate::model::{
     PrivacyMode, QualityMode, QueryOptions, RuleViolationsOptions, SemanticFailMode,
 };
 
+mod duplication_precision;
+mod duplication_semantics;
+mod duplication_signal_roles;
 mod hotspots;
 mod oversize_and_backfill;
 mod structural;

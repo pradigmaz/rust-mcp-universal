@@ -45,6 +45,7 @@ fn preflight_json_reports_ok_status() {
             || payload["stale_process_probe_binary_path"].is_string()
     );
     assert!(payload["errors"].is_array());
+    assert!(payload["warnings"].is_array());
     assert!(payload["safe_recovery_hint"].is_string());
 }
 
@@ -91,6 +92,7 @@ fn preflight_json_reports_incompatible_status_for_future_schema() {
             .as_array()
             .is_some_and(|items| !items.is_empty())
     );
+    assert!(payload["warnings"].is_array());
     assert!(
         payload["safe_recovery_hint"]
             .as_str()
@@ -146,6 +148,7 @@ fn preflight_json_detects_running_mcp_server_via_probe_binary_path() {
             .as_str()
             .is_some_and(|path| path.ends_with("rmu-mcp-server.exe"))
     );
+    assert!(payload["warnings"].is_array());
 
     let _ = child.kill();
     let _ = child.wait();
@@ -177,4 +180,5 @@ fn preflight_json_reports_incompatible_status_for_stale_running_binary() {
             .as_array()
             .is_some_and(|items| !items.is_empty())
     );
+    assert!(payload["warnings"].is_array());
 }

@@ -24,6 +24,8 @@ pub(super) const MAX_FAN_IN_PER_FILE: i64 = 20;
 pub(super) const MAX_FAN_OUT_PER_FILE: i64 = 20;
 pub(super) const MAX_CYCLOMATIC_COMPLEXITY: i64 = 12;
 pub(super) const MAX_COGNITIVE_COMPLEXITY: i64 = 18;
+pub(super) const MAX_DUPLICATE_BLOCK_COUNT: i64 = 3;
+pub(super) const MAX_DUPLICATE_DENSITY_BPS: i64 = 1_500;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum FileKind {
@@ -56,6 +58,7 @@ pub(crate) fn build_indexed_quality_facts(
         file_kind: classify_file_kind(rel_path),
         hotspots,
         structural: super::StructuralFacts::default(),
+        duplication: super::DuplicationFacts::default(),
     }
 }
 
@@ -78,6 +81,7 @@ pub(crate) fn build_oversize_quality_facts(
         file_kind: classify_file_kind(rel_path),
         hotspots: super::HotspotFacts::default(),
         structural: super::StructuralFacts::default(),
+        duplication: super::DuplicationFacts::default(),
     }
 }
 

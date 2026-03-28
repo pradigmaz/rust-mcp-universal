@@ -32,5 +32,7 @@ pub struct PreflightStatus {
     pub launcher_recommended: Option<String>,
     pub safe_recovery_hint: String,
     #[serde(default)]
+    pub warnings: Vec<String>,
+    #[serde(default)]
     pub errors: Vec<String>,
 }

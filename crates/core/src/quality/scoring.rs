@@ -14,6 +14,7 @@ impl Default for QualityRiskScoreWeights {
             nesting: 1.0,
             function_length: 1.0,
             complexity: 1.25,
+            duplication: 1.15,
         }
     }
 }
@@ -29,7 +30,8 @@ pub(crate) fn compute_file_risk_score(
         + components.size * weights.size
         + components.nesting * weights.nesting
         + components.function_length * weights.function_length
-        + components.complexity * weights.complexity;
+        + components.complexity * weights.complexity
+        + components.duplication * weights.duplication;
     QualityRiskScoreBreakdown {
         score,
         components,
@@ -52,6 +54,7 @@ pub(crate) fn compute_hit_risk_score(hit: &RuleViolationFileHit) -> QualityRiskS
             nesting: metric_value(hit, "max_nesting_depth"),
             function_length: metric_value(hit, "max_function_lines") / 50.0,
             complexity: complexity_component(hit),
+            duplication: duplication_component(hit),
         },
         QualityRiskScoreWeights::default(),
     )
@@ -61,6 +64,13 @@ fn complexity_component(hit: &RuleViolationFileHit) -> f64 {
     let cyclomatic = metric_value(hit, "max_cyclomatic_complexity") / 6.0;
     let cognitive = metric_value(hit, "max_cognitive_complexity") / 10.0;
     cyclomatic.max(cognitive)
+}
+
+fn duplication_component(hit: &RuleViolationFileHit) -> f64 {
+    let density = metric_value(hit, "duplicate_density_bps") / 1_000.0;
+    let blocks = metric_value(hit, "duplicate_block_count") / 2.0;
+    let peers = metric_value(hit, "duplicate_peer_count") / 2.0;
+    density.max(blocks + peers)
 }
 
 fn metric_value(hit: &RuleViolationFileHit, metric_id: &str) -> f64 {

@@ -11,6 +11,7 @@ use crate::model::{
 
 mod basic;
 mod complexity;
+mod duplication;
 mod file_hotspots;
 mod structural;
 
@@ -186,6 +187,7 @@ fn default_rules() -> Vec<Box<dyn QualityRule>> {
     let mut rules = basic::rules();
     rules.extend(file_hotspots::rules());
     rules.extend(complexity::rules());
+    rules.extend(duplication::rules());
     rules.extend(structural::rules());
     rules
 }

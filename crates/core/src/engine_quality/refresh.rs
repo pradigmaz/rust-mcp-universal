@@ -3,9 +3,7 @@ use std::fs;
 
 use anyhow::Result;
 
-use super::scope::{
-    QualityRefreshPlan, apply_quality_scope_policy, build_full_quality_refresh_plan,
-};
+use super::scope::{apply_quality_scope_policy, build_full_quality_refresh_plan};
 use super::status::{
     write_quality_status_degraded, write_quality_status_ready, write_quality_status_unavailable,
 };
@@ -15,11 +13,22 @@ use crate::engine::storage::{
     UpsertQualitySnapshotInput, remove_path_quality, upsert_quality_snapshot,
 };
 use crate::quality::{
-    IndexedQualityMetrics, build_indexed_quality_facts, build_oversize_quality_facts,
-    default_quality_policy, evaluate_quality, load_quality_policy, quality_metrics_hash,
-    suppressed_violations_hash, violations_hash,
+    DuplicationCandidate, IndexedQualityMetrics, analyze_duplication, build_indexed_quality_facts,
+    build_oversize_quality_facts, default_quality_policy, evaluate_quality, load_quality_policy,
+    load_quality_policy_digest, quality_metrics_hash, suppressed_violations_hash, violations_hash,
+    write_duplication_artifact,
 };
 use crate::utils::{INDEX_FILE_LIMIT, infer_language, normalized_path_to_fs_path};
+
+#[derive(Debug)]
+struct QualityRefreshInput {
+    path: String,
+    language: String,
+    source_mtime_unix_ms: Option<i64>,
+    facts: crate::quality::QualityCandidateFacts,
+    indexed_metrics: IndexedQualityMetrics,
+    source_text: Option<String>,
+}
 
 #[derive(Debug)]
 struct QualityRefreshRecord {
@@ -37,8 +46,6 @@ struct QualityRefreshRecord {
     metrics: Vec<crate::quality::QualityMetricEntry>,
     violations: Vec<crate::model::QualityViolationEntry>,
     suppressed_violations: Vec<crate::model::SuppressedQualityViolationEntry>,
-    had_rule_errors: bool,
-    last_error_rule_id: Option<String>,
 }
 
 pub(super) fn refresh_quality_after_index(
@@ -46,10 +53,10 @@ pub(super) fn refresh_quality_after_index(
     refresh_paths: &HashSet<String>,
     deleted_paths: &HashSet<String>,
 ) -> Result<()> {
-    let plan = QualityRefreshPlan {
-        refresh_paths: refresh_paths.clone(),
-        deleted_paths: deleted_paths.clone(),
-    };
+    let conn = engine.open_db_read_only()?;
+    let mut plan = build_full_quality_refresh_plan(engine, &conn)?;
+    plan.refresh_paths.extend(refresh_paths.iter().cloned());
+    plan.deleted_paths.extend(deleted_paths.iter().cloned());
     let _ = apply_quality_refresh(engine, plan);
     Ok(())
 }
@@ -61,20 +68,29 @@ pub(super) fn refresh_quality_only(engine: &Engine) -> Result<()> {
     Ok(())
 }
 
-fn apply_quality_refresh(engine: &Engine, plan: QualityRefreshPlan) -> Result<()> {
+fn apply_quality_refresh(engine: &Engine, plan: super::scope::QualityRefreshPlan) -> Result<()> {
     let conn = match engine.open_db() {
         Ok(conn) => conn,
         Err(_) => return Ok(()),
     };
     let mut degraded = false;
     let mut last_error_rule_id = None::<String>;
-    let mut records = Vec::new();
     let policy = match load_quality_policy(&engine.project_root) {
         Ok(policy) => policy,
         Err(_) => {
             degraded = true;
             last_error_rule_id = Some("quality_policy".to_string());
             default_quality_policy()
+        }
+    };
+    let policy_digest = match load_quality_policy_digest(&engine.project_root) {
+        Ok(digest) => digest,
+        Err(_) => {
+            degraded = true;
+            if last_error_rule_id.is_none() {
+                last_error_rule_id = Some("quality_policy_digest".to_string());
+            }
+            crate::utils::hash_bytes(b"quality-policy-digest-error")
         }
     };
     let plan = match apply_quality_scope_policy(&conn, plan, &policy) {
@@ -84,10 +100,9 @@ fn apply_quality_refresh(engine: &Engine, plan: QualityRefreshPlan) -> Result<()
             if last_error_rule_id.is_none() {
                 last_error_rule_id = Some("quality_scope".to_string());
             }
-            QualityRefreshPlan::default()
+            super::scope::QualityRefreshPlan::default()
         }
     };
-    let mut deleted_paths = plan.deleted_paths.clone();
     let structural_facts = match load_structural_facts(&conn, &plan.refresh_paths, &policy) {
         Ok(facts) => facts,
         Err(_) => {
@@ -99,25 +114,66 @@ fn apply_quality_refresh(engine: &Engine, plan: QualityRefreshPlan) -> Result<()
         }
     };
 
+    let mut refresh_inputs = Vec::new();
+    let mut deleted_paths = plan.deleted_paths.clone();
     for path in sorted_paths(&plan.refresh_paths) {
         let structural = structural_facts.get(&path).cloned().unwrap_or_default();
-        match build_refresh_record(&conn, engine, &path, &policy, structural) {
-            Ok(Some(record)) => {
-                if record.had_rule_errors {
-                    degraded = true;
-                    if last_error_rule_id.is_none() {
-                        last_error_rule_id = record.last_error_rule_id.clone();
-                    }
-                }
-                records.push(record);
-            }
+        match build_refresh_input(&conn, engine, &path, structural) {
+            Ok(Some(input)) => refresh_inputs.push(input),
             Ok(None) => {
                 deleted_paths.insert(path);
             }
-            Err(_) => {
-                degraded = true;
+            Err(_) => degraded = true,
+        }
+    }
+
+    let duplication = analyze_duplication(
+        &policy,
+        crate::quality::QUALITY_RULESET_ID,
+        &policy_digest,
+        &refresh_inputs
+            .iter()
+            .map(|input| DuplicationCandidate {
+                path: &input.path,
+                language: &input.language,
+                non_empty_lines: input.facts.non_empty_lines,
+                source_text: input.source_text.as_deref(),
+            })
+            .collect::<Vec<_>>(),
+    );
+
+    let mut records = Vec::new();
+    for mut input in refresh_inputs {
+        input.facts.duplication = duplication
+            .file_facts
+            .get(&input.path)
+            .cloned()
+            .unwrap_or_default();
+        let evaluation = evaluate_quality(&input.facts, &input.indexed_metrics, &policy);
+        if evaluation.had_rule_errors {
+            degraded = true;
+            if last_error_rule_id.is_none() {
+                last_error_rule_id = evaluation.last_error_rule_id.clone();
             }
         }
+        records.push(QualityRefreshRecord {
+            path: input.path,
+            language: input.language,
+            size_bytes: evaluation.snapshot.size_bytes,
+            total_lines: evaluation.snapshot.total_lines,
+            non_empty_lines: evaluation.snapshot.non_empty_lines,
+            import_count: evaluation.snapshot.import_count,
+            quality_mode: evaluation.snapshot.quality_mode,
+            source_mtime_unix_ms: input.source_mtime_unix_ms,
+            quality_metric_hash: quality_metrics_hash(&evaluation.snapshot.metrics),
+            quality_violation_hash: violations_hash(&evaluation.snapshot.violations),
+            quality_suppressed_violation_hash: suppressed_violations_hash(
+                &evaluation.snapshot.suppressed_violations,
+            ),
+            metrics: evaluation.snapshot.metrics,
+            violations: evaluation.snapshot.violations,
+            suppressed_violations: evaluation.snapshot.suppressed_violations,
+        });
     }
 
     let tx_result = match conn.unchecked_transaction() {
@@ -126,7 +182,6 @@ fn apply_quality_refresh(engine: &Engine, plan: QualityRefreshPlan) -> Result<()
                 for path in sorted_paths(&deleted_paths) {
                     remove_path_quality(&tx, &path)?;
                 }
-
                 for record in &records {
                     upsert_quality_snapshot(
                         &tx,
@@ -152,11 +207,14 @@ fn apply_quality_refresh(engine: &Engine, plan: QualityRefreshPlan) -> Result<()
                         },
                     )?;
                 }
-
                 if degraded {
-                    write_quality_status_degraded(&tx, last_error_rule_id.as_deref())?;
+                    write_quality_status_degraded(
+                        &tx,
+                        last_error_rule_id.as_deref(),
+                        &policy_digest,
+                    )?;
                 } else {
-                    write_quality_status_ready(&tx)?;
+                    write_quality_status_ready(&tx, &policy_digest)?;
                 }
                 tx.commit()?;
                 Ok(())
@@ -168,18 +226,20 @@ fn apply_quality_refresh(engine: &Engine, plan: QualityRefreshPlan) -> Result<()
 
     if tx_result.is_err() {
         let _ = write_quality_status_unavailable(&conn);
+        return Ok(());
     }
-
+    if write_duplication_artifact(&engine.project_root, &duplication.artifact).is_err() {
+        let _ = write_quality_status_unavailable(&conn);
+    }
     Ok(())
 }
 
-fn build_refresh_record(
+fn build_refresh_input(
     conn: &rusqlite::Connection,
     engine: &Engine,
     path: &str,
-    policy: &crate::quality::QualityPolicy,
     structural: crate::quality::StructuralFacts,
-) -> Result<Option<QualityRefreshRecord>> {
+) -> Result<Option<QualityRefreshInput>> {
     let abs_path = engine.project_root.join(normalized_path_to_fs_path(path));
     let metadata = match fs::metadata(&abs_path) {
         Ok(metadata) => metadata,
@@ -187,51 +247,46 @@ fn build_refresh_record(
     };
     let source_mtime_unix_ms = metadata.modified().ok().map(system_time_to_unix_ms);
     let language = infer_language(&abs_path);
-    let evaluation = if metadata.len() > INDEX_FILE_LIMIT {
+    let indexed_metrics = load_indexed_quality_metrics(conn, path)?;
+    if metadata.len() > INDEX_FILE_LIMIT {
         let mut facts =
             build_oversize_quality_facts(path, &language, metadata.len(), source_mtime_unix_ms);
         facts.structural = structural;
-        evaluate_quality(&facts, &IndexedQualityMetrics::default(), policy)
-    } else {
-        let bytes = match fs::read(&abs_path) {
-            Ok(bytes) => bytes,
-            Err(_) => return Ok(None),
-        };
-        if bytes.contains(&0) {
-            return Ok(None);
-        }
-        let full_text = String::from_utf8_lossy(&bytes).to_string();
-        let mut facts = build_indexed_quality_facts(
-            path,
-            &language,
-            metadata.len(),
+        let source_text = fs::read(&abs_path).ok().and_then(|bytes| {
+            (!bytes.contains(&0)).then(|| String::from_utf8_lossy(&bytes).to_string())
+        });
+        return Ok(Some(QualityRefreshInput {
+            path: path.to_string(),
+            language,
             source_mtime_unix_ms,
-            &full_text,
-        );
-        facts.structural = structural.clone();
-        let indexed_metrics = load_indexed_quality_metrics(conn, path)?;
-        evaluate_quality(&facts, &indexed_metrics, policy)
+            facts,
+            indexed_metrics,
+            source_text,
+        }));
+    }
+    let bytes = match fs::read(&abs_path) {
+        Ok(bytes) => bytes,
+        Err(_) => return Ok(None),
     };
-
-    Ok(Some(QualityRefreshRecord {
+    if bytes.contains(&0) {
+        return Ok(None);
+    }
+    let full_text = String::from_utf8_lossy(&bytes).to_string();
+    let mut facts = build_indexed_quality_facts(
+        path,
+        &language,
+        metadata.len(),
+        source_mtime_unix_ms,
+        &full_text,
+    );
+    facts.structural = structural;
+    Ok(Some(QualityRefreshInput {
         path: path.to_string(),
         language,
-        size_bytes: evaluation.snapshot.size_bytes,
-        total_lines: evaluation.snapshot.total_lines,
-        non_empty_lines: evaluation.snapshot.non_empty_lines,
-        import_count: evaluation.snapshot.import_count,
-        quality_mode: evaluation.snapshot.quality_mode,
         source_mtime_unix_ms,
-        quality_metric_hash: quality_metrics_hash(&evaluation.snapshot.metrics),
-        quality_violation_hash: violations_hash(&evaluation.snapshot.violations),
-        quality_suppressed_violation_hash: suppressed_violations_hash(
-            &evaluation.snapshot.suppressed_violations,
-        ),
-        metrics: evaluation.snapshot.metrics,
-        violations: evaluation.snapshot.violations,
-        suppressed_violations: evaluation.snapshot.suppressed_violations,
-        had_rule_errors: evaluation.had_rule_errors,
-        last_error_rule_id: evaluation.last_error_rule_id,
+        facts,
+        indexed_metrics,
+        source_text: Some(full_text),
     }))
 }
 

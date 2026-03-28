@@ -4,7 +4,9 @@ use rusqlite::{Connection, OptionalExtension, params};
 use crate::engine::Engine;
 use crate::engine::storage::load_existing_quality_state_conn;
 use crate::model::QualityStatus;
-use crate::quality::{CURRENT_QUALITY_RULESET_VERSION, load_quality_policy};
+use crate::quality::{
+    CURRENT_QUALITY_RULESET_VERSION, load_quality_policy, load_quality_policy_digest,
+};
 
 use super::scope::{apply_quality_scope_policy, build_full_quality_refresh_plan};
 
@@ -13,6 +15,7 @@ const META_QUALITY_RULESET_VERSION: &str = "quality.ruleset_version";
 const META_QUALITY_LAST_REFRESH_UTC: &str = "quality.last_refresh_utc";
 const META_QUALITY_LAST_ERROR_UTC: &str = "quality.last_error_utc";
 const META_QUALITY_LAST_ERROR_RULE_ID: &str = "quality.last_error_rule_id";
+const META_QUALITY_POLICY_DIGEST: &str = "quality.policy_digest";
 
 pub(super) fn quality_tables_available(conn: &Connection) -> Result<bool> {
     let mut stmt = conn.prepare(
@@ -52,8 +55,14 @@ pub(crate) fn compute_quality_status(engine: &Engine) -> Result<QualityStatus> {
         Ok(plan) => plan,
         Err(_) => return Ok(QualityStatus::Degraded),
     };
+    let policy_digest = match load_quality_policy_digest(&engine.project_root) {
+        Ok(digest) => digest,
+        Err(_) => return Ok(QualityStatus::Degraded),
+    };
     if match quality_refresh_needed_conn(&conn, &plan) {
-        Ok(needs_refresh) => needs_refresh,
+        Ok(needs_refresh) => {
+            needs_refresh || stored_policy_digest(&conn)?.as_deref() != Some(policy_digest.as_str())
+        }
         Err(_) => return Ok(QualityStatus::Degraded),
     } {
         return Ok(QualityStatus::Stale);
@@ -87,19 +96,24 @@ pub(crate) fn read_quality_degradation_reason(engine: &Engine) -> Result<Option<
         }))
 }
 
-pub(super) fn write_quality_status_ready(tx: &rusqlite::Transaction<'_>) -> Result<()> {
+pub(super) fn write_quality_status_ready(
+    tx: &rusqlite::Transaction<'_>,
+    policy_digest: &str,
+) -> Result<()> {
     write_quality_meta(
         tx,
         QualityStatus::Ready,
         None,
         None,
         Some(CURRENT_QUALITY_RULESET_VERSION),
+        Some(policy_digest),
     )
 }
 
 pub(super) fn write_quality_status_degraded(
     tx: &rusqlite::Transaction<'_>,
     last_error_rule_id: Option<&str>,
+    policy_digest: &str,
 ) -> Result<()> {
     write_quality_meta(
         tx,
@@ -107,6 +121,7 @@ pub(super) fn write_quality_status_degraded(
         Some(now_rfc3339()?.as_str()),
         last_error_rule_id,
         Some(CURRENT_QUALITY_RULESET_VERSION),
+        Some(policy_digest),
     )
 }
 
@@ -153,12 +168,23 @@ fn quality_refresh_needed_conn(
     Ok(false)
 }
 
+fn stored_policy_digest(conn: &Connection) -> Result<Option<String>> {
+    conn.query_row(
+        "SELECT value FROM meta WHERE key = ?1",
+        [META_QUALITY_POLICY_DIGEST],
+        |row| row.get::<_, String>(0),
+    )
+    .optional()
+    .map_err(Into::into)
+}
+
 fn write_quality_meta(
     tx: &rusqlite::Transaction<'_>,
     status: QualityStatus,
     last_error_utc: Option<&str>,
     last_error_rule_id: Option<&str>,
     ruleset_version: Option<i64>,
+    policy_digest: Option<&str>,
 ) -> Result<()> {
     let refreshed_at = now_rfc3339()?;
     upsert_meta(tx, META_QUALITY_STATUS, status.as_str())?;
@@ -176,6 +202,9 @@ fn write_quality_meta(
         META_QUALITY_LAST_ERROR_RULE_ID,
         last_error_rule_id.unwrap_or(""),
     )?;
+    if let Some(policy_digest) = policy_digest {
+        upsert_meta(tx, META_QUALITY_POLICY_DIGEST, policy_digest)?;
+    }
     Ok(())
 }
 

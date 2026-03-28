@@ -38,7 +38,7 @@ fn workspace_brief_includes_quality_summary() {
     assert_eq!(result["isError"], json!(false));
     assert_eq!(
         result["structuredContent"]["quality_summary"]["ruleset_id"],
-        json!("quality-core-v6")
+        json!("quality-core-v11")
     );
     assert_eq!(
         result["structuredContent"]["quality_summary"]["status"],

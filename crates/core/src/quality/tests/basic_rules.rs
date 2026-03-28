@@ -6,8 +6,8 @@ use crate::quality::{
 
 #[test]
 fn quality_constants_are_stable() {
-    assert_eq!(QUALITY_RULESET_ID, "quality-core-v6");
-    assert_eq!(CURRENT_QUALITY_RULESET_VERSION, 6);
+    assert_eq!(QUALITY_RULESET_ID, "quality-core-v11");
+    assert_eq!(CURRENT_QUALITY_RULESET_VERSION, 11);
 }
 
 #[test]
@@ -85,4 +85,6 @@ fn basic_rule_registry_keeps_stable_rule_ids() {
     assert!(metric_ids.contains(&"non_empty_lines"));
     assert!(metric_ids.contains(&"import_count"));
     assert!(metric_ids.contains(&"max_line_length"));
+    assert!(metric_ids.contains(&"duplicate_block_count"));
+    assert!(metric_ids.contains(&"duplicate_density_bps"));
 }

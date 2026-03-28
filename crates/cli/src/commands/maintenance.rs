@@ -223,6 +223,9 @@ pub(crate) fn run_preflight(engine: &Engine, json: bool, privacy_mode: PrivacyMo
         if !status.errors.is_empty() {
             print_line(format!("errors={}", status.errors.join(" | ")));
         }
+        if !status.warnings.is_empty() {
+            print_line(format!("warnings={}", status.warnings.join(" | ")));
+        }
         print_line(format!("safe_recovery_hint={}", status.safe_recovery_hint));
     }
     Ok(())

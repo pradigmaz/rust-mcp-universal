@@ -13,8 +13,9 @@ fn scoring_skeleton_is_deterministic() {
             nesting: 7.0,
             function_length: 8.0,
             complexity: 9.0,
+            duplication: 10.0,
         },
         QualityRiskScoreWeights::default(),
     );
-    assert_eq!(breakdown.score, 46.25);
+    assert_eq!(breakdown.score, 57.75);
 }

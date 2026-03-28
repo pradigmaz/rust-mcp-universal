@@ -45,6 +45,10 @@ pub(super) fn write_repo_artifacts(
         &outcome.by_metric_max_cognitive_complexity,
     )?;
     write_json_file(
+        &repo_output_root.join("violations.by_metric_duplicate_density_bps.json"),
+        &outcome.by_metric_duplicate_density_bps,
+    )?;
+    write_json_file(
         &repo_output_root.join("hotspots.file.json"),
         &outcome.file_hotspots,
     )?;
@@ -56,6 +60,12 @@ pub(super) fn write_repo_artifacts(
         &repo_output_root.join("hotspots.module.json"),
         &outcome.module_hotspots,
     )?;
+    if let Some(duplication_clone_classes) = &outcome.duplication_clone_classes {
+        write_json_file(
+            &repo_output_root.join("duplication.clone_classes.json"),
+            duplication_clone_classes,
+        )?;
+    }
     fs::write(repo_output_root.join("notes.md"), &outcome.notes_markdown).with_context(|| {
         format!(
             "failed to write notes markdown `{}`",

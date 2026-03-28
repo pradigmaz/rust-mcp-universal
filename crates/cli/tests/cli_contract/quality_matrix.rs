@@ -156,12 +156,49 @@ fn quality_matrix_single_repo_writes_canonical_summary_without_absolute_repo_pat
         aggregate["repos"][0]["artifacts"]["violations_by_metric_max_cognitive_complexity"],
         json!("violations.by_metric_max_cognitive_complexity.json")
     );
+    assert_eq!(
+        aggregate["repos"][0]["artifacts"]["violations_by_metric_duplicate_density_bps"],
+        json!("violations.by_metric_duplicate_density_bps.json")
+    );
+    assert_eq!(
+        aggregate["repos"][0]["artifacts"]["duplication_clone_classes"],
+        json!("duplication.clone_classes.json")
+    );
     assert!(
         aggregate["repos"][0]["latency_summary"]["metric_max_cognitive_complexity_ms"]
             .as_u64()
             .is_some()
     );
+    assert!(
+        aggregate["repos"][0]["latency_summary"]["metric_duplicate_density_bps_ms"]
+            .as_u64()
+            .is_some()
+    );
+    assert_eq!(
+        aggregate["repos"][0]["noise_summary"]["manual_review_required"],
+        json!(false)
+    );
+    assert_eq!(
+        aggregate["repos"][0]["noise_summary"]["review_shortlist"],
+        json!([])
+    );
     assert!(aggregate["repos"][0]["top_hot_files"]["metric_max_cognitive_complexity"].is_array());
+    assert!(aggregate["repos"][0]["top_hot_files"]["metric_duplicate_density_bps"].is_array());
+    let notes = std::fs::read_to_string(
+        matrix_root
+            .path()
+            .join(".codex/quality-matrix/runs")
+            .read_dir()
+            .expect("runs dir")
+            .next()
+            .expect("run dir")
+            .expect("run dir entry")
+            .path()
+            .join("repo_alpha/notes.md"),
+    )
+    .expect("read notes");
+    assert!(notes.contains("manual_review_required=false"));
+    assert!(notes.contains("review_shortlist="));
     assert!(!canonical_raw.contains(&repo.display().to_string()));
     assert!(!canonical_raw.contains(&matrix_root.path().display().to_string()));
 }

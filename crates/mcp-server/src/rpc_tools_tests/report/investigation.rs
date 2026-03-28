@@ -186,6 +186,7 @@ fn preflight_tool_returns_structured_status_payload() {
             || result["structuredContent"]["stale_process_probe_binary_path"].is_string()
     );
     assert!(result["structuredContent"]["same_binary_other_pids"].is_array());
+    assert!(result["structuredContent"]["warnings"].is_array());
     assert!(result["structuredContent"]["errors"].is_array());
     assert!(result["structuredContent"]["safe_recovery_hint"].is_string());
 

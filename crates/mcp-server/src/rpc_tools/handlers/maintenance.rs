@@ -31,6 +31,7 @@ pub(super) fn preflight(args: &Value, state: &mut ServerState) -> Result<Value> 
             "safe_recovery_hint": binding_failure.details["safe_recovery_hint"]
                 .as_str()
                 .unwrap_or("provide initialize roots/projectPath or call set_project_path before using project-scoped tools"),
+            "warnings": [],
             "binding_status": state.binding_status(),
             "resolved_project_path": Value::Null,
             "resolved_db_path": state.db_path.as_ref().map(|value| value.display().to_string()),

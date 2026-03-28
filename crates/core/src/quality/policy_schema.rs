@@ -7,7 +7,15 @@ use serde::Deserialize;
 use crate::model::{QualityCategory, QualitySeverity};
 use crate::quality::is_known_rule_id;
 
-pub(crate) const CURRENT_QUALITY_POLICY_VERSION: u32 = 2;
+#[path = "policy_schema_duplication.rs"]
+mod duplication;
+
+pub(crate) use duplication::{
+    DuplicationPathPairFile, DuplicationPolicyFile, DuplicationSuppressionFile,
+    validate_duplication_suppressions,
+};
+
+pub(crate) const CURRENT_QUALITY_POLICY_VERSION: u32 = 3;
 
 #[derive(Debug, Clone, Default, Deserialize)]
 pub(crate) struct QualityPolicyFile {
@@ -19,6 +27,8 @@ pub(crate) struct QualityPolicyFile {
     pub(crate) quality_scope: Option<QualityScopePolicyFile>,
     #[serde(default)]
     pub(crate) structural: Option<StructuralPolicyFile>,
+    #[serde(default)]
+    pub(crate) duplication: Option<DuplicationPolicyFile>,
     #[serde(default)]
     pub(crate) rule_overrides: BTreeMap<String, QualityRuleMetadataOverrideFile>,
     #[serde(default)]
@@ -49,6 +59,8 @@ pub(crate) struct QualityThresholdOverrides {
     pub(crate) max_fan_out_per_file: Option<i64>,
     pub(crate) max_cyclomatic_complexity: Option<i64>,
     pub(crate) max_cognitive_complexity: Option<i64>,
+    pub(crate) max_duplicate_block_count: Option<i64>,
+    pub(crate) max_duplicate_density_bps: Option<i64>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -84,6 +96,8 @@ pub(crate) struct PathScopePolicyFile {
     pub(crate) rule_overrides: BTreeMap<String, QualityRuleMetadataOverrideFile>,
     #[serde(default)]
     pub(crate) suppressions: Vec<QualitySuppressionFile>,
+    #[serde(default)]
+    pub(crate) duplication: Option<DuplicationPolicyFile>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -154,6 +168,9 @@ pub(crate) fn parse_quality_policy_file(
     validate_rule_overrides(policy_path, &parsed.rule_overrides)?;
     validate_path_scopes(policy_path, &parsed.path_scopes)?;
     validate_suppressions(policy_path, None, &parsed.suppressions)?;
+    if let Some(duplication) = parsed.duplication.as_ref() {
+        validate_duplication_suppressions(policy_path, None, &duplication.suppressions)?;
+    }
     validate_structural_policy(policy_path, parsed.structural.as_ref())?;
     Ok(parsed)
 }
@@ -197,6 +214,13 @@ fn validate_path_scopes(policy_path: &Path, scopes: &[PathScopePolicyFile]) -> R
         }
         validate_rule_overrides(policy_path, &scope.rule_overrides)?;
         validate_suppressions(policy_path, Some(scope_id), &scope.suppressions)?;
+        if let Some(duplication) = scope.duplication.as_ref() {
+            validate_duplication_suppressions(
+                policy_path,
+                Some(scope_id),
+                &duplication.suppressions,
+            )?;
+        }
     }
     Ok(())
 }

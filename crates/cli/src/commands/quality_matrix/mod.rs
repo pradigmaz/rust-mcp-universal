@@ -4,9 +4,11 @@ use anyhow::Result;
 use rmu_core::{
     MigrationMode, PrivacyMode, QualityHotspotsResult, RuleViolationsResult, WorkspaceBrief,
 };
+use serde_json::Value;
 
 mod artifacts;
 mod baseline;
+mod builder;
 mod hotspots;
 mod manifest;
 mod notes;
@@ -32,9 +34,11 @@ pub(super) struct RepoRunOutcome {
     pub(super) by_non_empty_lines: RuleViolationsResult,
     pub(super) by_metric_graph_edge_out_count: RuleViolationsResult,
     pub(super) by_metric_max_cognitive_complexity: RuleViolationsResult,
+    pub(super) by_metric_duplicate_density_bps: RuleViolationsResult,
     pub(super) file_hotspots: QualityHotspotsResult,
     pub(super) directory_hotspots: QualityHotspotsResult,
     pub(super) module_hotspots: QualityHotspotsResult,
+    pub(super) duplication_clone_classes: Option<Value>,
     pub(super) evaluated_files: usize,
     pub(super) violating_files: usize,
     pub(super) total_violations: usize,

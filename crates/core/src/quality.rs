@@ -5,6 +5,8 @@ use crate::model::{
 
 #[path = "quality/complexity.rs"]
 mod complexity;
+#[path = "quality/duplication.rs"]
+mod duplication;
 #[path = "quality/evaluate.rs"]
 mod evaluate;
 #[path = "quality/location.rs"]
@@ -22,8 +24,8 @@ mod rules;
 #[path = "quality/scoring.rs"]
 mod scoring;
 
-pub(crate) const QUALITY_RULESET_ID: &str = "quality-core-v6";
-pub(crate) const CURRENT_QUALITY_RULESET_VERSION: i64 = 6;
+pub(crate) const QUALITY_RULESET_ID: &str = "quality-core-v11";
+pub(crate) const CURRENT_QUALITY_RULESET_VERSION: i64 = 11;
 
 #[derive(Debug, Clone)]
 pub(crate) struct QualityMetricEntry {
@@ -105,6 +107,17 @@ pub(crate) struct StructuralFacts {
     pub(crate) orphan_module: bool,
 }
 
+#[derive(Debug, Clone, Default)]
+pub(crate) struct DuplicationFacts {
+    pub(crate) duplicate_block_count: i64,
+    pub(crate) duplicate_peer_count: i64,
+    pub(crate) duplicate_lines: i64,
+    pub(crate) max_duplicate_block_tokens: i64,
+    pub(crate) max_duplicate_similarity_percent: i64,
+    pub(crate) duplicate_density_bps: i64,
+    pub(crate) primary_location: Option<crate::model::QualityLocation>,
+}
+
 #[derive(Debug, Clone)]
 pub(crate) struct QualitySnapshot {
     pub(crate) size_bytes: i64,
@@ -138,6 +151,7 @@ pub(crate) struct QualityCandidateFacts {
     pub(crate) file_kind: metrics::FileKind,
     pub(crate) hotspots: HotspotFacts,
     pub(crate) structural: StructuralFacts,
+    pub(crate) duplication: DuplicationFacts,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -148,13 +162,16 @@ pub(crate) struct IndexedQualityMetrics {
     pub(crate) graph_edge_out_count: Option<i64>,
 }
 
+pub(crate) use duplication::{
+    DuplicationCandidate, analyze_duplication, write_duplication_artifact,
+};
 pub(crate) use evaluate::{
     build_indexed_quality_facts, build_oversize_quality_facts, evaluate_quality,
 };
 pub(crate) use metrics::quality_metrics_hash;
 pub(crate) use policy::{
     EffectiveQualityPolicy, QualityPolicy, QualityThresholds, StructuralPolicy,
-    default_quality_policy, load_quality_policy,
+    default_quality_policy, load_quality_policy, load_quality_policy_digest,
 };
 pub(crate) use policy_schema::StructuralUnmatchedBehavior;
 pub(crate) use rule_metadata::is_known_rule_id;

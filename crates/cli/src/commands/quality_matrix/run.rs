@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 use rmu_core::{MigrationMode, PrivacyMode};
 
 use crate::output::{print_json, print_line};
@@ -25,6 +25,7 @@ pub(super) fn run(
         .as_deref()
         .map(|path| manifest::resolve_from_project_root(project_root, path))
         .unwrap_or_else(|| manifest::default_override_path(project_root));
+    let explicit_output_root = args.output_root.is_some();
     let output_root = args
         .output_root
         .as_deref()
@@ -38,8 +39,7 @@ pub(super) fn run(
         bail!("quality-matrix selected zero repositories");
     }
 
-    let run_root = output_root.join(artifacts::run_stamp()?);
-    artifacts::create_directory(&run_root)?;
+    let run_root = prepare_run_root(project_root, &output_root, explicit_output_root)?;
 
     let mut repo_reports = Vec::new();
     let mut evaluated_files = Vec::new();
@@ -100,4 +100,64 @@ pub(super) fn run(
         print_line(report::text_summary(&aggregate, privacy_mode));
     }
     Ok(())
+}
+
+fn prepare_run_root(
+    project_root: &Path,
+    output_root: &Path,
+    explicit_output_root: bool,
+) -> Result<std::path::PathBuf> {
+    let run_stamp = artifacts::run_stamp()?;
+    let preferred = output_root.join(&run_stamp);
+    if artifacts::create_directory(&preferred).is_ok() {
+        return Ok(preferred);
+    }
+    if explicit_output_root {
+        artifacts::create_directory(&preferred)?;
+        return Ok(preferred);
+    }
+
+    let fallback_root = project_root.join("target/quality-matrix-runs");
+    let fallback = fallback_root.join(&run_stamp);
+    artifacts::create_directory(&fallback).with_context(|| {
+        format!(
+            "failed to create preferred quality-matrix output root `{}` and fallback `{}`",
+            preferred.display(),
+            fallback.display()
+        )
+    })?;
+    Ok(fallback)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    use super::prepare_run_root;
+
+    fn temp_dir(prefix: &str) -> std::path::PathBuf {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system clock")
+            .as_nanos();
+        std::env::temp_dir().join(format!("{prefix}-{nanos}"))
+    }
+
+    #[test]
+    fn default_output_root_falls_back_to_target_when_preferred_root_is_unwritable() {
+        let root = temp_dir("rmu-quality-matrix-run-fallback");
+        fs::create_dir_all(root.join(".codex/quality-matrix")).expect("create quality-matrix dir");
+        fs::create_dir_all(root.join("target")).expect("create target dir");
+        fs::write(root.join(".codex/quality-matrix/runs"), "occupied-by-file")
+            .expect("create blocking file");
+
+        let run_root = prepare_run_root(&root, &root.join(".codex/quality-matrix/runs"), false)
+            .expect("fallback run root");
+
+        assert!(run_root.starts_with(root.join("target/quality-matrix-runs")));
+        assert!(run_root.exists());
+
+        let _ = fs::remove_dir_all(root);
+    }
 }

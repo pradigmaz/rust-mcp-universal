@@ -10,7 +10,7 @@ fn rule_violations_expose_structural_hotspots() -> anyhow::Result<()> {
         &root,
         "rmu-quality-policy.json",
         r#"{
-            "version":2,
+            "version":3,
             "thresholds":{"max_fan_in_per_file":1,"max_fan_out_per_file":1},
             "structural":{
                 "zones":[

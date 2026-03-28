@@ -45,6 +45,7 @@ pub enum QualitySource {
     Ast,
     ParserLight,
     Heuristic,
+    Duplication,
 }
 
 impl QualitySource {
@@ -53,6 +54,7 @@ impl QualitySource {
             Self::Ast => "ast",
             Self::ParserLight => "parser_light",
             Self::Heuristic => "heuristic",
+            Self::Duplication => "duplication",
         }
     }
 
@@ -61,6 +63,7 @@ impl QualitySource {
             "ast" => Some(Self::Ast),
             "parser_light" => Some(Self::ParserLight),
             "heuristic" => Some(Self::Heuristic),
+            "duplication" => Some(Self::Duplication),
             _ => None,
         }
     }
@@ -233,6 +236,8 @@ pub struct QualityRiskScoreWeights {
     pub nesting: f64,
     pub function_length: f64,
     pub complexity: f64,
+    #[serde(default)]
+    pub duplication: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, Default)]
@@ -245,6 +250,8 @@ pub struct QualityRiskScoreComponents {
     pub nesting: f64,
     pub function_length: f64,
     pub complexity: f64,
+    #[serde(default)]
+    pub duplication: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

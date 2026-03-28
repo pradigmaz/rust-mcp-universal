@@ -23,6 +23,7 @@ fn preflight_status_schema_covers_supported_keywords_and_shapes() {
         "stale_process_suspected": true,
         "launcher_recommended": "scripts/rmu-mcp-server-fresh.cmd",
         "safe_recovery_hint": "use fresh launcher",
+        "warnings": ["name-only probe fallback"],
         "errors": ["db newer than binary supported"],
         "binding_status": "bound",
         "binding_source": "cli",
@@ -37,10 +38,10 @@ fn preflight_status_schema_covers_supported_keywords_and_shapes() {
     invalid_status["status"] = json!("unexpected");
     assert_schema_rejects(&invalid_status, &schema, "preflight.invalid-status");
 
-    let mut missing_errors = valid_payload;
-    missing_errors
+    let mut missing_warnings = valid_payload;
+    missing_warnings
         .as_object_mut()
         .expect("object payload")
-        .remove("errors");
-    assert_schema_rejects(&missing_errors, &schema, "preflight.missing-errors");
+        .remove("warnings");
+    assert_schema_rejects(&missing_warnings, &schema, "preflight.missing-warnings");
 }

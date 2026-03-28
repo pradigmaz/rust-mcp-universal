@@ -10,7 +10,7 @@ fn rule_violations_expose_hotspot_locations_and_sources() -> anyhow::Result<()> 
     write_project_file(
         &root,
         "rmu-quality-policy.json",
-        r#"{"version":2,"thresholds":{"max_function_lines":3,"max_nesting_depth":2,"max_parameters_per_function":3,"max_export_count_per_file":2,"max_class_member_count":2,"max_todo_count_per_file":1}}"#,
+        r#"{"version":3,"thresholds":{"max_function_lines":3,"max_nesting_depth":2,"max_parameters_per_function":3,"max_export_count_per_file":2,"max_class_member_count":2,"max_todo_count_per_file":1}}"#,
     )?;
     write_project_file(
         &root,
@@ -135,7 +135,7 @@ fn rule_violations_and_hotspots_expose_complexity_contract() -> anyhow::Result<(
     write_project_file(
         &root,
         "rmu-quality-policy.json",
-        r#"{"version":2,"thresholds":{"max_cyclomatic_complexity":2,"max_cognitive_complexity":2}}"#,
+        r#"{"version":3,"thresholds":{"max_cyclomatic_complexity":2,"max_cognitive_complexity":2}}"#,
     )?;
     write_project_file(
         &root,
@@ -215,7 +215,7 @@ fn quality_hotspots_directory_and_module_modes_group_deterministically() -> anyh
         &root,
         "rmu-quality-policy.json",
         r#"{
-            "version":2,
+            "version":3,
             "structural":{
                 "zones":[
                     {"id":"ui","paths":["src/ui/**"]},
@@ -288,7 +288,7 @@ fn complexity_can_outrank_long_linear_files_in_hotspots() -> anyhow::Result<()> 
         &root,
         "rmu-quality-policy.json",
         r#"{
-            "version":2,
+            "version":3,
             "thresholds":{
                 "max_non_empty_lines_default":50,
                 "max_cyclomatic_complexity":2,
@@ -317,6 +317,151 @@ fn complexity_can_outrank_long_linear_files_in_hotspots() -> anyhow::Result<()> 
         .expect("at least one hotspot bucket should exist");
 
     assert_eq!(top_bucket.bucket_id, "src/branchy.rs");
+
+    let _ = std::fs::remove_dir_all(root);
+    Ok(())
+}
+
+#[test]
+fn rule_violations_and_hotspots_expose_duplication_contract() -> anyhow::Result<()> {
+    let root = temp_dir("rmu-quality-duplication-contract");
+    std::fs::create_dir_all(&root)?;
+    write_project_file(
+        &root,
+        "rmu-quality-policy.json",
+        r#"{"version":3,"thresholds":{"max_duplicate_block_count":0,"max_duplicate_density_bps":500}}"#,
+    )?;
+    write_project_file(
+        &root,
+        "src/alpha.rs",
+        "pub fn repeated(input: i32) -> i32 {\n    let mut total = input;\n    total += 1;\n    total += 2;\n    total += 3;\n    total += 4;\n    total += 5;\n    total += 6;\n    total += 7;\n    total += 8;\n    total += 9;\n    total += 10;\n    total += 11;\n    total += 12;\n    total += 13;\n    total += 14;\n    total += 15;\n    total += 16;\n    if total > 10 {\n        total -= 2;\n    }\n    if total % 2 == 0 {\n        total += 3;\n    }\n    if total > 40 {\n        total -= 5;\n    }\n    if total > 80 {\n        total -= 7;\n    }\n    if total % 3 == 0 {\n        total += 9;\n    }\n    if total > 120 {\n        total -= 11;\n    }\n    total\n}\n",
+    )?;
+    write_project_file(
+        &root,
+        "src/beta.rs",
+        "pub fn repeated(input: i32) -> i32 {\n    let mut total = input;\n    total += 1;\n    total += 2;\n    total += 3;\n    total += 4;\n    total += 5;\n    total += 6;\n    total += 7;\n    total += 8;\n    total += 9;\n    total += 10;\n    total += 11;\n    total += 12;\n    total += 13;\n    total += 14;\n    total += 15;\n    total += 16;\n    if total > 10 {\n        total -= 2;\n    }\n    if total % 2 == 0 {\n        total += 3;\n    }\n    if total > 40 {\n        total -= 5;\n    }\n    if total > 80 {\n        total -= 7;\n    }\n    if total % 3 == 0 {\n        total += 9;\n    }\n    if total > 120 {\n        total -= 11;\n    }\n    total\n}\n",
+    )?;
+
+    let engine = Engine::new(root.clone(), Some(root.join(".rmu/index.db")))?;
+    engine.index_path()?;
+
+    let violations = engine.rule_violations(&RuleViolationsOptions {
+        metric_ids: vec![
+            "duplicate_block_count".to_string(),
+            "duplicate_density_bps".to_string(),
+            "duplicate_peer_count".to_string(),
+            "max_duplicate_block_tokens".to_string(),
+        ],
+        sort_metric_id: Some("duplicate_density_bps".to_string()),
+        sort_by: RuleViolationsSortBy::MetricValue,
+        ..RuleViolationsOptions::default()
+    })?;
+    let hotspots = engine.quality_hotspots(&QualityHotspotsOptions::default())?;
+
+    let hit = violations
+        .hits
+        .iter()
+        .find(|hit| hit.path == "src/alpha.rs")
+        .expect("duplication file hit should exist");
+    let bucket = hotspots
+        .buckets
+        .iter()
+        .find(|bucket| bucket.bucket_id == "src/alpha.rs")
+        .expect("duplication hotspot bucket should exist");
+
+    assert!(
+        hit.metrics
+            .iter()
+            .any(|metric| metric.metric_id == "duplicate_block_count" && metric.metric_value > 0)
+    );
+    assert!(
+        hit.violations
+            .iter()
+            .any(|violation| violation.rule_id == "max_duplicate_block_count")
+    );
+    assert_eq!(
+        hit.metrics
+            .iter()
+            .find(|metric| metric.metric_id == "duplicate_density_bps")
+            .and_then(|metric| metric.source),
+        Some(QualitySource::Duplication)
+    );
+    assert!(
+        hit.risk_score
+            .expect("duplication risk score should exist")
+            .components
+            .duplication
+            > 0.0
+    );
+    assert!(
+        bucket
+            .risk_score
+            .expect("duplication bucket risk should exist")
+            .components
+            .duplication
+            > 0.0
+    );
+    assert!(
+        root.join(".rmu/quality/duplication.clone_classes.json")
+            .exists()
+    );
+
+    let _ = std::fs::remove_dir_all(root);
+    Ok(())
+}
+
+#[test]
+fn same_file_duplication_stays_out_of_file_level_quality_signal() -> anyhow::Result<()> {
+    let root = temp_dir("rmu-quality-duplication-same-file");
+    std::fs::create_dir_all(&root)?;
+    write_project_file(
+        &root,
+        "rmu-quality-policy.json",
+        r#"{"version":3,"thresholds":{"max_duplicate_block_count":0,"max_duplicate_density_bps":500}}"#,
+    )?;
+    write_project_file(
+        &root,
+        "src/lib.rs",
+        "pub fn alpha(input: i32) -> i32 {\n    let mut total = input;\n    total += 1;\n    total += 2;\n    total += 3;\n    total += 4;\n    total += 5;\n    total += 6;\n    total += 7;\n    total += 8;\n    if total > 10 {\n        total -= 2;\n    }\n    if total % 2 == 0 {\n        total += 3;\n    }\n    if total > 40 {\n        total -= 5;\n    }\n    total\n}\n\npub fn beta(value: i32) -> i32 {\n    let mut amount = value;\n    amount += 1;\n    amount += 2;\n    amount += 3;\n    amount += 4;\n    amount += 5;\n    amount += 6;\n    amount += 7;\n    amount += 8;\n    if amount > 10 {\n        amount -= 2;\n    }\n    if amount % 2 == 0 {\n        amount += 3;\n    }\n    if amount > 40 {\n        amount -= 5;\n    }\n    amount\n}\n",
+    )?;
+
+    let engine = Engine::new(root.clone(), Some(root.join(".rmu/index.db")))?;
+    engine.index_path()?;
+
+    let violations = engine.rule_violations(&RuleViolationsOptions {
+        metric_ids: vec![
+            "duplicate_block_count".to_string(),
+            "duplicate_density_bps".to_string(),
+        ],
+        sort_metric_id: Some("duplicate_density_bps".to_string()),
+        sort_by: RuleViolationsSortBy::MetricValue,
+        ..RuleViolationsOptions::default()
+    })?;
+
+    let hit = violations
+        .hits
+        .iter()
+        .find(|hit| hit.path == "src/lib.rs")
+        .expect("same-file duplication test hit should exist");
+    assert_eq!(
+        hit.metrics
+            .iter()
+            .find(|metric| metric.metric_id == "duplicate_density_bps")
+            .map(|metric| metric.metric_value),
+        Some(0)
+    );
+    assert!(
+        hit.violations
+            .iter()
+            .all(|violation| violation.rule_id != "max_duplicate_density_bps")
+    );
+    assert_eq!(
+        hit.risk_score
+            .expect("same-file duplication risk score should exist")
+            .components
+            .duplication,
+        0.0
+    );
 
     let _ = std::fs::remove_dir_all(root);
     Ok(())

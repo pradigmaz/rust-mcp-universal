@@ -38,7 +38,7 @@ fn load_quality_policy_applies_overrides() {
     fs::create_dir_all(&root).expect("create temp dir");
     fs::write(
         root.join("rmu-quality-policy.json"),
-        r#"{"version":2,"thresholds":{"max_non_empty_lines_default":400,"max_function_lines":12}}"#,
+        r#"{"version":3,"thresholds":{"max_non_empty_lines_default":400,"max_function_lines":12}}"#,
     )
     .expect("write policy");
 
@@ -60,7 +60,7 @@ fn load_quality_policy_reads_quality_scope_and_structural_sections() {
     fs::write(
         root.join("rmu-quality-policy.json"),
         r#"{
-            "version":2,
+            "version":3,
             "thresholds":{"max_fan_in_per_file":9,"max_fan_out_per_file":7},
             "quality_scope":{"exclude_paths":["generated/**"]},
             "structural":{
@@ -91,7 +91,7 @@ fn load_quality_policy_reads_quality_scope_and_structural_sections() {
 fn policy_schema_rejects_duplicate_structural_zone_patterns() {
     let err = parse_quality_policy_file(
         r#"{
-            "version":2,
+            "version":3,
             "thresholds":{},
             "structural":{
                 "zones":[
@@ -116,7 +116,7 @@ fn load_quality_policy_applies_rule_metadata_path_scopes_and_suppressions() {
     fs::write(
         root.join("rmu-quality-policy.json"),
         r#"{
-            "version":2,
+            "version":3,
             "rule_overrides":{
                 "max_line_length":{"severity":"high","category":"risk"}
             },
@@ -201,7 +201,7 @@ fn load_quality_policy_applies_rule_metadata_path_scopes_and_suppressions() {
 fn policy_schema_rejects_unknown_rule_metadata_and_suppressions() {
     let err = parse_quality_policy_file(
         r#"{
-            "version":2,
+            "version":3,
             "rule_overrides":{"unknown_rule":{"severity":"high"}},
             "thresholds":{}
         }"#,
@@ -212,7 +212,7 @@ fn policy_schema_rejects_unknown_rule_metadata_and_suppressions() {
 
     let err = parse_quality_policy_file(
         r#"{
-            "version":2,
+            "version":3,
             "thresholds":{},
             "suppressions":[
                 {"id":"bad","rule_ids":["unknown_rule"],"paths":["src/**"],"reason":"x"}
@@ -222,4 +222,65 @@ fn policy_schema_rejects_unknown_rule_metadata_and_suppressions() {
     )
     .expect_err("unknown suppression rule should fail");
     assert!(err.to_string().contains("unknown rule"));
+}
+
+#[test]
+fn load_quality_policy_reads_duplication_suppressions() {
+    let root = temp_dir("rmu-quality-duplication-policy");
+    fs::create_dir_all(&root).expect("create temp dir");
+    fs::write(
+        root.join("rmu-quality-policy.json"),
+        r#"{
+            "version":3,
+            "duplication":{
+                "suppressions":[
+                    {
+                        "id":"intentional-shared-shell",
+                        "clone_class_ids":["abc123"],
+                        "reason":"shared bootstrap shell"
+                    }
+                ]
+            },
+            "path_scopes":[
+                {
+                    "id":"api",
+                    "paths":["src/api/**"],
+                    "duplication":{
+                        "suppressions":[
+                            {
+                                "id":"intentional-route-mirror",
+                                "path_pairs":[
+                                    {"left":"src/api/routes/**","right":"src/api/v1/endpoints/**"}
+                                ],
+                                "reason":"route layer mirrors endpoint layer intentionally"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }"#,
+    )
+    .expect("write policy");
+
+    let policy = load_quality_policy(&root).expect("policy should load");
+    assert_eq!(policy.duplication.suppressions.len(), 2);
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn policy_schema_rejects_duplication_suppressions_without_selectors() {
+    let err = parse_quality_policy_file(
+        r#"{
+            "version":3,
+            "duplication":{
+                "suppressions":[
+                    {"id":"bad","reason":"missing selectors"}
+                ]
+            }
+        }"#,
+        std::path::Path::new("policy.json"),
+    )
+    .expect_err("duplication suppressions without selectors must fail");
+    assert!(err.to_string().contains("without any"));
 }

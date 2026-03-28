@@ -141,6 +141,7 @@ fn preflight_json_reports_status_and_recovery_hint() {
     assert!(payload["db_schema_version"].is_number());
     assert!(payload["safe_recovery_hint"].is_string());
     assert!(payload["same_binary_other_pids"].is_array());
+    assert!(payload["warnings"].is_array());
 }
 
 #[test]

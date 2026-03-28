@@ -64,6 +64,7 @@ impl Engine {
             cfg!(windows).then(|| "scripts/rmu-mcp-server-fresh.cmd".to_string());
         let safe_recovery_hint = compatibility_hint();
         let mut errors = Vec::new();
+        let mut warnings = Vec::new();
         let mut db_schema_version = None;
         let mut index_format_version = None;
         let mut ann_version = None;
@@ -91,11 +92,11 @@ impl Engine {
             .as_deref()
             .unwrap_or(binary_path.as_str());
         let same_binary_other_pids =
-            detect_same_binary_other_pids(stale_process_probe_target, &mut errors);
+            detect_same_binary_other_pids(stale_process_probe_target, &mut warnings);
         let stale_process_suspected = !same_binary_other_pids.is_empty();
         let status = if !errors.is_empty() {
             PreflightState::Incompatible
-        } else if stale_process_suspected {
+        } else if stale_process_suspected || !warnings.is_empty() {
             PreflightState::Warning
         } else {
             PreflightState::Ok
@@ -116,6 +117,7 @@ impl Engine {
             stale_process_suspected,
             launcher_recommended,
             safe_recovery_hint,
+            warnings,
             errors,
         })
     }
@@ -261,50 +263,81 @@ fn is_running_binary_stale(process_started_at_ms: i128, binary_modified_at_ms: i
     binary_modified_at_ms > process_started_at_ms + RUNNING_BINARY_STALE_GRACE_MS
 }
 
-fn detect_same_binary_other_pids(binary_path: &str, errors: &mut Vec<String>) -> Vec<u32> {
+fn detect_same_binary_other_pids(binary_path: &str, warnings: &mut Vec<String>) -> Vec<u32> {
     #[cfg(windows)]
     {
-        let escaped = binary_path.replace('\'', "''");
         let current_pid = process::id();
-        let script = format!(
-            "$p='{escaped}'; Get-CimInstance Win32_Process -Filter \"Name = 'rmu-mcp-server.exe'\" | Where-Object {{ $_.ExecutablePath -and [System.StringComparer]::OrdinalIgnoreCase.Equals([System.IO.Path]::GetFullPath($_.ExecutablePath), $p) -and $_.ProcessId -ne {current_pid} }} | Select-Object -ExpandProperty ProcessId | ConvertTo-Json -Compress"
-        );
-        match Command::new("powershell.exe")
-            .args(["-NoProfile", "-Command", &script])
-            .output()
-        {
-            Ok(output) if output.status.success() => {
-                let raw = String::from_utf8_lossy(&output.stdout).trim().to_string();
-                if raw.is_empty() || raw == "null" {
-                    Vec::new()
-                } else if let Ok(single) = serde_json::from_str::<u32>(&raw) {
-                    vec![single]
-                } else if let Ok(many) = serde_json::from_str::<Vec<u32>>(&raw) {
-                    many
-                } else {
-                    errors.push(format!(
-                        "failed to parse stale process probe output `{raw}`"
-                    ));
-                    Vec::new()
-                }
-            }
-            Ok(output) => {
-                errors.push(format!(
-                    "stale process probe failed with exit code {:?}",
-                    output.status.code()
-                ));
-                Vec::new()
-            }
+        match probe_same_binary_other_pids_by_path(binary_path, current_pid) {
+            Ok(pids) => pids,
             Err(err) => {
-                errors.push(format!("stale process probe failed: {err}"));
-                Vec::new()
+                warnings.push(format!(
+                    "stale process exact-path probe unavailable: {err}; falling back to process-name match"
+                ));
+                match probe_same_binary_other_pids_by_name(binary_path, current_pid) {
+                    Ok(pids) => pids,
+                    Err(fallback_err) => {
+                        warnings.push(format!(
+                            "stale process name probe unavailable: {fallback_err}"
+                        ));
+                        Vec::new()
+                    }
+                }
             }
         }
     }
     #[cfg(not(windows))]
     {
-        let _ = (binary_path, errors);
+        let _ = (binary_path, warnings);
         Vec::new()
+    }
+}
+
+#[cfg(windows)]
+fn probe_same_binary_other_pids_by_path(binary_path: &str, current_pid: u32) -> Result<Vec<u32>> {
+    let escaped = binary_path.replace('\'', "''");
+    let script = format!(
+        "$p='{escaped}'; Get-CimInstance Win32_Process -Filter \"Name = 'rmu-mcp-server.exe'\" | Where-Object {{ $_.ExecutablePath -and [System.StringComparer]::OrdinalIgnoreCase.Equals([System.IO.Path]::GetFullPath($_.ExecutablePath), $p) -and $_.ProcessId -ne {current_pid} }} | Select-Object -ExpandProperty ProcessId | ConvertTo-Json -Compress"
+    );
+    run_process_probe_script(&script)
+}
+
+#[cfg(windows)]
+fn probe_same_binary_other_pids_by_name(binary_path: &str, current_pid: u32) -> Result<Vec<u32>> {
+    let process_name = Path::new(binary_path)
+        .file_stem()
+        .and_then(|value| value.to_str())
+        .unwrap_or("rmu-mcp-server");
+    let escaped = process_name.replace('\'', "''");
+    let script = format!(
+        "$name='{escaped}'; Get-Process -Name $name -ErrorAction SilentlyContinue | Where-Object {{ $_.Id -ne {current_pid} }} | Select-Object -ExpandProperty Id | ConvertTo-Json -Compress"
+    );
+    run_process_probe_script(&script)
+}
+
+#[cfg(windows)]
+fn run_process_probe_script(script: &str) -> Result<Vec<u32>> {
+    let output = Command::new("powershell.exe")
+        .args(["-NoProfile", "-Command", script])
+        .output()
+        .context("failed to run stale process probe")?;
+    if !output.status.success() {
+        return Err(anyhow::anyhow!(
+            "stale process probe failed with exit code {:?}",
+            output.status.code()
+        ));
+    }
+
+    let raw = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if raw.is_empty() || raw == "null" {
+        Ok(Vec::new())
+    } else if let Ok(single) = serde_json::from_str::<u32>(&raw) {
+        Ok(vec![single])
+    } else if let Ok(many) = serde_json::from_str::<Vec<u32>>(&raw) {
+        Ok(many)
+    } else {
+        Err(anyhow::anyhow!(
+            "failed to parse stale process probe output `{raw}`"
+        ))
     }
 }
 
@@ -466,7 +499,10 @@ mod tests {
         assert_eq!(status.project_path, root.display().to_string());
         assert_eq!(status.db_schema_version, Some(14));
         assert!(status.errors.is_empty());
-        assert_ne!(status.status, PreflightState::Incompatible);
+        assert!(matches!(
+            status.status,
+            PreflightState::Ok | PreflightState::Warning
+        ));
 
         drop(engine);
         let _ = fs::remove_dir_all(root);

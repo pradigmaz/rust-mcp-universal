@@ -7,18 +7,23 @@ use anyhow::{Context, Result};
 use crate::index_scope::IndexScope;
 use crate::model::{IndexingOptions, QualitySuppression};
 
+#[path = "policy_duplication.rs"]
+mod duplication_policy;
+
 use super::policy_schema::{
     PathScopePolicyFile, QualityPolicyFile, QualityRuleMetadataOverrideFile,
     QualityScopePolicyFile, QualitySuppressionFile, QualityThresholdOverrides,
     StructuralPolicyFile, StructuralUnmatchedBehavior, parse_quality_policy_file,
 };
 use super::rule_metadata::{RuleMetadata, default_rule_metadata_map};
+pub(crate) use duplication_policy::{DuplicationPolicy, duplication_policy_from_file};
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct QualityPolicy {
     pub(crate) thresholds: QualityThresholds,
     pub(crate) quality_scope: QualityScopePolicy,
     pub(crate) structural: Option<StructuralPolicy>,
+    pub(crate) duplication: DuplicationPolicy,
     pub(crate) rule_metadata: BTreeMap<String, RuleMetadata>,
     pub(crate) path_scopes: Vec<PathScopePolicy>,
     pub(crate) suppressions: Vec<QualitySuppressionPolicy>,
@@ -82,6 +87,8 @@ pub(crate) struct QualityThresholds {
     pub(crate) max_fan_out_per_file: i64,
     pub(crate) max_cyclomatic_complexity: i64,
     pub(crate) max_cognitive_complexity: i64,
+    pub(crate) max_duplicate_block_count: i64,
+    pub(crate) max_duplicate_density_bps: i64,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -128,6 +135,7 @@ pub(crate) struct PathScopePolicy {
     pub(crate) thresholds: QualityThresholdOverrides,
     pub(crate) rule_overrides: BTreeMap<String, QualityRuleMetadataOverride>,
     pub(crate) suppressions: Vec<QualitySuppressionPolicy>,
+    pub(crate) duplication: DuplicationPolicy,
 }
 
 #[derive(Debug, Clone)]
@@ -146,12 +154,12 @@ pub(crate) struct QualityRuleMetadataOverride {
 }
 
 #[derive(Debug, Clone)]
-struct PathMatcher {
+pub(crate) struct PathMatcher {
     scope: IndexScope,
 }
 
 impl PathMatcher {
-    fn new(patterns: &[String]) -> Result<Self> {
+    pub(crate) fn new(patterns: &[String]) -> Result<Self> {
         Ok(Self {
             scope: IndexScope::new(&IndexingOptions {
                 profile: None,
@@ -164,7 +172,7 @@ impl PathMatcher {
         })
     }
 
-    fn matches(&self, rel_path: &str) -> bool {
+    pub(crate) fn matches(&self, rel_path: &str) -> bool {
         self.scope.allows(rel_path)
     }
 }
@@ -192,9 +200,12 @@ pub(crate) fn default_quality_policy() -> QualityPolicy {
             max_fan_out_per_file: super::metrics::MAX_FAN_OUT_PER_FILE,
             max_cyclomatic_complexity: super::metrics::MAX_CYCLOMATIC_COMPLEXITY,
             max_cognitive_complexity: super::metrics::MAX_COGNITIVE_COMPLEXITY,
+            max_duplicate_block_count: super::metrics::MAX_DUPLICATE_BLOCK_COUNT,
+            max_duplicate_density_bps: super::metrics::MAX_DUPLICATE_DENSITY_BPS,
         },
         quality_scope: QualityScopePolicy::default(),
         structural: None,
+        duplication: DuplicationPolicy::default(),
         rule_metadata: default_rule_metadata_map(),
         path_scopes: Vec::new(),
         suppressions: Vec::new(),
@@ -202,6 +213,13 @@ pub(crate) fn default_quality_policy() -> QualityPolicy {
 }
 
 impl QualityPolicy {
+    pub(crate) fn duplication_suppressions_for_class(
+        &self,
+        class: &crate::quality::duplication::artifact::DuplicationCloneClass,
+    ) -> Vec<QualitySuppression> {
+        self.duplication.suppressions_for_class(class)
+    }
+
     pub(crate) fn effective_for_path(&self, rel_path: &str) -> EffectiveQualityPolicy {
         let mut thresholds = self.thresholds.clone();
         let mut rule_metadata = self.rule_metadata.clone();
@@ -259,11 +277,15 @@ fn quality_policy_from_file(parsed: QualityPolicyFile) -> Result<QualityPolicy> 
             .collect(),
     );
     policy.structural = parsed.structural.map(structural_policy_from_file);
+    policy.duplication = duplication_policy_from_file(None, None, parsed.duplication)?;
     policy.path_scopes = parsed
         .path_scopes
         .into_iter()
         .map(path_scope_from_file)
         .collect::<Result<Vec<_>>>()?;
+    for scope in &policy.path_scopes {
+        policy.duplication.extend_from(scope.duplication.clone());
+    }
     policy.suppressions = parsed
         .suppressions
         .into_iter()
@@ -288,6 +310,11 @@ fn path_scope_from_file(parsed: PathScopePolicyFile) -> Result<PathScopePolicy> 
             .into_iter()
             .map(|suppression| suppression_from_file(Some(parsed.id.as_str()), suppression))
             .collect::<Result<Vec<_>>>()?,
+        duplication: duplication_policy_from_file(
+            Some(parsed.id.as_str()),
+            Some(&parsed.paths),
+            parsed.duplication,
+        )?,
     })
 }
 
@@ -384,6 +411,33 @@ fn apply_threshold_overrides(
     if let Some(value) = overrides.max_cognitive_complexity {
         thresholds.max_cognitive_complexity = value;
     }
+    if let Some(value) = overrides.max_duplicate_block_count {
+        thresholds.max_duplicate_block_count = value;
+    }
+    if let Some(value) = overrides.max_duplicate_density_bps {
+        thresholds.max_duplicate_density_bps = value;
+    }
+}
+
+pub(crate) fn load_quality_policy_digest(project_root: &Path) -> Result<String> {
+    const QUALITY_ENGINE_DIGEST_SALT: &str = "quality-engine-v4-duplication-semantics";
+    let policy_path = project_root.join("rmu-quality-policy.json");
+    if !policy_path.exists() {
+        return Ok(crate::utils::hash_bytes(
+            format!(
+                "quality-policy-default-v{}|{}",
+                super::policy_schema::CURRENT_QUALITY_POLICY_VERSION,
+                QUALITY_ENGINE_DIGEST_SALT
+            )
+            .as_bytes(),
+        ));
+    }
+    let raw = fs::read(&policy_path)
+        .with_context(|| format!("failed to read quality policy `{}`", policy_path.display()))?;
+    let mut salted = raw;
+    salted.extend_from_slice(b"|");
+    salted.extend_from_slice(QUALITY_ENGINE_DIGEST_SALT.as_bytes());
+    Ok(crate::utils::hash_bytes(&salted))
 }
 
 fn apply_quality_scope(scope: &mut QualityScopePolicy, overrides: Option<QualityScopePolicyFile>) {

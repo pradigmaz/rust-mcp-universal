@@ -11,6 +11,7 @@
     "same_binary_other_pids",
     "stale_process_suspected",
     "safe_recovery_hint",
+    "warnings",
     "errors"
   ],
   "properties": {
@@ -52,6 +53,10 @@
       "items": { "type": "string" }
     },
     "safe_recovery_hint": { "type": "string", "minLength": 1 },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
     "errors": {
       "type": "array",
       "items": { "type": "string" }
