@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use crate::engine::investigation::SharedInvestigationSnapshot;
 use crate::model::{
+    CanonicalBasis, CanonicalFreshness, CanonicalProvenance, CanonicalStrength,
     InvestigationConstraintSummary, InvestigationDivergenceSummary, InvestigationHints,
     InvestigationRouteSummary, InvestigationSummary, InvestigationTopVariant,
 };
@@ -16,15 +17,19 @@ const DIVERGENCE_AUTHORITATIVE_TOOL: &str = "divergence_report";
 pub(super) fn format_investigation_summary(
     snapshot: &SharedInvestigationSnapshot,
 ) -> InvestigationSummary {
+    let route_trace = summarize_route(&snapshot.route_trace);
+    let constraint_evidence = summarize_constraints(&snapshot.constraint_evidence);
+    let divergence = snapshot.divergence.as_ref().map(summarize_divergence);
     InvestigationSummary {
         surface_kind: EMBEDDED_SURFACE_KIND.to_string(),
         concept_cluster: crate::model::InvestigationConceptClusterSummary {
             variant_count: snapshot.concept_cluster.cluster_summary.variant_count,
             top_variants: collect_top_variants(&snapshot.concept_cluster.variants),
         },
-        route_trace: summarize_route(&snapshot.route_trace),
-        constraint_evidence: summarize_constraints(&snapshot.constraint_evidence),
-        divergence: snapshot.divergence.as_ref().map(summarize_divergence),
+        route_trace,
+        constraint_evidence,
+        divergence,
+        provenance: summarize_provenance(snapshot),
     }
 }
 
@@ -85,6 +90,8 @@ fn summarize_route(route_trace: &crate::model::RouteTraceResult) -> Investigatio
                         .map(|segment| route_segment_kind_name(segment.kind).to_string()),
                 ),
         ),
+        unsupported_sources: route_trace.unsupported_sources.clone(),
+        capability_status: route_trace.capability_status.clone(),
     }
 }
 
@@ -121,6 +128,8 @@ fn summarize_constraints(
         .into_iter()
         .take(MAX_NORMALIZED_KEYS)
         .collect(),
+        unsupported_sources: constraint_evidence.unsupported_sources.clone(),
+        capability_status: constraint_evidence.capability_status.clone(),
     }
 }
 
@@ -137,6 +146,59 @@ fn summarize_divergence(report: &crate::model::DivergenceReport) -> Investigatio
             .take(MAX_FOLLOWUPS)
             .cloned()
             .collect(),
+        unsupported_sources: report.unsupported_sources.clone(),
+        capability_status: report.capability_status.clone(),
+    }
+}
+
+fn summarize_provenance(snapshot: &SharedInvestigationSnapshot) -> CanonicalProvenance {
+    let unsupported_sources_present = !snapshot.route_trace.unsupported_sources.is_empty()
+        || !snapshot.constraint_evidence.unsupported_sources.is_empty()
+        || !snapshot.concept_cluster.unsupported_sources.is_empty()
+        || snapshot
+            .divergence
+            .as_ref()
+            .map(|report| !report.unsupported_sources.is_empty())
+            .unwrap_or(false);
+
+    let strength = if unsupported_sources_present {
+        CanonicalStrength::Weak
+    } else if snapshot.route_trace.unresolved_gaps.is_empty()
+        && snapshot.constraint_evidence.items.iter().any(|item| item.strength == "strong")
+    {
+        CanonicalStrength::Strong
+    } else {
+        CanonicalStrength::Moderate
+    };
+
+    let mut reasons = vec![
+        format!(
+            "cluster_capability:{}",
+            snapshot.concept_cluster.capability_status
+        ),
+        format!("route_capability:{}", snapshot.route_trace.capability_status),
+        format!(
+            "constraint_capability:{}",
+            snapshot.constraint_evidence.capability_status
+        ),
+    ];
+    if let Some(divergence) = snapshot.divergence.as_ref() {
+        reasons.push(format!("divergence_capability:{}", divergence.capability_status));
+    }
+    if unsupported_sources_present {
+        reasons.push("unsupported_sources_present".to_string());
+    }
+
+    CanonicalProvenance {
+        basis: if snapshot.divergence.is_some() {
+            CanonicalBasis::Mixed
+        } else {
+            CanonicalBasis::GraphDerived
+        },
+        derivation: "investigation_summary".to_string(),
+        freshness: CanonicalFreshness::IndexSnapshot,
+        strength,
+        reasons,
     }
 }
 

@@ -55,7 +55,7 @@ pub(super) fn enum_schema(description: &str, options: &[&str]) -> Value {
 
 pub(crate) fn privacy_mode_schema() -> Value {
     enum_schema(
-        "How RMU should handle potentially sensitive path and content fragments in results.",
+        "How RMU should handle potentially sensitive path and content fragments in results. Use `off` for unsanitized output.",
         &["off", "mask", "hash"],
     )
 }

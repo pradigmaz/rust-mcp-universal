@@ -1,7 +1,7 @@
 use anyhow::Result;
 use rmu_core::{
-    ConceptSeedKind, ContextMode, IgnoreInstallTarget, IndexProfile, MigrationMode, PrivacyMode,
-    RolloutPhase, SemanticFailMode,
+    AgentIntentMode, BootstrapProfile, ConceptSeedKind, ContextMode, IgnoreInstallTarget,
+    IndexProfile, MigrationMode, PrivacyMode, RolloutPhase, SemanticFailMode,
 };
 use time::{OffsetDateTime, UtcOffset, format_description::well_known::Rfc3339};
 
@@ -17,7 +17,7 @@ pub(super) fn parse_semantic_fail_mode(raw: &str) -> Result<SemanticFailMode> {
 pub(super) fn parse_privacy_mode(raw: &str) -> Result<PrivacyMode> {
     PrivacyMode::parse(raw).ok_or_else(|| {
         anyhow::anyhow!(
-            "`privacy_mode` must be one of: off, mask, hash (got `{}`)",
+            "`privacy_mode` must be one of: off, mask, hash; use `off` for unsanitized output (not `none` or `repo-only`) (got `{}`)",
             raw
         )
     })
@@ -27,6 +27,24 @@ pub(super) fn parse_context_mode(raw: &str) -> Result<ContextMode> {
     ContextMode::parse(raw).ok_or_else(|| {
         anyhow::anyhow!(
             "`mode` must be one of: code, design, bugfix (got `{}`)",
+            raw
+        )
+    })
+}
+
+pub(super) fn parse_agent_intent_mode(raw: &str) -> Result<AgentIntentMode> {
+    AgentIntentMode::parse(raw).ok_or_else(|| {
+        anyhow::anyhow!(
+            "`mode` must be one of: entrypoint_map, test_map, review_prep, api_contract_map, runtime_surface, refactor_surface (got `{}`)",
+            raw
+        )
+    })
+}
+
+pub(super) fn parse_bootstrap_profile(raw: &str) -> Result<BootstrapProfile> {
+    BootstrapProfile::parse(raw).ok_or_else(|| {
+        anyhow::anyhow!(
+            "`profile` must be one of: fast, investigation_summary, report, full (got `{}`)",
             raw
         )
     })

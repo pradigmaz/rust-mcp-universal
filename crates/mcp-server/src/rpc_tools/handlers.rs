@@ -23,6 +23,8 @@ mod maintenance;
 mod modes;
 #[path = "handlers/quality_hotspots.rs"]
 mod quality_hotspots;
+#[path = "handlers/quality_snapshot.rs"]
+mod quality_snapshot;
 #[path = "handlers/query_report.rs"]
 mod query_report;
 #[path = "handlers/related_files.rs"]
@@ -39,6 +41,7 @@ mod symbol_lookup;
 mod symbol_references;
 
 use modes::{
+    parse_optional_agent_intent_mode, parse_optional_bootstrap_profile,
     parse_optional_context_mode, parse_optional_migration_mode, parse_optional_privacy_mode,
     parse_optional_rollout_phase, parse_optional_semantic_fail_mode,
 };
@@ -105,6 +108,10 @@ pub(super) fn rule_violations(args: &Value, state: &mut ServerState) -> Result<V
 
 pub(super) fn quality_hotspots(args: &Value, state: &mut ServerState) -> Result<Value> {
     quality_hotspots::quality_hotspots(args, state)
+}
+
+pub(super) fn quality_snapshot(args: &Value, state: &mut ServerState) -> Result<Value> {
+    quality_snapshot::quality_snapshot(args, state)
 }
 
 pub(super) fn call_path(args: &Value, state: &mut ServerState) -> Result<Value> {

@@ -57,6 +57,48 @@ fn tools_call_argument_validation_errors_use_invalid_params_error() {
 }
 
 #[test]
+fn tools_call_invalid_privacy_mode_suggests_off() {
+    let mut state = running_state();
+
+    let raw = r#"{"jsonrpc":"2.0","id":41,"method":"tools/call","params":{"name":"search_candidates","arguments":{"query":"x","privacy_mode":"repo-only"}}}"#;
+    let response = expect_single_response(raw, &mut state);
+    let error = response.error.expect("error expected");
+    let error_json = serde_json::to_value(&error).expect("serialize error");
+    assert_eq!(error.code, -32602);
+    assert!(
+        error_json["message"]
+            .as_str()
+            .is_some_and(|message| message.contains("use `off` for unsanitized output"))
+    );
+    assert!(
+        error_json["message"]
+            .as_str()
+            .is_some_and(|message| message.contains("repo-only"))
+    );
+}
+
+#[test]
+fn tools_call_rule_violations_invalid_sort_by_points_to_path_prefix() {
+    let mut state = running_state();
+
+    let raw = r#"{"jsonrpc":"2.0","id":42,"method":"tools/call","params":{"name":"rule_violations","arguments":{"sort_by":"path"}}}"#;
+    let response = expect_single_response(raw, &mut state);
+    let error = response.error.expect("error expected");
+    let error_json = serde_json::to_value(&error).expect("serialize error");
+    assert_eq!(error.code, -32602);
+    assert!(
+        error_json["message"]
+            .as_str()
+            .is_some_and(|message| message.contains("metric_value"))
+    );
+    assert!(
+        error_json["message"]
+            .as_str()
+            .is_some_and(|message| message.contains("path_prefix"))
+    );
+}
+
+#[test]
 fn project_scoped_tools_fail_when_project_is_not_bound() {
     let mut state = default_state();
     let _ = handle_request(

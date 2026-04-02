@@ -31,8 +31,8 @@ mod vector_utils;
 
 use super::{Engine, context, investigation};
 use crate::model::{
-    ContextMode, ContextPackResult, ContextSelection, IndexTelemetry, QueryOptions,
-    QuerySurfaceTimings, SearchHit,
+    AgentIntentMode, ContextMode, ContextPackResult, ContextSelection, IndexTelemetry,
+    ModeResolutionSource, QueryOptions, QuerySurfaceTimings, SearchHit,
 };
 use crate::report::{
     QueryReportBuildInput, ResultExplainEntry, RetrievalStageCounts, build_query_report,
@@ -45,6 +45,8 @@ pub(super) struct SearchExecution {
     pub(super) hits: Vec<SearchHit>,
     pub(super) chunk_by_path: HashMap<String, context::ChunkExcerpt>,
     pub(super) semantic_outcome: SemanticRerankOutcome,
+    pub(super) resolved_mode: AgentIntentMode,
+    pub(super) mode_source: ModeResolutionSource,
     pub(super) explain_entries: Vec<ResultExplainEntry>,
     pub(super) stage_counts: RetrievalStageCounts,
 }
@@ -164,6 +166,8 @@ impl Engine {
                 context: &context,
                 max_tokens,
                 privacy_mode: options.privacy_mode,
+                resolved_mode: execution.resolved_mode,
+                mode_source: execution.mode_source,
                 semantic_requested: options.semantic,
                 semantic_outcome: execution.semantic_outcome,
                 explain_entries: &execution.explain_entries,

@@ -121,6 +121,7 @@ fn indexing_respects_project_gitignore_for_scoped_code_indexing() -> Result<(), 
         semantic_fail_mode: SemanticFailMode::FailOpen,
         privacy_mode: PrivacyMode::Off,
         context_mode: None,
+        agent_intent_mode: None,
     })?;
     assert!(hits.is_empty());
 

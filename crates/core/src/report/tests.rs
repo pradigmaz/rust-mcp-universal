@@ -1,7 +1,7 @@
 use super::{QueryReportBuildInput, RetrievalStageCounts, build_query_report};
 use crate::model::{
-    ConfidenceSignals, ContextFile, ContextSelection, IndexTelemetry, PrivacyMode,
-    RankExplainBreakdown, SearchHit,
+    AgentIntentMode, ConfidenceSignals, ContextFile, ContextSelection, IndexTelemetry,
+    ModeResolutionSource, PrivacyMode, RankExplainBreakdown, SearchHit,
 };
 use crate::report::ResultExplainEntry;
 use crate::vector_rank::SemanticRerankOutcome;
@@ -134,6 +134,8 @@ fn selected_context_uses_per_result_explain_breakdown_with_ranks() {
             context: &context,
             max_tokens: 64,
             privacy_mode: PrivacyMode::Off,
+            resolved_mode: AgentIntentMode::EntrypointMap,
+            mode_source: ModeResolutionSource::Default,
             semantic_requested: true,
             semantic_outcome: SemanticRerankOutcome::AppliedRrfIndexed,
             explain_entries: &explain_entries,

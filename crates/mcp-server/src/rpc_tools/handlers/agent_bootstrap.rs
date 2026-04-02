@@ -14,8 +14,9 @@ use crate::rpc_tools::parsing::{
 use crate::rpc_tools::result::tool_result;
 
 use super::{
-    ensure_query_index_ready, parse_optional_migration_mode, parse_optional_privacy_mode,
-    parse_optional_rollout_phase, parse_optional_semantic_fail_mode,
+    ensure_query_index_ready, parse_optional_agent_intent_mode,
+    parse_optional_bootstrap_profile, parse_optional_migration_mode,
+    parse_optional_privacy_mode, parse_optional_rollout_phase, parse_optional_semantic_fail_mode,
 };
 
 pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<Value> {
@@ -34,6 +35,8 @@ pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<V
             "migration_mode",
             "max_chars",
             "max_tokens",
+            "mode",
+            "profile",
             "include_report",
             "include_investigation_summary",
         ],
@@ -57,6 +60,8 @@ pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<V
         parse_optional_usize_with_min(args, "agent_bootstrap", "max_chars", 256, 12_000)?;
     let max_tokens =
         parse_optional_usize_with_min(args, "agent_bootstrap", "max_tokens", 64, 3_000)?;
+    let mode = parse_optional_agent_intent_mode(args, "agent_bootstrap", "mode")?;
+    let profile = parse_optional_bootstrap_profile(args, "agent_bootstrap", "profile")?;
     let include_report =
         parse_optional_bool(args, "agent_bootstrap", "include_report")?.unwrap_or(false);
     let include_investigation_summary =
@@ -93,9 +98,11 @@ pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<V
         max_chars,
         max_tokens,
         false,
+        mode,
         AgentBootstrapIncludeOptions {
             include_report,
             include_investigation_summary,
+            profile,
         },
     )?;
     let mut payload = serde_json::to_value(payload)?;

@@ -39,7 +39,12 @@ pub(super) fn cases() -> Vec<RuntimeConstraintCase> {
         (
             "rule_violations",
             json!({"sort_by": "wrong"}),
-            "`sort_by` must be one of: violation_count, size_bytes, non_empty_lines",
+            "`sort_by` must be one of: violation_count, size_bytes, non_empty_lines, metric_value",
+        ),
+        (
+            "rule_violations",
+            json!({"sort_by": "path"}),
+            "use `path_prefix` to filter paths",
         ),
     ]
 }

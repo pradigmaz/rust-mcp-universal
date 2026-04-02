@@ -39,7 +39,7 @@ pub(super) fn parse_optional_privacy_mode(
     };
     let parsed = PrivacyMode::parse(raw_string).ok_or_else(|| {
         invalid_params_error(format!(
-            "{tool_name} `privacy_mode` must be one of: off, mask, hash"
+            "{tool_name} `privacy_mode` must be one of: off, mask, hash; use `off` for unsanitized output (not `none` or `repo-only`)"
         ))
     })?;
     Ok(Some(parsed))

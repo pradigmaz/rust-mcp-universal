@@ -1,8 +1,11 @@
 use super::*;
+use rmu_core::AgentBootstrapIncludeOptions;
 
 pub(crate) fn run_agent(engine: &Engine, json: bool, args: AgentArgs) -> Result<()> {
     let AgentArgs {
         query,
+        mode,
+        profile,
         limit,
         semantic,
         auto_index,
@@ -25,7 +28,7 @@ pub(crate) fn run_agent(engine: &Engine, json: bool, args: AgentArgs) -> Result<
             decide_semantic_rollout(semantic, vector_layer_enabled, rollout_phase, value).enabled
         })
         .unwrap_or(false);
-    let payload = engine.agent_bootstrap_with_auto_index_and_mode(
+    let payload = engine.agent_bootstrap_with_auto_index_and_options(
         normalized_query,
         limit,
         semantic_effective,
@@ -34,6 +37,11 @@ pub(crate) fn run_agent(engine: &Engine, json: bool, args: AgentArgs) -> Result<
         max_chars,
         max_tokens,
         auto_index,
+        mode,
+        AgentBootstrapIncludeOptions {
+            profile,
+            ..AgentBootstrapIncludeOptions::default()
+        },
     )?;
 
     if json {
@@ -43,8 +51,9 @@ pub(crate) fn run_agent(engine: &Engine, json: bool, args: AgentArgs) -> Result<
     } else {
         let masked_db = sanitize_path_text(privacy_mode, &payload.brief.index_status.db_path);
         print_line(format!(
-            "auto_indexed={}, files={}, symbols={}, semantic_vectors={}, semantic_model={}, db={}",
+            "auto_indexed={}, profile={}, files={}, symbols={}, semantic_vectors={}, semantic_model={}, db={}",
             payload.brief.auto_indexed,
+            payload.profile.as_str(),
             payload.brief.index_status.files,
             payload.brief.index_status.symbols,
             payload.brief.index_status.semantic_vectors,
@@ -53,8 +62,9 @@ pub(crate) fn run_agent(engine: &Engine, json: bool, args: AgentArgs) -> Result<
         ));
         if let Some(bundle) = payload.query_bundle {
             print_line(format!(
-                "query=\"{}\", hits={}, context_files={}, est_tokens={}",
+                "query=\"{}\", mode={}, hits={}, context_files={}, est_tokens={}",
                 sanitize_query_text(privacy_mode, &bundle.query),
+                bundle.resolved_mode.as_str(),
                 bundle.hits.len(),
                 bundle.context.files.len(),
                 bundle.context.estimated_tokens

@@ -31,6 +31,8 @@ fn oversized_limit_is_rejected_in_preflight() {
 fn agent_rejects_whitespace_only_query_in_preflight() {
     let err = preflight_validate(&Command::Agent {
         query: Some("   ".to_string()),
+        mode: None,
+        profile: None,
         limit: 20,
         semantic: false,
         auto_index: false,

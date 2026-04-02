@@ -64,6 +64,7 @@ pub(super) fn semantic_search(args: &Value, state: &mut ServerState) -> Result<V
         semantic_fail_mode,
         privacy_mode,
         context_mode: None,
+        agent_intent_mode: None,
     })?;
     let mut payload = json!({"hits": hits});
     sanitize_value_for_privacy(privacy_mode, &mut payload);

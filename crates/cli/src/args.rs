@@ -212,6 +212,8 @@ pub(crate) enum Command {
     Report {
         #[arg(long)]
         query: String,
+        #[arg(long)]
+        mode: Option<String>,
         #[arg(long, default_value_t = 20)]
         limit: usize,
         #[arg(long, default_value_t = false)]
@@ -277,10 +279,15 @@ pub(crate) enum Command {
         #[arg(long, default_value_t = false)]
         auto_index: bool,
     },
+    QualitySnapshot(QualitySnapshotCommandArgs),
     Brief,
     Agent {
         #[arg(long)]
         query: Option<String>,
+        #[arg(long)]
+        mode: Option<String>,
+        #[arg(long)]
+        profile: Option<String>,
         #[arg(long, default_value_t = 20)]
         limit: usize,
         #[arg(long, default_value_t = false)]
@@ -310,4 +317,24 @@ pub(crate) struct IndexCommandArgs {
     pub(crate) exclude_paths: Vec<String>,
     #[arg(long, default_value_t = false)]
     pub(crate) reindex: bool,
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub(crate) struct QualitySnapshotCommandArgs {
+    #[arg(long, default_value = "ad_hoc")]
+    pub(crate) snapshot_kind: String,
+    #[arg(long)]
+    pub(crate) wave_id: Option<String>,
+    #[arg(long)]
+    pub(crate) output_root: Option<PathBuf>,
+    #[arg(long, default_value = "none")]
+    pub(crate) compare_against: String,
+    #[arg(long)]
+    pub(crate) auto_index: Option<bool>,
+    #[arg(long)]
+    pub(crate) persist_artifacts: Option<bool>,
+    #[arg(long, default_value_t = false)]
+    pub(crate) promote_self_baseline: bool,
+    #[arg(long, default_value_t = false)]
+    pub(crate) fail_on_regression: bool,
 }

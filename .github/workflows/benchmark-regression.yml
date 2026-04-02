@@ -79,6 +79,13 @@ jobs:
           echo "gate_exit_code=${GATE_EXIT_CODE}" >> "${GITHUB_OUTPUT}"
           exit "${GATE_EXIT_CODE}"
 
+      - name: Run quality snapshot contract smoke tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo test --locked -p rmu-cli cli_contract::quality_snapshot -- --nocapture
+          cargo test --locked -p rmu-mcp-server quality_snapshot -- --nocapture
+
       - name: Upload benchmark gate artifacts
         if: ${{ always() }}
         uses: actions/upload-artifact@v4

@@ -97,6 +97,7 @@ fn search_paths(engine: &Engine, query: &str) -> Result<Vec<rmu_core::SearchHit>
         semantic_fail_mode: SemanticFailMode::FailOpen,
         privacy_mode: PrivacyMode::Off,
         context_mode: None,
+        agent_intent_mode: None,
     })?)
 }
 
@@ -110,6 +111,7 @@ fn report_paths(engine: &Engine, query: &str) -> Result<Vec<String>, Box<dyn Err
             semantic_fail_mode: SemanticFailMode::FailOpen,
             privacy_mode: PrivacyMode::Off,
             context_mode: None,
+        agent_intent_mode: None,
         },
         12_000,
         3_000,

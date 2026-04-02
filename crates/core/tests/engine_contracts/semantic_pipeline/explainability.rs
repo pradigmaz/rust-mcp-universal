@@ -15,6 +15,7 @@ fn report_reflects_fallback_semantic_outcome_and_sources() -> Result<(), Box<dyn
             semantic_fail_mode: SemanticFailMode::FailOpen,
             privacy_mode: PrivacyMode::Off,
             context_mode: None,
+        agent_intent_mode: None,
         },
         20_000,
         6_000,
@@ -46,6 +47,7 @@ fn explain_breakdown_is_reproducible_for_same_query_inputs() -> Result<(), Box<d
         semantic_fail_mode: SemanticFailMode::FailOpen,
         privacy_mode: PrivacyMode::Off,
         context_mode: None,
+        agent_intent_mode: None,
     };
 
     let first = engine.build_report(&options, 20_000, 6_000)?;
@@ -96,6 +98,7 @@ fn report_falls_back_when_chunk_embedding_payload_is_corrupted() -> Result<(), B
             semantic_fail_mode: SemanticFailMode::FailOpen,
             privacy_mode: PrivacyMode::Off,
             context_mode: None,
+        agent_intent_mode: None,
         },
         20_000,
         6_000,

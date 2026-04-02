@@ -3,6 +3,7 @@ use super::*;
 pub(crate) fn run_report(engine: &Engine, json: bool, args: ReportArgs) -> Result<()> {
     let ReportArgs {
         query,
+        mode,
         limit,
         semantic,
         auto_index,
@@ -27,6 +28,7 @@ pub(crate) fn run_report(engine: &Engine, json: bool, args: ReportArgs) -> Resul
         semantic_fail_mode,
         privacy_mode,
         context_mode: None,
+        agent_intent_mode: mode,
     };
     let report = engine.build_report(&opts, max_chars, max_tokens)?;
 

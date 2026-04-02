@@ -26,6 +26,7 @@ pub(crate) fn run_semantic_search(
         semantic_fail_mode,
         privacy_mode,
         context_mode: None,
+        agent_intent_mode: None,
     };
     let hits = engine.search(&opts)?;
 

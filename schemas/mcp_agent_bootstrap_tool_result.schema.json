@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "McpAgentBootstrapToolResult",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": ["content", "structuredContent", "isError"],
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "text"],
+            "properties": {
+              "type": { "const": "text" },
+              "text": { "type": "string" }
+            }
+          }
+        },
+        "structuredContent": {
+          "$ref": "./agent_bootstrap.schema.json"
+        },
+        "isError": { "const": false }
+      }
+    },
+    {
+      "type": "object",
+      "required": ["content", "structuredContent", "isError"],
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "text"],
+            "properties": {
+              "type": { "const": "text" },
+              "text": { "type": "string" }
+            }
+          }
+        },
+        "structuredContent": {
+          "type": "object",
+          "required": ["error"],
+          "properties": {
+            "error": { "type": "string" }
+          }
+        },
+        "isError": { "const": true }
+      }
+    }
+  ]
+}

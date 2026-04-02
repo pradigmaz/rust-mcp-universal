@@ -13,6 +13,7 @@ fn empty_query_returns_no_hits() -> Result<(), Box<dyn Error>> {
         semantic_fail_mode: SemanticFailMode::FailOpen,
         privacy_mode: PrivacyMode::Off,
         context_mode: None,
+        agent_intent_mode: None,
     })?;
     assert!(hits.is_empty());
 
@@ -31,6 +32,7 @@ fn context_budget_stops_on_char_and_token_limits() -> Result<(), Box<dyn Error>>
         semantic_fail_mode: SemanticFailMode::FailOpen,
         privacy_mode: PrivacyMode::Off,
         context_mode: None,
+        agent_intent_mode: None,
     };
 
     let by_chars = engine.build_context_under_budget(&opts, 5, 10_000)?;
@@ -78,6 +80,7 @@ fn context_pack_design_mode_returns_docs_first() -> Result<(), Box<dyn Error>> {
             semantic_fail_mode: SemanticFailMode::FailOpen,
             privacy_mode: PrivacyMode::Off,
             context_mode: None,
+        agent_intent_mode: None,
         },
         rmu_core::ContextMode::Design,
         10_000,

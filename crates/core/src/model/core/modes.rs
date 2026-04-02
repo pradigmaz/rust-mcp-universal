@@ -71,6 +71,107 @@ impl ContextMode {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
+pub enum AgentIntentMode {
+    #[default]
+    EntrypointMap,
+    TestMap,
+    ReviewPrep,
+    ApiContractMap,
+    RuntimeSurface,
+    RefactorSurface,
+}
+
+impl AgentIntentMode {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::EntrypointMap => "entrypoint_map",
+            Self::TestMap => "test_map",
+            Self::ReviewPrep => "review_prep",
+            Self::ApiContractMap => "api_contract_map",
+            Self::RuntimeSurface => "runtime_surface",
+            Self::RefactorSurface => "refactor_surface",
+        }
+    }
+
+    pub fn parse(value: &str) -> Option<Self> {
+        parse::agent_intent_mode(value)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum BootstrapProfile {
+    #[default]
+    Fast,
+    InvestigationSummary,
+    Report,
+    Full,
+}
+
+impl BootstrapProfile {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Fast => "fast",
+            Self::InvestigationSummary => "investigation_summary",
+            Self::Report => "report",
+            Self::Full => "full",
+        }
+    }
+
+    pub fn parse(value: &str) -> Option<Self> {
+        parse::bootstrap_profile(value)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum ModeResolutionSource {
+    Explicit,
+    Inferred,
+    #[default]
+    Default,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DegradationReason {
+    SemanticFailOpen,
+    SemanticLowSignalSkip,
+    ChunkPreviewFallback,
+    BudgetTruncated,
+    ProfileLimited,
+    UnsupportedSourcesPresent,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CanonicalBasis {
+    Indexed,
+    PreviewFallback,
+    GraphDerived,
+    Heuristic,
+    Mixed,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CanonicalFreshness {
+    IndexSnapshot,
+    LiveRead,
+    Unknown,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CanonicalStrength {
+    Strong,
+    Moderate,
+    Weak,
+    FallbackOnly,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
 pub enum RolloutPhase {
     Shadow,
     Canary5,

@@ -47,9 +47,11 @@ fn agent_bootstrap_can_opt_into_report_and_investigation_summary() -> Result<(),
         12_000,
         3_000,
         true,
+        None,
         AgentBootstrapIncludeOptions {
             include_report: true,
             include_investigation_summary: true,
+            profile: None,
         },
     )?;
 

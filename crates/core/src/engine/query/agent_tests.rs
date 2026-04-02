@@ -67,9 +67,11 @@ fn agent_bootstrap_can_opt_into_report_and_investigation_summary() -> anyhow::Re
         12_000,
         3_000,
         false,
+        None,
         AgentBootstrapIncludeOptions {
             include_report: true,
             include_investigation_summary: true,
+            profile: None,
         },
     )?;
 

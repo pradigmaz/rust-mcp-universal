@@ -47,7 +47,7 @@ pub(super) fn rule_violations(args: &Value, state: &mut ServerState) -> Result<V
         .map(|raw| {
             RuleViolationsSortBy::parse(&raw).ok_or_else(|| {
                 invalid_params_error(
-                    "rule_violations `sort_by` must be one of: violation_count, size_bytes, non_empty_lines, metric_value",
+                    "rule_violations `sort_by` must be one of: violation_count, size_bytes, non_empty_lines, metric_value; use `path_prefix` to filter paths because `sort_by=path` is not supported",
                 )
             })
         })

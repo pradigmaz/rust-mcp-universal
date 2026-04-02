@@ -78,6 +78,7 @@ fn search_hit_count(engine: &Engine, query: &str) -> Result<usize, Box<dyn Error
         semantic_fail_mode: SemanticFailMode::FailOpen,
         privacy_mode: PrivacyMode::Off,
         context_mode: None,
+        agent_intent_mode: None,
     })?;
     Ok(hits.len())
 }

@@ -1,4 +1,4 @@
-use crate::model::{ContextMode, SearchHit};
+use crate::model::{AgentIntentMode, ContextMode, ModeResolutionSource, SearchHit};
 
 #[path = "intent/aliases.rs"]
 mod aliases;
@@ -44,6 +44,12 @@ pub(super) struct SearchIntent {
     token_count: usize,
     coverage_groups: Vec<&'static [&'static str]>,
     workload_groups: Vec<&'static [&'static str]>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct ResolvedAgentIntent {
+    pub(crate) mode: AgentIntentMode,
+    pub(crate) source: ModeResolutionSource,
 }
 
 impl SearchIntent {
@@ -174,6 +180,190 @@ impl SearchIntent {
         }
     }
 
+    pub(crate) fn from_agent_mode(mode: AgentIntentMode) -> Self {
+        match mode {
+            AgentIntentMode::EntrypointMap => Self {
+                explicit_domain: Some(FileDomain::Backend),
+                prefers_backend: true,
+                prefers_frontend: false,
+                prefers_database: false,
+                wants_api_surface: true,
+                wants_service_layer: true,
+                wants_hook: false,
+                wants_page: false,
+                wants_component: false,
+                wants_mod_runtime: false,
+                wants_migration: false,
+                wants_architecture: true,
+                wants_entrypoints: true,
+                wants_auth_boundary: false,
+                wants_tests: false,
+                code_first: true,
+                token_count: 6,
+                coverage_groups: vec![
+                    ENTRYPOINT_ALIASES,
+                    API_ALIASES,
+                    ENDPOINT_ALIASES,
+                    ROUTER_ALIASES,
+                    SERVICE_ALIASES,
+                ],
+                workload_groups: Vec::new(),
+            },
+            AgentIntentMode::TestMap => Self {
+                explicit_domain: None,
+                prefers_backend: true,
+                prefers_frontend: false,
+                prefers_database: false,
+                wants_api_surface: false,
+                wants_service_layer: true,
+                wants_hook: false,
+                wants_page: false,
+                wants_component: false,
+                wants_mod_runtime: false,
+                wants_migration: false,
+                wants_architecture: false,
+                wants_entrypoints: false,
+                wants_auth_boundary: false,
+                wants_tests: true,
+                code_first: true,
+                token_count: 6,
+                coverage_groups: vec![TEST_ALIASES, ENTRYPOINT_ALIASES, SERVICE_ALIASES],
+                workload_groups: Vec::new(),
+            },
+            AgentIntentMode::ReviewPrep => Self {
+                explicit_domain: None,
+                prefers_backend: true,
+                prefers_frontend: true,
+                prefers_database: true,
+                wants_api_surface: true,
+                wants_service_layer: true,
+                wants_hook: false,
+                wants_page: false,
+                wants_component: false,
+                wants_mod_runtime: true,
+                wants_migration: true,
+                wants_architecture: true,
+                wants_entrypoints: true,
+                wants_auth_boundary: true,
+                wants_tests: true,
+                code_first: true,
+                token_count: 8,
+                coverage_groups: vec![
+                    ENTRYPOINT_ALIASES,
+                    API_ALIASES,
+                    SERVICE_ALIASES,
+                    TEST_ALIASES,
+                    SCHEMA_ALIASES,
+                ],
+                workload_groups: vec![RULE_ALIASES],
+            },
+            AgentIntentMode::ApiContractMap => Self {
+                explicit_domain: Some(FileDomain::Backend),
+                prefers_backend: true,
+                prefers_frontend: false,
+                prefers_database: false,
+                wants_api_surface: true,
+                wants_service_layer: true,
+                wants_hook: false,
+                wants_page: false,
+                wants_component: false,
+                wants_mod_runtime: false,
+                wants_migration: false,
+                wants_architecture: false,
+                wants_entrypoints: true,
+                wants_auth_boundary: false,
+                wants_tests: false,
+                code_first: true,
+                token_count: 6,
+                coverage_groups: vec![
+                    API_ALIASES,
+                    ENDPOINT_ALIASES,
+                    ROUTER_ALIASES,
+                    SERVICE_ALIASES,
+                ],
+                workload_groups: Vec::new(),
+            },
+            AgentIntentMode::RuntimeSurface => Self {
+                explicit_domain: None,
+                prefers_backend: true,
+                prefers_frontend: true,
+                prefers_database: false,
+                wants_api_surface: false,
+                wants_service_layer: false,
+                wants_hook: true,
+                wants_page: false,
+                wants_component: false,
+                wants_mod_runtime: true,
+                wants_migration: false,
+                wants_architecture: true,
+                wants_entrypoints: true,
+                wants_auth_boundary: false,
+                wants_tests: false,
+                code_first: true,
+                token_count: 6,
+                coverage_groups: vec![
+                    MODULE_ALIASES,
+                    CONFIG_ALIASES,
+                    RUNTIME_ALIASES,
+                    ENTRYPOINT_ALIASES,
+                ],
+                workload_groups: Vec::new(),
+            },
+            AgentIntentMode::RefactorSurface => Self {
+                explicit_domain: None,
+                prefers_backend: true,
+                prefers_frontend: true,
+                prefers_database: false,
+                wants_api_surface: false,
+                wants_service_layer: true,
+                wants_hook: false,
+                wants_page: false,
+                wants_component: false,
+                wants_mod_runtime: true,
+                wants_migration: false,
+                wants_architecture: true,
+                wants_entrypoints: false,
+                wants_auth_boundary: false,
+                wants_tests: true,
+                code_first: true,
+                token_count: 7,
+                coverage_groups: vec![
+                    SERVICE_ALIASES,
+                    DOMAIN_ALIASES,
+                    MODULE_ALIASES,
+                    TEST_ALIASES,
+                ],
+                workload_groups: vec![RULE_ALIASES],
+            },
+        }
+    }
+
+    pub(crate) fn resolve(
+        query: &str,
+        explicit_mode: Option<AgentIntentMode>,
+    ) -> (Self, ResolvedAgentIntent) {
+        if let Some(mode) = explicit_mode {
+            return (
+                Self::from_agent_mode(mode),
+                ResolvedAgentIntent {
+                    mode,
+                    source: ModeResolutionSource::Explicit,
+                },
+            );
+        }
+
+        let inferred = Self::from_query(query);
+        let mode = inferred
+            .inferred_agent_mode()
+            .unwrap_or(AgentIntentMode::EntrypointMap);
+        let source = if inferred.inferred_agent_mode().is_some() {
+            ModeResolutionSource::Inferred
+        } else {
+            ModeResolutionSource::Default
+        };
+        (inferred, ResolvedAgentIntent { mode, source })
+    }
+
     pub(super) fn apply_to_hits(&self, hits: &mut [SearchHit], context_mode: Option<ContextMode>) {
         for hit in hits {
             hit.score = (hit.score
@@ -289,5 +479,27 @@ impl SearchIntent {
 
     pub(crate) fn expects_mod_runtime_surface(&self) -> bool {
         self.wants_mod_runtime
+    }
+
+    fn inferred_agent_mode(&self) -> Option<AgentIntentMode> {
+        if self.wants_tests {
+            return Some(AgentIntentMode::TestMap);
+        }
+        if self.wants_mod_runtime {
+            return Some(AgentIntentMode::RuntimeSurface);
+        }
+        if self.wants_api_surface {
+            return Some(AgentIntentMode::ApiContractMap);
+        }
+        if self.wants_entrypoints {
+            return Some(AgentIntentMode::EntrypointMap);
+        }
+        if self.wants_architecture && (self.prefers_backend || self.prefers_frontend) {
+            return Some(AgentIntentMode::RefactorSurface);
+        }
+        if self.prefers_backend && self.prefers_frontend {
+            return Some(AgentIntentMode::ReviewPrep);
+        }
+        None
     }
 }

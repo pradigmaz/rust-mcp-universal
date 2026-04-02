@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::super::{ContextMode, PrivacyMode, SemanticFailMode};
+use super::super::{AgentIntentMode, ContextMode, PrivacyMode, SemanticFailMode};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct QueryOptions {
@@ -14,6 +14,8 @@ pub struct QueryOptions {
     pub privacy_mode: PrivacyMode,
     #[serde(default)]
     pub context_mode: Option<ContextMode>,
+    #[serde(default)]
+    pub agent_intent_mode: Option<AgentIntentMode>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

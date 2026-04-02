@@ -27,6 +27,7 @@ pub(crate) fn run_context(engine: &Engine, json: bool, args: ContextArgs) -> Res
         semantic_fail_mode,
         privacy_mode,
         context_mode: None,
+        agent_intent_mode: None,
     };
     let ctx = engine.build_context_under_budget(&opts, max_chars, max_tokens)?;
 
@@ -76,6 +77,7 @@ pub(crate) fn run_context_pack(engine: &Engine, json: bool, args: ContextPackArg
             semantic_fail_mode,
             privacy_mode,
             context_mode: Some(mode),
+            agent_intent_mode: None,
         },
         mode,
         max_chars,

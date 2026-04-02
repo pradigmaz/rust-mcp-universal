@@ -151,6 +151,7 @@
 
 - `rule-violations`
 - `quality-hotspots`
+- `quality-snapshot`
 
 ### Для чего это нужно
 
@@ -190,6 +191,7 @@ Benchmark нужен, чтобы:
 - нужны связи вокруг найденного места - navigation tools
 - нужен разбор одного механизма - investigation surface
 - нужен приоритетный список проблемных зон - quality surface
+- нужен before/after след по debt wave и regression gate - `quality-snapshot`
 
 ## Чего RMU не делает
 

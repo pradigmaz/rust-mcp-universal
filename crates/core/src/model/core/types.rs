@@ -7,6 +7,7 @@ mod investigation_embed;
 mod navigation;
 mod preflight;
 mod quality;
+mod quality_snapshot;
 mod query;
 mod report;
 mod workspace;
@@ -51,10 +52,18 @@ pub use quality::{
     WorkspaceQualityCategoryCount, WorkspaceQualitySeverityCount, WorkspaceQualitySummary,
     WorkspaceQualityTopMetric, WorkspaceQualityTopRule,
 };
+pub use quality_snapshot::{
+    QualityProjectArtifactPaths, QualityProjectDeltaReport, QualityProjectGateStatus,
+    QualityProjectHotspotDelta, QualityProjectSnapshotCapture,
+    QualityProjectSnapshotCompareAgainst, QualityProjectSnapshotKind,
+    QualityProjectSnapshotOptions, QualityProjectSnapshotReport, QualityProjectTopHotFiles,
+    QualityProjectTopHotspotBuckets,
+};
 pub use query::{QueryOptions, SearchHit};
 pub use report::{
-    BudgetInfo, ConfidenceInfo, ConfidenceSignals, IndexTelemetry, InvestigationPhaseTimings,
-    QueryReport, QuerySurfaceTimings, RankExplainBreakdown, RetrievalStage, SelectedContextItem,
+    BudgetInfo, CanonicalProvenance, ConfidenceInfo, ConfidenceSignals, IndexTelemetry,
+    InvestigationPhaseTimings, QueryReport, QuerySurfaceTimings, RankExplainBreakdown,
+    RetrievalStage, SelectedContextItem,
 };
 pub use workspace::{
     WorkspaceBrief, WorkspaceLanguageStat, WorkspaceRepairHint, WorkspaceTopSymbol,

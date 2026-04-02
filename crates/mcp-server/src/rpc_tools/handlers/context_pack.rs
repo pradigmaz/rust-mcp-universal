@@ -86,6 +86,7 @@ pub(super) fn context_pack(args: &Value, state: &mut ServerState) -> Result<Valu
             semantic_fail_mode,
             privacy_mode,
             context_mode: Some(mode),
+            agent_intent_mode: None,
         },
         mode,
         max_chars,

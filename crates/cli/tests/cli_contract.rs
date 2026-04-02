@@ -34,6 +34,7 @@ mod cli_contract {
     mod preflight;
     mod quality_hotspots;
     mod quality_matrix;
+    mod quality_snapshot;
 
     fn write_query_benchmark_fixture(project_root: &Path) -> (PathBuf, PathBuf) {
         std::fs::create_dir_all(project_root.join("src")).expect("create src");

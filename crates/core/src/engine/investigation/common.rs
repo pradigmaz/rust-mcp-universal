@@ -333,6 +333,7 @@ fn collect_search_hits(engine: &Engine, seed: &str, limit: usize) -> Result<Vec<
         semantic_fail_mode: Default::default(),
         privacy_mode: PrivacyMode::Off,
         context_mode: None,
+        agent_intent_mode: None,
     })?;
     Ok(hits.into_iter().map(candidate_from_hit).collect())
 }

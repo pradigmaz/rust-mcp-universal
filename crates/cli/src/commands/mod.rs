@@ -3,6 +3,7 @@ mod maintenance;
 mod modes;
 mod preflight;
 mod quality_hotspots;
+mod quality_snapshot;
 #[path = "quality_matrix/mod.rs"]
 mod quality_matrix;
 mod query;

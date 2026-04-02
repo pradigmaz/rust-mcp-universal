@@ -6,17 +6,40 @@
     "query_id",
     "timestamp_utc",
     "project_root",
+    "resolved_mode",
+    "mode_source",
     "budget",
     "retrieval_pipeline",
     "selected_context",
+    "provenance",
     "confidence",
     "gaps",
-    "index_telemetry"
+    "index_telemetry",
+    "deepen_available"
   ],
   "properties": {
     "query_id": { "type": "string" },
     "timestamp_utc": { "type": "string" },
     "project_root": { "type": "string" },
+    "resolved_mode": {
+      "type": "string",
+      "oneOf": [
+        { "const": "entrypoint_map" },
+        { "const": "test_map" },
+        { "const": "review_prep" },
+        { "const": "api_contract_map" },
+        { "const": "runtime_surface" },
+        { "const": "refactor_surface" }
+      ]
+    },
+    "mode_source": {
+      "type": "string",
+      "oneOf": [
+        { "const": "explicit" },
+        { "const": "inferred" },
+        { "const": "default" }
+      ]
+    },
     "budget": {
       "type": "object",
       "required": ["max_tokens", "used_estimate", "hard_truncated"],
@@ -51,7 +74,8 @@
           "end_line",
           "chunk_source",
           "why",
-          "explain"
+          "explain",
+          "provenance"
         ],
         "properties": {
           "path": { "type": "string" },
@@ -95,7 +119,83 @@
               },
               "graph_hops": { "type": "integer", "minimum": 0 }
             }
+          },
+          "provenance": {
+            "type": "object",
+            "required": ["basis", "derivation", "freshness", "strength"],
+            "properties": {
+              "basis": {
+                "type": "string",
+                "oneOf": [
+                  { "const": "indexed" },
+                  { "const": "preview_fallback" },
+                  { "const": "graph_derived" },
+                  { "const": "heuristic" },
+                  { "const": "mixed" }
+                ]
+              },
+              "derivation": { "type": "string" },
+              "freshness": {
+                "type": "string",
+                "oneOf": [
+                  { "const": "index_snapshot" },
+                  { "const": "live_read" },
+                  { "const": "unknown" }
+                ]
+              },
+              "strength": {
+                "type": "string",
+                "oneOf": [
+                  { "const": "strong" },
+                  { "const": "moderate" },
+                  { "const": "weak" },
+                  { "const": "fallback_only" }
+                ]
+              },
+              "reasons": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
           }
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["basis", "derivation", "freshness", "strength"],
+      "properties": {
+        "basis": {
+          "type": "string",
+          "oneOf": [
+            { "const": "indexed" },
+            { "const": "preview_fallback" },
+            { "const": "graph_derived" },
+            { "const": "heuristic" },
+            { "const": "mixed" }
+          ]
+        },
+        "derivation": { "type": "string" },
+        "freshness": {
+          "type": "string",
+          "oneOf": [
+            { "const": "index_snapshot" },
+            { "const": "live_read" },
+            { "const": "unknown" }
+          ]
+        },
+        "strength": {
+          "type": "string",
+          "oneOf": [
+            { "const": "strong" },
+            { "const": "moderate" },
+            { "const": "weak" },
+            { "const": "fallback_only" }
+          ]
+        },
+        "reasons": {
+          "type": "array",
+          "items": { "type": "string" }
         }
       }
     },
@@ -147,13 +247,30 @@
         "chunk_source": { "type": "string" }
       }
     },
+    "degradation_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "oneOf": [
+          { "const": "semantic_fail_open" },
+          { "const": "semantic_low_signal_skip" },
+          { "const": "chunk_preview_fallback" },
+          { "const": "budget_truncated" },
+          { "const": "profile_limited" },
+          { "const": "unsupported_sources_present" }
+        ]
+      }
+    },
+    "deepen_available": { "type": "boolean" },
+    "deepen_hint": { "type": "string" },
     "investigation_summary": {
       "type": "object",
       "required": [
+        "surface_kind",
         "concept_cluster",
         "route_trace",
         "constraint_evidence",
-        "surface_kind"
+        "provenance"
       ],
       "properties": {
         "surface_kind": { "type": "string" },
@@ -182,24 +299,36 @@
             "best_route_segment_count",
             "alternate_route_count",
             "unresolved_gap_count",
-            "segment_kinds"
+            "segment_kinds",
+            "capability_status"
           ],
           "properties": {
             "best_route_segment_count": { "type": "integer", "minimum": 0 },
             "alternate_route_count": { "type": "integer", "minimum": 0 },
             "unresolved_gap_count": { "type": "integer", "minimum": 0 },
-            "segment_kinds": { "type": "array", "items": { "type": "string" } }
+            "segment_kinds": { "type": "array", "items": { "type": "string" } },
+            "unsupported_sources": { "type": "array", "items": { "type": "string" } },
+            "capability_status": { "type": "string" }
           }
         },
         "constraint_evidence": {
           "type": "object",
-          "required": ["total", "strong", "weak", "constraint_kinds", "normalized_keys"],
+          "required": [
+            "total",
+            "strong",
+            "weak",
+            "constraint_kinds",
+            "normalized_keys",
+            "capability_status"
+          ],
           "properties": {
             "total": { "type": "integer", "minimum": 0 },
             "strong": { "type": "integer", "minimum": 0 },
             "weak": { "type": "integer", "minimum": 0 },
             "constraint_kinds": { "type": "array", "items": { "type": "string" } },
-            "normalized_keys": { "type": "array", "items": { "type": "string" } }
+            "normalized_keys": { "type": "array", "items": { "type": "string" } },
+            "unsupported_sources": { "type": "array", "items": { "type": "string" } },
+            "capability_status": { "type": "string" }
           }
         },
         "divergence": {
@@ -210,7 +339,8 @@
             "preview_only",
             "highest_severity",
             "signal_count",
-            "recommended_followups"
+            "recommended_followups",
+            "capability_status"
           ],
           "properties": {
             "surface_kind": { "type": "string" },
@@ -218,7 +348,47 @@
             "preview_only": { "type": "boolean" },
             "highest_severity": { "type": "string" },
             "signal_count": { "type": "integer", "minimum": 0 },
-            "recommended_followups": { "type": "array", "items": { "type": "string" } }
+            "recommended_followups": { "type": "array", "items": { "type": "string" } },
+            "unsupported_sources": { "type": "array", "items": { "type": "string" } },
+            "capability_status": { "type": "string" }
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "required": ["basis", "derivation", "freshness", "strength"],
+          "properties": {
+            "basis": {
+              "type": "string",
+              "oneOf": [
+                { "const": "indexed" },
+                { "const": "preview_fallback" },
+                { "const": "graph_derived" },
+                { "const": "heuristic" },
+                { "const": "mixed" }
+              ]
+            },
+            "derivation": { "type": "string" },
+            "freshness": {
+              "type": "string",
+              "oneOf": [
+                { "const": "index_snapshot" },
+                { "const": "live_read" },
+                { "const": "unknown" }
+              ]
+            },
+            "strength": {
+              "type": "string",
+              "oneOf": [
+                { "const": "strong" },
+                { "const": "moderate" },
+                { "const": "weak" },
+                { "const": "fallback_only" }
+              ]
+            },
+            "reasons": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
           }
         }
       }

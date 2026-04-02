@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use super::super::serde_glue;
+use super::super::{
+    AgentIntentMode, CanonicalBasis, CanonicalFreshness, CanonicalStrength, DegradationReason,
+    ModeResolutionSource, serde_glue,
+};
 use super::investigation_embed::InvestigationSummary;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -28,6 +31,17 @@ pub struct SelectedContextItem {
     pub chunk_source: String,
     pub why: Vec<String>,
     pub explain: RankExplainBreakdown,
+    pub provenance: CanonicalProvenance,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CanonicalProvenance {
+    pub basis: CanonicalBasis,
+    pub derivation: String,
+    pub freshness: CanonicalFreshness,
+    pub strength: CanonicalStrength,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub reasons: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -100,12 +114,21 @@ pub struct QueryReport {
     pub query_id: String,
     pub timestamp_utc: String,
     pub project_root: String,
+    pub resolved_mode: AgentIntentMode,
+    pub mode_source: ModeResolutionSource,
     pub budget: BudgetInfo,
     pub retrieval_pipeline: Vec<RetrievalStage>,
     pub selected_context: Vec<SelectedContextItem>,
+    pub provenance: CanonicalProvenance,
     pub confidence: ConfidenceInfo,
     pub gaps: Vec<String>,
     pub index_telemetry: IndexTelemetry,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub degradation_reasons: Vec<DegradationReason>,
+    #[serde(default)]
+    pub deepen_available: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deepen_hint: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub investigation_summary: Option<InvestigationSummary>,
     #[serde(skip_serializing_if = "Option::is_none")]

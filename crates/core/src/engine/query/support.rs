@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 
-use crate::model::ContextMode;
+use crate::model::{AgentIntentMode, ContextMode};
 use crate::query_profile::{QueryProfile, derive_query_profile};
 use crate::vector_rank::SemanticRerankOutcome;
 
@@ -51,7 +51,55 @@ pub(super) fn is_low_signal_query(query: &str) -> bool {
 pub(super) fn derive_fusion_profile(
     query: &str,
     context_mode: Option<ContextMode>,
+    agent_intent_mode: Option<AgentIntentMode>,
 ) -> FusionProfile {
+    if let Some(mode) = agent_intent_mode {
+        return match mode {
+            AgentIntentMode::EntrypointMap => FusionProfile {
+                lexical_weight: 0.46,
+                semantic_file_weight: 0.18,
+                semantic_chunk_weight: 0.16,
+                graph_weight: 0.20,
+                probe_factor: 1.05,
+            },
+            AgentIntentMode::TestMap => FusionProfile {
+                lexical_weight: 0.32,
+                semantic_file_weight: 0.20,
+                semantic_chunk_weight: 0.22,
+                graph_weight: 0.26,
+                probe_factor: 1.10,
+            },
+            AgentIntentMode::ReviewPrep => FusionProfile {
+                lexical_weight: 0.28,
+                semantic_file_weight: 0.24,
+                semantic_chunk_weight: 0.24,
+                graph_weight: 0.24,
+                probe_factor: 1.20,
+            },
+            AgentIntentMode::ApiContractMap => FusionProfile {
+                lexical_weight: 0.38,
+                semantic_file_weight: 0.20,
+                semantic_chunk_weight: 0.18,
+                graph_weight: 0.24,
+                probe_factor: 1.10,
+            },
+            AgentIntentMode::RuntimeSurface => FusionProfile {
+                lexical_weight: 0.30,
+                semantic_file_weight: 0.22,
+                semantic_chunk_weight: 0.20,
+                graph_weight: 0.28,
+                probe_factor: 1.20,
+            },
+            AgentIntentMode::RefactorSurface => FusionProfile {
+                lexical_weight: 0.26,
+                semantic_file_weight: 0.24,
+                semantic_chunk_weight: 0.22,
+                graph_weight: 0.28,
+                probe_factor: 1.22,
+            },
+        };
+    }
+
     if let Some(mode) = context_mode {
         return match mode {
             ContextMode::Code => FusionProfile {

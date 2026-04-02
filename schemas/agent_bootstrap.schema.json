@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentBootstrap",
+  "type": "object",
+  "required": [
+    "brief",
+    "profile",
+    "deepen_available",
+    "timings"
+  ],
+  "properties": {
+    "brief": {
+      "type": "object"
+    },
+    "profile": {
+      "type": "string",
+      "oneOf": [
+        { "const": "fast" },
+        { "const": "investigation_summary" },
+        { "const": "report" },
+        { "const": "full" }
+      ]
+    },
+    "degradation_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "oneOf": [
+          { "const": "semantic_fail_open" },
+          { "const": "semantic_low_signal_skip" },
+          { "const": "chunk_preview_fallback" },
+          { "const": "budget_truncated" },
+          { "const": "profile_limited" },
+          { "const": "unsupported_sources_present" }
+        ]
+      }
+    },
+    "deepen_available": { "type": "boolean" },
+    "deepen_hint": { "type": "string" },
+    "query_bundle": {
+      "type": "object",
+      "required": [
+        "query",
+        "limit",
+        "semantic",
+        "resolved_mode",
+        "mode_source",
+        "max_chars",
+        "max_tokens",
+        "hits",
+        "context",
+        "provenance"
+      ],
+      "properties": {
+        "query": { "type": "string" },
+        "limit": { "type": "integer", "minimum": 1 },
+        "semantic": { "type": "boolean" },
+        "resolved_mode": {
+          "type": "string",
+          "oneOf": [
+            { "const": "entrypoint_map" },
+            { "const": "test_map" },
+            { "const": "review_prep" },
+            { "const": "api_contract_map" },
+            { "const": "runtime_surface" },
+            { "const": "refactor_surface" }
+          ]
+        },
+        "mode_source": {
+          "type": "string",
+          "oneOf": [
+            { "const": "explicit" },
+            { "const": "inferred" },
+            { "const": "default" }
+          ]
+        },
+        "max_chars": { "type": "integer", "minimum": 256 },
+        "max_tokens": { "type": "integer", "minimum": 64 },
+        "hits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "preview", "score", "size_bytes", "language"],
+            "properties": {
+              "path": { "type": "string" },
+              "preview": { "type": "string" },
+              "score": { "type": "number" },
+              "size_bytes": { "type": "integer" },
+              "language": { "type": "string" }
+            }
+          }
+        },
+        "context": {
+          "type": "object"
+        },
+        "provenance": {
+          "type": "object",
+          "required": ["basis", "derivation", "freshness", "strength"],
+          "properties": {
+            "basis": {
+              "type": "string",
+              "oneOf": [
+                { "const": "indexed" },
+                { "const": "preview_fallback" },
+                { "const": "graph_derived" },
+                { "const": "heuristic" },
+                { "const": "mixed" }
+              ]
+            },
+            "derivation": { "type": "string" },
+            "freshness": {
+              "type": "string",
+              "oneOf": [
+                { "const": "index_snapshot" },
+                { "const": "live_read" },
+                { "const": "unknown" }
+              ]
+            },
+            "strength": {
+              "type": "string",
+              "oneOf": [
+                { "const": "strong" },
+                { "const": "moderate" },
+                { "const": "weak" },
+                { "const": "fallback_only" }
+              ]
+            },
+            "reasons": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "followups": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "investigation_summary": {
+          "type": "object"
+        },
+        "report": {
+          "$ref": "./query_report.schema.json"
+        }
+      }
+    },
+    "timings": {
+      "type": "object",
+      "required": [
+        "index_ready_ms",
+        "brief_ms",
+        "search_ms",
+        "context_ms",
+        "investigation_ms",
+        "report_ms",
+        "total_ms"
+      ],
+      "properties": {
+        "index_ready_ms": { "type": "integer", "minimum": 0 },
+        "brief_ms": { "type": "integer", "minimum": 0 },
+        "search_ms": { "type": "integer", "minimum": 0 },
+        "context_ms": { "type": "integer", "minimum": 0 },
+        "investigation_ms": { "type": "integer", "minimum": 0 },
+        "report_ms": { "type": "integer", "minimum": 0 },
+        "total_ms": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

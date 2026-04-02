@@ -33,7 +33,8 @@ use crate::vector_rank::embed_for_index;
 
 pub(super) fn search_with_meta(engine: &Engine, options: &QueryOptions) -> Result<SearchExecution> {
     let conn = engine.open_db()?;
-    let search_intent = SearchIntent::from_query(&options.query);
+    let (search_intent, resolved_intent) =
+        SearchIntent::resolve(&options.query, options.agent_intent_mode);
     let requested_limit = options.limit.max(1);
     let lexical_candidate_limit = search_intent.lexical_candidate_limit(requested_limit);
     let lexical_db_limit = db_limit_for(lexical_candidate_limit)?;
@@ -50,7 +51,11 @@ pub(super) fn search_with_meta(engine: &Engine, options: &QueryOptions) -> Resul
     let lexical_by_path =
         build_lexical_by_path(&conn, &options.query, &lexical_hits, used_like_fallback)?;
 
-    let profile = derive_fusion_profile(&options.query, options.context_mode);
+    let profile = derive_fusion_profile(
+        &options.query,
+        options.context_mode,
+        options.agent_intent_mode,
+    );
     let low_signal_semantic = options.semantic && is_low_signal_query(&options.query);
     let semantic_enabled = options.semantic && !low_signal_semantic;
     let candidate_limit =
@@ -142,6 +147,7 @@ pub(super) fn search_with_meta(engine: &Engine, options: &QueryOptions) -> Resul
             graph_pool: &[],
             profile: seed_profile,
             context_mode: options.context_mode,
+            agent_intent_mode: options.agent_intent_mode,
             candidate_limit,
         });
         fused.hits
@@ -169,6 +175,7 @@ pub(super) fn search_with_meta(engine: &Engine, options: &QueryOptions) -> Resul
             graph_pool: &graph_pool,
             profile,
             context_mode: options.context_mode,
+            agent_intent_mode: options.agent_intent_mode,
             candidate_limit,
         });
         fused_explain = fused.explain_by_path;
@@ -242,6 +249,8 @@ pub(super) fn search_with_meta(engine: &Engine, options: &QueryOptions) -> Resul
         hits,
         chunk_by_path,
         semantic_outcome,
+        resolved_mode: resolved_intent.mode,
+        mode_source: resolved_intent.source,
         explain_entries,
         stage_counts: RetrievalStageCounts {
             lexical_candidates,

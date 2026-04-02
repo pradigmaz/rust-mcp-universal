@@ -10,8 +10,8 @@ pub(super) use indexing::{
     preflight_schema, scope_preview_schema,
 };
 pub(super) use navigation::{call_path_schema, navigation_schema};
-pub(super) use quality::{quality_hotspots_schema, rule_violations_schema};
+pub(super) use quality::{quality_hotspots_schema, quality_snapshot_schema, rule_violations_schema};
 pub(super) use query::{
-    budget_query_schema, context_pack_schema, investigation_schema, query_benchmark_schema,
-    query_schema,
+    agent_intent_mode_schema, bootstrap_profile_schema, budget_query_schema, context_pack_schema,
+    investigation_schema, query_benchmark_schema, query_schema, report_query_schema,
 };

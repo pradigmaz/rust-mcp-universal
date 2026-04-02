@@ -14,8 +14,8 @@ use crate::rpc_tools::parsing::{
 use crate::rpc_tools::result::tool_result;
 
 use super::{
-    ensure_query_index_ready, parse_optional_migration_mode, parse_optional_privacy_mode,
-    parse_optional_rollout_phase, parse_optional_semantic_fail_mode,
+    ensure_query_index_ready, parse_optional_agent_intent_mode, parse_optional_migration_mode,
+    parse_optional_privacy_mode, parse_optional_rollout_phase, parse_optional_semantic_fail_mode,
 };
 
 pub(super) fn query_report(args: &Value, state: &mut ServerState) -> Result<Value> {
@@ -34,6 +34,7 @@ pub(super) fn query_report(args: &Value, state: &mut ServerState) -> Result<Valu
             "migration_mode",
             "max_chars",
             "max_tokens",
+            "mode",
         ],
     )?;
     let query = parse_required_non_empty_string(args, "query_report", "query")?;
@@ -53,6 +54,7 @@ pub(super) fn query_report(args: &Value, state: &mut ServerState) -> Result<Valu
         .unwrap_or(MigrationMode::Auto);
     let max_chars = parse_optional_usize_with_min(args, "query_report", "max_chars", 256, 12_000)?;
     let max_tokens = parse_optional_usize_with_min(args, "query_report", "max_tokens", 64, 3_000)?;
+    let mode = parse_optional_agent_intent_mode(args, "query_report", "mode")?;
 
     let semantic_effective =
         decide_semantic_rollout(semantic, vector_layer_enabled, rollout_phase, &query).enabled;
@@ -71,6 +73,7 @@ pub(super) fn query_report(args: &Value, state: &mut ServerState) -> Result<Valu
             semantic_fail_mode,
             privacy_mode,
             context_mode: None,
+            agent_intent_mode: mode,
         },
         max_chars,
         max_tokens,

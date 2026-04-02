@@ -2,10 +2,11 @@ use serde_json::{Value, json};
 
 use super::helpers::{json_schema_object, tool};
 use super::schemas::{
-    budget_query_schema, call_path_schema, context_pack_schema, db_maintenance_schema,
-    delete_index_schema, index_schema, install_ignore_rules_schema, investigation_schema,
-    migration_mode_schema, navigation_schema, preflight_schema, privacy_mode_schema,
-    quality_hotspots_schema, query_benchmark_schema, query_schema, rollout_phase_schema,
+    agent_intent_mode_schema, bootstrap_profile_schema, budget_query_schema, call_path_schema,
+    context_pack_schema, db_maintenance_schema, delete_index_schema, index_schema,
+    install_ignore_rules_schema, investigation_schema, migration_mode_schema, navigation_schema,
+    preflight_schema, privacy_mode_schema, quality_hotspots_schema, quality_snapshot_schema,
+    query_benchmark_schema, query_schema, report_query_schema, rollout_phase_schema,
     rule_violations_schema, scope_preview_schema,
 };
 
@@ -113,6 +114,16 @@ pub(super) fn tools_list() -> Value {
                                 "minimum": 64,
                                 "description": "Maximum number of tokens allowed in the assembled payload."
                             }),
+                        ),
+                        (
+                            "mode",
+                            agent_intent_mode_schema(
+                                "Optional agent-facing intent mode. When omitted, RMU resolves one heuristically.",
+                            ),
+                        ),
+                        (
+                            "profile",
+                            bootstrap_profile_schema(),
                         ),
                         (
                             "include_report",
@@ -224,7 +235,7 @@ pub(super) fn tools_list() -> Value {
             ),
             tool(
                 "search_candidates",
-                "Search indexed candidates by query",
+                "Search indexed candidates by query with canonical privacy_mode values `off`, `mask`, or `hash`",
                 query_schema(true)
             ),
             tool(
@@ -234,13 +245,18 @@ pub(super) fn tools_list() -> Value {
             ),
             tool(
                 "rule_violations",
-                "Report persisted file-level quality violations from the quality index",
+                "Report persisted file-level quality violations from the quality index; use `path_prefix` to scope paths",
                 rule_violations_schema()
             ),
             tool(
                 "quality_hotspots",
                 "Report aggregated quality hotspots across file, directory, or module buckets",
                 quality_hotspots_schema()
+            ),
+            tool(
+                "quality_snapshot",
+                "Capture a fresh project quality snapshot, persist debt-wave artifacts, and optionally compare against baseline or wave_before",
+                quality_snapshot_schema()
             ),
             tool(
                 "build_context_under_budget",
@@ -255,7 +271,7 @@ pub(super) fn tools_list() -> Value {
             tool(
                 "query_report",
                 "Generate retrieval report for a query",
-                budget_query_schema()
+                report_query_schema()
             ),
             tool(
                 "query_benchmark",

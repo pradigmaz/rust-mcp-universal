@@ -54,6 +54,7 @@ fn oversize_files_are_quality_only_and_not_searchable() -> anyhow::Result<()> {
         semantic_fail_mode: SemanticFailMode::FailOpen,
         privacy_mode: PrivacyMode::Off,
         context_mode: None,
+        agent_intent_mode: None,
     })?;
     assert!(
         search_hits.iter().all(|hit| hit.path != "src/big.rs"),

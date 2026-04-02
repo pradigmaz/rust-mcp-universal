@@ -87,6 +87,7 @@ pub(super) fn build_context_under_budget(args: &Value, state: &mut ServerState) 
             semantic_fail_mode,
             privacy_mode,
             context_mode: None,
+        agent_intent_mode: None,
         },
         max_chars,
         max_tokens,

@@ -2,8 +2,9 @@ use anyhow::Result;
 
 use crate::engine::Engine;
 use crate::model::{
-    QualityHotspotsOptions, QualityHotspotsResult, QualityStatus, RuleViolationsOptions,
-    RuleViolationsResult, WorkspaceQualitySummary,
+    QualityHotspotsOptions, QualityHotspotsResult, QualityProjectSnapshotCapture,
+    QualityProjectSnapshotOptions, QualityStatus, RuleViolationsOptions, RuleViolationsResult,
+    WorkspaceQualitySummary,
 };
 
 #[path = "engine_quality/hotspots.rs"]
@@ -16,6 +17,8 @@ mod query;
 mod refresh;
 #[path = "engine_quality/scope.rs"]
 mod scope;
+#[path = "engine_quality/snapshot.rs"]
+mod snapshot;
 #[path = "engine_quality/status.rs"]
 mod status;
 #[path = "engine_quality/structural.rs"]
@@ -42,6 +45,13 @@ impl Engine {
             refresh::refresh_quality_only(self)?;
         }
         Ok(())
+    }
+
+    pub fn quality_project_snapshot(
+        &self,
+        options: &QualityProjectSnapshotOptions,
+    ) -> Result<QualityProjectSnapshotCapture> {
+        snapshot::capture_quality_project_snapshot(self, options)
     }
 }
 

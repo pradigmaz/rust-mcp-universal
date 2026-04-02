@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 
+use super::super::{AgentIntentMode, BootstrapProfile, DegradationReason, ModeResolutionSource};
 use super::context::ContextSelection;
 use super::investigation_embed::InvestigationSummary;
 use super::query::SearchHit;
-use super::report::QueryReport;
+use super::report::{CanonicalProvenance, QueryReport};
 use super::workspace::WorkspaceBrief;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, Default)]
@@ -12,6 +13,8 @@ pub struct AgentBootstrapIncludeOptions {
     pub include_report: bool,
     #[serde(default)]
     pub include_investigation_summary: bool,
+    #[serde(default)]
+    pub profile: Option<BootstrapProfile>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
@@ -37,10 +40,13 @@ pub struct AgentQueryBundle {
     pub query: String,
     pub limit: usize,
     pub semantic: bool,
+    pub resolved_mode: AgentIntentMode,
+    pub mode_source: ModeResolutionSource,
     pub max_chars: usize,
     pub max_tokens: usize,
     pub hits: Vec<SearchHit>,
     pub context: ContextSelection,
+    pub provenance: CanonicalProvenance,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub followups: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -52,6 +58,13 @@ pub struct AgentQueryBundle {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AgentBootstrap {
     pub brief: WorkspaceBrief,
+    pub profile: BootstrapProfile,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub degradation_reasons: Vec<DegradationReason>,
+    #[serde(default)]
+    pub deepen_available: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deepen_hint: Option<String>,
     pub query_bundle: Option<AgentQueryBundle>,
     #[serde(default)]
     pub timings: AgentBootstrapTimings,

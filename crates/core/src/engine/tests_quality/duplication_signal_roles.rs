@@ -63,8 +63,9 @@ public class AdminConfigView {
         );
     }
 
-    let artifact: Value =
-        serde_json::from_str(&std::fs::read_to_string(root.join(".rmu/quality/duplication.clone_classes.json"))?)?;
+    let artifact: Value = serde_json::from_str(&std::fs::read_to_string(
+        root.join(".rmu/quality/duplication.clone_classes.json"),
+    )?)?;
     assert!(
         artifact["clone_classes"]
             .as_array()
@@ -132,8 +133,9 @@ pub fn beta_shell() {
         );
     }
 
-    let artifact: Value =
-        serde_json::from_str(&std::fs::read_to_string(root.join(".rmu/quality/duplication.clone_classes.json"))?)?;
+    let artifact: Value = serde_json::from_str(&std::fs::read_to_string(
+        root.join(".rmu/quality/duplication.clone_classes.json"),
+    )?)?;
     assert!(
         artifact["clone_classes"]
             .as_array()
@@ -204,8 +206,9 @@ class AdminSchema:
         );
     }
 
-    let artifact: Value =
-        serde_json::from_str(&std::fs::read_to_string(root.join(".rmu/quality/duplication.clone_classes.json"))?)?;
+    let artifact: Value = serde_json::from_str(&std::fs::read_to_string(
+        root.join(".rmu/quality/duplication.clone_classes.json"),
+    )?)?;
     assert!(
         artifact["clone_classes"]
             .as_array()
@@ -278,8 +281,9 @@ fn tsx_wrapper_shells_do_not_raise_duplication_risk() -> anyhow::Result<()> {
         );
     }
 
-    let artifact: Value =
-        serde_json::from_str(&std::fs::read_to_string(root.join(".rmu/quality/duplication.clone_classes.json"))?)?;
+    let artifact: Value = serde_json::from_str(&std::fs::read_to_string(
+        root.join(".rmu/quality/duplication.clone_classes.json"),
+    )?)?;
     assert!(
         artifact["clone_classes"]
             .as_array()

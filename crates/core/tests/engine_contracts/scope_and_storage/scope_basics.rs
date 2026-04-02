@@ -19,6 +19,7 @@ fn unicode_canonical_equivalence_hits_via_fallback_when_fts_misses() -> Result<(
         semantic_fail_mode: SemanticFailMode::FailOpen,
         privacy_mode: PrivacyMode::Off,
         context_mode: None,
+        agent_intent_mode: None,
     })?;
 
     assert!(

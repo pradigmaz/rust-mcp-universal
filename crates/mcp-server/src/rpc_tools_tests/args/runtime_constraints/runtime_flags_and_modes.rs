@@ -56,6 +56,16 @@ pub(super) fn cases() -> Vec<RuntimeConstraintCase> {
         ),
         (
             "search_candidates",
+            json!({"query": "q", "privacy_mode": "none"}),
+            "use `off` for unsanitized output",
+        ),
+        (
+            "search_candidates",
+            json!({"query": "q", "privacy_mode": "repo-only"}),
+            "use `off` for unsanitized output",
+        ),
+        (
+            "search_candidates",
             json!({"query": "q", "rollout_phase": "canary"}),
             "`rollout_phase` must be one of: shadow, canary_5, canary_25, full_100",
         ),

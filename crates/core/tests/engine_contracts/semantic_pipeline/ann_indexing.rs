@@ -34,6 +34,7 @@ fn semantic_search_unions_lexical_and_semantic_candidates() -> Result<(), Box<dy
         semantic_fail_mode: SemanticFailMode::FailOpen,
         privacy_mode: PrivacyMode::Off,
         context_mode: None,
+        agent_intent_mode: None,
     })?;
     assert!(
         hits.iter()
@@ -49,6 +50,7 @@ fn semantic_search_unions_lexical_and_semantic_candidates() -> Result<(), Box<dy
             semantic_fail_mode: SemanticFailMode::FailOpen,
             privacy_mode: PrivacyMode::Off,
             context_mode: None,
+        agent_intent_mode: None,
         },
         20_000,
         6_000,
@@ -113,6 +115,7 @@ fn semantic_query_prefers_source_implementation_over_planning_notes_and_tests(
             semantic_fail_mode: SemanticFailMode::FailOpen,
             privacy_mode: PrivacyMode::Off,
             context_mode: None,
+        agent_intent_mode: None,
         },
         20_000,
         6_000,
@@ -153,6 +156,7 @@ fn explicit_semantic_query_runs_semantic_stage_even_with_many_lexical_hits(
             semantic_fail_mode: SemanticFailMode::FailOpen,
             privacy_mode: PrivacyMode::Off,
             context_mode: None,
+        agent_intent_mode: None,
         },
         20_000,
         6_000,
@@ -220,6 +224,7 @@ fn semantic_candidate_retrieval_falls_back_when_ann_table_empty() -> Result<(), 
         semantic_fail_mode: SemanticFailMode::FailOpen,
         privacy_mode: PrivacyMode::Off,
         context_mode: None,
+        agent_intent_mode: None,
     })?;
     assert!(
         hits.iter()

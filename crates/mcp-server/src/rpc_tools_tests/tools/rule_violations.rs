@@ -280,6 +280,46 @@ fn rule_violations_auto_index_uses_mixed_profile_for_fresh_typescript_repos() {
 }
 
 #[test]
+fn rule_violations_accept_metric_value_sorting_when_metric_context_is_provided() {
+    let project_dir = temp_dir("rmu-mcp-tests-rule-violations-metric-value");
+    fs::create_dir_all(project_dir.join("src")).expect("create src");
+    fs::write(
+        project_dir.join("src/lib.rs"),
+        (0..301)
+            .map(|idx| format!("line_{idx}\n"))
+            .collect::<String>(),
+    )
+    .expect("write src");
+
+    let mut state = state_for(project_dir.clone(), Some(project_dir.join(".rmu/index.db")));
+    let result = handle_tool_call(
+        Some(json!({
+            "name": "rule_violations",
+            "arguments": {
+                "auto_index": true,
+                "sort_by": "metric_value",
+                "sort_metric_id": "non_empty_lines"
+            }
+        })),
+        &mut state,
+    )
+    .expect("rule_violations metric_value sorting should succeed");
+
+    assert_eq!(result["isError"], json!(false));
+    let first_hit = &result["structuredContent"]["hits"][0];
+    assert_eq!(first_hit["path"], json!("src/lib.rs"));
+    assert!(
+        first_hit["metrics"]
+            .as_array()
+            .expect("metrics array")
+            .iter()
+            .any(|metric| metric["metric_id"] == json!("non_empty_lines"))
+    );
+
+    let _ = fs::remove_dir_all(project_dir);
+}
+
+#[test]
 fn rule_violations_auto_index_uses_rust_monorepo_for_fresh_rust_workspaces() {
     let project_dir = temp_dir("rmu-mcp-tests-rule-violations-auto-index-rust");
     fs::create_dir_all(project_dir.join("src")).expect("create src");

@@ -6,6 +6,27 @@ use super::common::{
 };
 use crate::rpc_tools::registry::helpers::json_schema_object;
 
+pub(crate) fn agent_intent_mode_schema(description: &str) -> Value {
+    enum_schema(
+        description,
+        &[
+            "entrypoint_map",
+            "test_map",
+            "review_prep",
+            "api_contract_map",
+            "runtime_surface",
+            "refactor_surface",
+        ],
+    )
+}
+
+pub(crate) fn bootstrap_profile_schema() -> Value {
+    enum_schema(
+        "Preferred bootstrap surface depth. Overrides legacy include flags when provided.",
+        &["fast", "investigation_summary", "report", "full"],
+    )
+}
+
 pub(crate) fn query_schema(include_semantic_flag: bool) -> Value {
     let mut fields = vec![
         (
@@ -50,6 +71,64 @@ pub(crate) fn budget_query_schema() -> Value {
             (
                 "query",
                 string_schema("Natural-language query to search for.", Some(1)),
+            ),
+            (
+                "limit",
+                integer_schema("Maximum number of candidates to return.", Some(1)),
+            ),
+            (
+                "semantic",
+                boolean_schema("Enable semantic reranking for this request."),
+            ),
+            (
+                "auto_index",
+                boolean_schema("Automatically build or refresh the index if needed."),
+            ),
+            (
+                "semantic_fail_mode",
+                enum_schema(
+                    "How to behave if semantic search is unavailable.",
+                    &["fail_open", "fail_closed"],
+                ),
+            ),
+            ("privacy_mode", privacy_mode_schema()),
+            (
+                "vector_layer_enabled",
+                boolean_schema("Allow vector-layer retrieval when available."),
+            ),
+            ("rollout_phase", rollout_phase_schema()),
+            ("migration_mode", migration_mode_schema()),
+            (
+                "max_chars",
+                integer_schema(
+                    "Maximum number of characters allowed in the assembled context.",
+                    Some(256),
+                ),
+            ),
+            (
+                "max_tokens",
+                integer_schema(
+                    "Maximum number of tokens allowed in the assembled context.",
+                    Some(64),
+                ),
+            ),
+        ],
+        &["query"],
+    )
+}
+
+pub(crate) fn report_query_schema() -> Value {
+    json_schema_object(
+        &[
+            (
+                "query",
+                string_schema("Natural-language query to search for.", Some(1)),
+            ),
+            (
+                "mode",
+                agent_intent_mode_schema(
+                    "Optional agent-facing intent mode. When omitted, RMU resolves one heuristically.",
+                ),
             ),
             (
                 "limit",

@@ -1,7 +1,8 @@
 use time::{OffsetDateTime, UtcOffset, format_description::well_known::Rfc3339};
 
 use super::{
-    ContextMode, IndexProfile, MigrationMode, PrivacyMode, RolloutPhase, SemanticFailMode,
+    AgentIntentMode, BootstrapProfile, ContextMode, IndexProfile, MigrationMode, PrivacyMode,
+    RolloutPhase, SemanticFailMode,
 };
 
 pub(super) fn semantic_fail_mode(value: &str) -> Option<SemanticFailMode> {
@@ -26,6 +27,28 @@ pub(super) fn context_mode(value: &str) -> Option<ContextMode> {
         "code" => Some(ContextMode::Code),
         "design" => Some(ContextMode::Design),
         "bugfix" => Some(ContextMode::Bugfix),
+        _ => None,
+    }
+}
+
+pub(super) fn agent_intent_mode(value: &str) -> Option<AgentIntentMode> {
+    match value.trim() {
+        "entrypoint_map" => Some(AgentIntentMode::EntrypointMap),
+        "test_map" => Some(AgentIntentMode::TestMap),
+        "review_prep" => Some(AgentIntentMode::ReviewPrep),
+        "api_contract_map" => Some(AgentIntentMode::ApiContractMap),
+        "runtime_surface" => Some(AgentIntentMode::RuntimeSurface),
+        "refactor_surface" => Some(AgentIntentMode::RefactorSurface),
+        _ => None,
+    }
+}
+
+pub(super) fn bootstrap_profile(value: &str) -> Option<BootstrapProfile> {
+    match value.trim() {
+        "fast" => Some(BootstrapProfile::Fast),
+        "investigation_summary" => Some(BootstrapProfile::InvestigationSummary),
+        "report" => Some(BootstrapProfile::Report),
+        "full" => Some(BootstrapProfile::Full),
         _ => None,
     }
 }

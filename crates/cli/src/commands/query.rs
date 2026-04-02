@@ -1,8 +1,9 @@
 use anyhow::{Result, anyhow};
 use rmu_core::{
-    ConceptSeedKind, ContextMode, Engine, IndexProfile, IndexingOptions, MigrationMode,
-    PrivacyMode, QueryBenchmarkOptions, QueryOptions, RolloutPhase, SemanticFailMode,
-    decide_semantic_rollout, sanitize_path_text, sanitize_query_text, sanitize_value_for_privacy,
+    AgentIntentMode, BootstrapProfile, ConceptSeedKind, ContextMode, Engine, IndexProfile,
+    IndexingOptions, MigrationMode, PrivacyMode, QueryBenchmarkOptions, QueryOptions,
+    RolloutPhase, SemanticFailMode, decide_semantic_rollout, sanitize_path_text,
+    sanitize_query_text, sanitize_value_for_privacy,
 };
 use std::path::PathBuf;
 
@@ -58,6 +59,8 @@ pub(crate) use semantic_search::run_semantic_search;
 
 pub(crate) struct AgentArgs {
     pub(crate) query: Option<String>,
+    pub(crate) mode: Option<AgentIntentMode>,
+    pub(crate) profile: Option<BootstrapProfile>,
     pub(crate) limit: usize,
     pub(crate) semantic: bool,
     pub(crate) auto_index: bool,
@@ -135,6 +138,7 @@ pub(crate) struct ContextPackArgs {
 
 pub(crate) struct ReportArgs {
     pub(crate) query: String,
+    pub(crate) mode: Option<AgentIntentMode>,
     pub(crate) limit: usize,
     pub(crate) semantic: bool,
     pub(crate) auto_index: bool,

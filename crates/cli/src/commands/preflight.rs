@@ -5,8 +5,9 @@ use crate::error::{CODE_CONFIRM_REQUIRED, cli_error};
 use crate::validation::{require_max, require_min};
 
 use super::modes::{
-    parse_changed_since, parse_changed_since_commit, parse_context_mode,
-    parse_ignore_install_target, parse_index_profile, parse_seed_kind, parse_semantic_fail_mode,
+    parse_agent_intent_mode, parse_bootstrap_profile, parse_changed_since,
+    parse_changed_since_commit, parse_context_mode, parse_ignore_install_target,
+    parse_index_profile, parse_seed_kind, parse_semantic_fail_mode,
 };
 
 pub(super) fn preflight_validate(command: &Command) -> Result<()> {
@@ -119,8 +120,15 @@ pub(super) fn preflight_validate(command: &Command) -> Result<()> {
             max_chars,
             max_tokens,
             ..
+        } => {
+            let _ = require_min("limit", *limit, 1)?;
+            let _ = require_max("limit", *limit, limit_max)?;
+            let _ = require_min("max_chars", *max_chars, 256)?;
+            let _ = require_min("max_tokens", *max_tokens, 64)?;
+            let _ = parse_semantic_fail_mode(semantic_fail_mode)?;
         }
-        | Command::Report {
+        Command::Report {
+            mode,
             limit,
             semantic_fail_mode,
             max_chars,
@@ -132,6 +140,9 @@ pub(super) fn preflight_validate(command: &Command) -> Result<()> {
             let _ = require_min("max_chars", *max_chars, 256)?;
             let _ = require_min("max_tokens", *max_tokens, 64)?;
             let _ = parse_semantic_fail_mode(semantic_fail_mode)?;
+            if let Some(raw_mode) = mode {
+                let _ = parse_agent_intent_mode(raw_mode)?;
+            }
         }
         Command::ContextPack {
             mode,
@@ -227,8 +238,42 @@ pub(super) fn preflight_validate(command: &Command) -> Result<()> {
                 bail!("`sort_by` must be one of: hotspot_score, risk_score_delta, new_violations");
             }
         }
+        Command::QualitySnapshot(args) => {
+            if rmu_core::QualityProjectSnapshotKind::parse(&args.snapshot_kind).is_none() {
+                bail!("`snapshot_kind` must be one of: ad_hoc, before, after, baseline");
+            }
+            if args
+                .output_root
+                .as_ref()
+                .is_some_and(|value| value.as_os_str().is_empty())
+            {
+                bail!("`output_root` must be non-empty when provided");
+            }
+            if rmu_core::QualityProjectSnapshotCompareAgainst::parse(&args.compare_against).is_none()
+            {
+                bail!("`compare_against` must be one of: none, self_baseline, wave_before");
+            }
+            if matches!(args.snapshot_kind.as_str(), "before" | "after")
+                && args
+                    .wave_id
+                    .as_ref()
+                    .is_none_or(|value| value.trim().is_empty())
+            {
+                bail!("`wave_id` must be non-empty for before/after quality snapshots");
+            }
+            if args.compare_against == "wave_before"
+                && args
+                    .wave_id
+                    .as_ref()
+                    .is_none_or(|value| value.trim().is_empty())
+            {
+                bail!("`wave_id` must be non-empty when compare_against=wave_before");
+            }
+        }
         Command::Agent {
             query,
+            mode,
+            profile,
             limit,
             semantic_fail_mode,
             max_chars,
@@ -240,6 +285,12 @@ pub(super) fn preflight_validate(command: &Command) -> Result<()> {
             let _ = require_min("max_chars", *max_chars, 256)?;
             let _ = require_min("max_tokens", *max_tokens, 64)?;
             let _ = parse_semantic_fail_mode(semantic_fail_mode)?;
+            if let Some(raw_mode) = mode {
+                let _ = parse_agent_intent_mode(raw_mode)?;
+            }
+            if let Some(raw_profile) = profile {
+                let _ = parse_bootstrap_profile(raw_profile)?;
+            }
             if let Some(raw_query) = query {
                 if raw_query.trim().is_empty() {
                     bail!("`query` must be non-empty when provided");

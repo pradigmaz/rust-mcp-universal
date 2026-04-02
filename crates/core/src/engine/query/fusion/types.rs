@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::model::{ContextMode, SearchHit};
+use crate::model::{AgentIntentMode, ContextMode, SearchHit};
 
 use super::super::chunking::ChunkPoolCandidate;
 use super::super::graph_stage::GraphPoolCandidate;
@@ -35,6 +35,7 @@ pub(crate) struct FusionInputs<'a> {
     pub(crate) graph_pool: &'a [GraphPoolCandidate],
     pub(crate) profile: FusionProfile,
     pub(crate) context_mode: Option<ContextMode>,
+    pub(crate) agent_intent_mode: Option<AgentIntentMode>,
     pub(crate) candidate_limit: usize,
 }
 

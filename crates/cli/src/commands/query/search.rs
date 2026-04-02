@@ -24,6 +24,7 @@ pub(crate) fn run_search(engine: &Engine, json: bool, args: SearchArgs) -> Resul
         semantic_fail_mode,
         privacy_mode,
         context_mode: None,
+        agent_intent_mode: None,
     };
     let hits = engine.search(&opts)?;
 

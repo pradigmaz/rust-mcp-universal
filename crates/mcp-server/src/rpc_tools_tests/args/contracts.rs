@@ -54,6 +54,54 @@ fn scope_preview_tool_is_registered() {
 }
 
 #[test]
+fn query_and_quality_tool_schemas_reject_drifted_argument_aliases() {
+    let tools = tools_list();
+    let items = tools["tools"]
+        .as_array()
+        .expect("tools list should contain `tools` array");
+
+    let search_schema = &items
+        .iter()
+        .find(|tool| tool["name"].as_str() == Some("search_candidates"))
+        .expect("search_candidates tool should exist")["inputSchema"];
+    assert_schema_rejects(
+        &json!({"query": "probe", "privacy_mode": "none"}),
+        search_schema,
+        "search_candidates.schema.privacy.none",
+    );
+    assert_schema_rejects(
+        &json!({"query": "probe", "privacy_mode": "repo-only"}),
+        search_schema,
+        "search_candidates.schema.privacy.repo-only",
+    );
+
+    let violations_schema = &items
+        .iter()
+        .find(|tool| tool["name"].as_str() == Some("rule_violations"))
+        .expect("rule_violations tool should exist")["inputSchema"];
+    assert_schema_rejects(
+        &json!({"sort_by": "path"}),
+        violations_schema,
+        "rule_violations.schema.sort_by.path",
+    );
+
+    let snapshot_schema = &items
+        .iter()
+        .find(|tool| tool["name"].as_str() == Some("quality_snapshot"))
+        .expect("quality_snapshot tool should exist")["inputSchema"];
+    assert_required_structure(
+        &json!({"snapshot_kind": "before", "wave_id": "wave-0", "compare_against": "wave_before"}),
+        snapshot_schema,
+        "quality_snapshot.schema.shape",
+    );
+    assert_schema_rejects(
+        &json!({"compare_against": "wave-before"}),
+        snapshot_schema,
+        "quality_snapshot.schema.compare_against.wave-before",
+    );
+}
+
+#[test]
 fn navigation_v2_tools_are_registered() {
     let tools = tools_list();
     let items = tools["tools"]

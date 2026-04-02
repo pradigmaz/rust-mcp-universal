@@ -3,10 +3,11 @@ use anyhow::Result;
 use crate::args::Command;
 
 use super::modes::{
-    parse_context_mode, parse_ignore_install_target, parse_seed_kind, parse_semantic_fail_mode,
+    parse_agent_intent_mode, parse_bootstrap_profile, parse_context_mode,
+    parse_ignore_install_target, parse_seed_kind, parse_semantic_fail_mode,
 };
 use super::preflight_helpers::PreparedRun;
-use super::{indexing, maintenance, quality_hotspots, quality_matrix, query};
+use super::{indexing, maintenance, quality_hotspots, quality_matrix, quality_snapshot, query};
 
 pub(super) fn run(prepared: PreparedRun) -> Result<()> {
     let PreparedRun {
@@ -306,6 +307,7 @@ pub(super) fn run(prepared: PreparedRun) -> Result<()> {
         ),
         Command::Report {
             query,
+            mode,
             limit,
             semantic,
             auto_index,
@@ -317,6 +319,10 @@ pub(super) fn run(prepared: PreparedRun) -> Result<()> {
             json,
             query::ReportArgs {
                 query,
+                mode: mode
+                    .as_deref()
+                    .map(parse_agent_intent_mode)
+                    .transpose()?,
                 limit,
                 semantic,
                 auto_index,
@@ -402,9 +408,26 @@ pub(super) fn run(prepared: PreparedRun) -> Result<()> {
                 auto_index,
             },
         ),
+        Command::QualitySnapshot(args) => quality_snapshot::run(
+            required_engine(engine)?,
+            json,
+            privacy_mode,
+            quality_snapshot::QualitySnapshotArgs {
+                snapshot_kind: args.snapshot_kind,
+                wave_id: args.wave_id,
+                output_root: args.output_root,
+                compare_against: args.compare_against,
+                auto_index: args.auto_index,
+                persist_artifacts: args.persist_artifacts,
+                promote_self_baseline: args.promote_self_baseline,
+                fail_on_regression: args.fail_on_regression,
+            },
+        ),
         Command::Brief => maintenance::run_brief(required_engine(engine)?, json, privacy_mode),
         Command::Agent {
             query,
+            mode,
+            profile,
             limit,
             semantic,
             auto_index,
@@ -416,6 +439,14 @@ pub(super) fn run(prepared: PreparedRun) -> Result<()> {
             json,
             query::AgentArgs {
                 query,
+                mode: mode
+                    .as_deref()
+                    .map(parse_agent_intent_mode)
+                    .transpose()?,
+                profile: profile
+                    .as_deref()
+                    .map(parse_bootstrap_profile)
+                    .transpose()?,
                 limit,
                 semantic,
                 auto_index,

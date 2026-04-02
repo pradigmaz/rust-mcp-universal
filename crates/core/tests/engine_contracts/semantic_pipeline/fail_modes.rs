@@ -19,6 +19,7 @@ fn semantic_fail_open_degrades_to_lexical_on_corrupted_vector_payload() -> Resul
         semantic_fail_mode: SemanticFailMode::FailOpen,
         privacy_mode: PrivacyMode::Off,
         context_mode: None,
+        agent_intent_mode: None,
     };
 
     let hits = engine.search(&query)?;
@@ -71,6 +72,7 @@ fn helper_noise_signal() {
         semantic_fail_mode: SemanticFailMode::FailOpen,
         privacy_mode: PrivacyMode::Off,
         context_mode: None,
+        agent_intent_mode: None,
     };
 
     let hits = engine.search(&query)?;
@@ -103,6 +105,7 @@ fn semantic_fail_closed_returns_error_on_corrupted_vector_payload() -> Result<()
         semantic_fail_mode: SemanticFailMode::FailClosed,
         privacy_mode: PrivacyMode::Off,
         context_mode: None,
+        agent_intent_mode: None,
     };
 
     let err = engine

@@ -116,7 +116,10 @@ mod tests {
             QualityCorpusClass::Test
         );
         assert_eq!(
-            classify_corpus("crates/mcp-server/src/main_tests/protocol/tools_call.rs", "rust"),
+            classify_corpus(
+                "crates/mcp-server/src/main_tests/protocol/tools_call.rs",
+                "rust"
+            ),
             QualityCorpusClass::Test
         );
         assert_eq!(
@@ -177,7 +180,10 @@ mod tests {
             QualityCorpusClass::Production
         );
         assert_eq!(
-            classify_corpus("backend/alembic/versions/065_autobalance_attestation.py", "python"),
+            classify_corpus(
+                "backend/alembic/versions/065_autobalance_attestation.py",
+                "python"
+            ),
             QualityCorpusClass::Production
         );
         assert_eq!(

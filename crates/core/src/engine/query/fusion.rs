@@ -16,7 +16,10 @@ use score::score_candidates;
 
 pub(super) fn fuse_candidate_pools(input: FusionInputs<'_>) -> FusionResult {
     let lexical_anchor_paths = lexical_anchor_paths(input.query, input.lexical_pool);
-    let search_intent = SearchIntent::from_query(input.query);
+    let search_intent = input
+        .agent_intent_mode
+        .map(SearchIntent::from_agent_mode)
+        .unwrap_or_else(|| SearchIntent::from_query(input.query));
     let mut scored = score_candidates(
         build_candidate_states(
             input.lexical_pool,
