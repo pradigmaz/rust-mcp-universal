@@ -8,7 +8,7 @@ fn same_file_duplication_does_not_create_duplication_risk() -> anyhow::Result<()
     write_project_file(
         &root,
         "rmu-quality-policy.json",
-        r#"{"version":3,"thresholds":{"max_duplicate_block_count":0,"max_duplicate_density_bps":1}}"#,
+        r#"{"version":4,"thresholds":{"max_duplicate_block_count":0,"max_duplicate_density_bps":1}}"#,
     )?;
     write_project_file(
         &root,
@@ -92,7 +92,7 @@ fn test_files_are_excluded_from_duplication_scoring() -> anyhow::Result<()> {
     write_project_file(
         &root,
         "rmu-quality-policy.json",
-        r#"{"version":3,"thresholds":{"max_duplicate_block_count":0,"max_duplicate_density_bps":1}}"#,
+        r#"{"version":4,"thresholds":{"max_duplicate_block_count":0,"max_duplicate_density_bps":1}}"#,
     )?;
     let repeated = r#"import { describe, expect, it } from "vitest";
 
@@ -159,7 +159,7 @@ fn duplication_path_pair_policy_suppresses_intentional_clone_class() -> anyhow::
         &root,
         "rmu-quality-policy.json",
         r#"{
-            "version":3,
+            "version":4,
             "thresholds":{"max_duplicate_block_count":0,"max_duplicate_density_bps":1},
             "duplication":{
                 "suppressions":[
@@ -250,7 +250,7 @@ fn duplication_clone_class_id_policy_suppresses_known_clone_class() -> anyhow::R
     write_project_file(
         &root,
         "rmu-quality-policy.json",
-        r#"{"version":3,"thresholds":{"max_duplicate_block_count":0,"max_duplicate_density_bps":1}}"#,
+        r#"{"version":4,"thresholds":{"max_duplicate_block_count":0,"max_duplicate_density_bps":1}}"#,
     )?;
     let repeated = r#"export function repeated(input: number): number {
   let total = input
@@ -295,7 +295,7 @@ fn duplication_clone_class_id_policy_suppresses_known_clone_class() -> anyhow::R
         "rmu-quality-policy.json",
         &format!(
             r#"{{
-                "version":3,
+                "version":4,
                 "thresholds":{{"max_duplicate_block_count":0,"max_duplicate_density_bps":1}},
                 "duplication":{{
                     "suppressions":[

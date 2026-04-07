@@ -38,7 +38,7 @@ fn load_quality_policy_applies_overrides() {
     fs::create_dir_all(&root).expect("create temp dir");
     fs::write(
         root.join("rmu-quality-policy.json"),
-        r#"{"version":3,"thresholds":{"max_non_empty_lines_default":400,"max_function_lines":12}}"#,
+        r#"{"version":4,"thresholds":{"max_non_empty_lines_default":400,"max_function_lines":12}}"#,
     )
     .expect("write policy");
 
@@ -60,10 +60,10 @@ fn load_quality_policy_reads_quality_scope_and_structural_sections() {
     fs::write(
         root.join("rmu-quality-policy.json"),
         r#"{
-            "version":3,
+            "version":4,
             "thresholds":{"max_fan_in_per_file":9,"max_fan_out_per_file":7},
             "quality_scope":{"exclude_paths":["generated/**"]},
-            "structural":{
+            "layering":{
                 "zones":[
                     {"id":"ui","paths":["src/ui/**"]},
                     {"id":"domain","paths":["src/domain/**"]}
@@ -79,7 +79,7 @@ fn load_quality_policy_reads_quality_scope_and_structural_sections() {
     assert_eq!(policy.thresholds.max_fan_in_per_file, 9);
     assert_eq!(policy.thresholds.max_fan_out_per_file, 7);
     assert_eq!(policy.quality_scope.exclude_paths, vec!["generated/**"]);
-    let structural = policy.structural.expect("structural policy should exist");
+    let structural = policy.layering.expect("layering policy should exist");
     assert_eq!(structural.zones.len(), 2);
     assert_eq!(structural.allowed_directions.len(), 1);
     assert_eq!(structural.forbidden_edges.len(), 1);
@@ -91,9 +91,9 @@ fn load_quality_policy_reads_quality_scope_and_structural_sections() {
 fn policy_schema_rejects_duplicate_structural_zone_patterns() {
     let err = parse_quality_policy_file(
         r#"{
-            "version":3,
+            "version":4,
             "thresholds":{},
-            "structural":{
+            "layering":{
                 "zones":[
                     {"id":"ui","paths":["src/shared/**"]},
                     {"id":"domain","paths":["src/shared/**"]}
@@ -116,7 +116,7 @@ fn load_quality_policy_applies_rule_metadata_path_scopes_and_suppressions() {
     fs::write(
         root.join("rmu-quality-policy.json"),
         r#"{
-            "version":3,
+            "version":4,
             "rule_overrides":{
                 "max_line_length":{"severity":"high","category":"risk"}
             },
@@ -201,7 +201,7 @@ fn load_quality_policy_applies_rule_metadata_path_scopes_and_suppressions() {
 fn policy_schema_rejects_unknown_rule_metadata_and_suppressions() {
     let err = parse_quality_policy_file(
         r#"{
-            "version":3,
+            "version":4,
             "rule_overrides":{"unknown_rule":{"severity":"high"}},
             "thresholds":{}
         }"#,
@@ -212,7 +212,7 @@ fn policy_schema_rejects_unknown_rule_metadata_and_suppressions() {
 
     let err = parse_quality_policy_file(
         r#"{
-            "version":3,
+            "version":4,
             "thresholds":{},
             "suppressions":[
                 {"id":"bad","rule_ids":["unknown_rule"],"paths":["src/**"],"reason":"x"}
@@ -231,7 +231,7 @@ fn load_quality_policy_reads_duplication_suppressions() {
     fs::write(
         root.join("rmu-quality-policy.json"),
         r#"{
-            "version":3,
+            "version":4,
             "duplication":{
                 "suppressions":[
                     {
@@ -272,7 +272,7 @@ fn load_quality_policy_reads_duplication_suppressions() {
 fn policy_schema_rejects_duplication_suppressions_without_selectors() {
     let err = parse_quality_policy_file(
         r#"{
-            "version":3,
+            "version":4,
             "duplication":{
                 "suppressions":[
                     {"id":"bad","reason":"missing selectors"}

@@ -11,9 +11,10 @@ use crate::model::{IndexingOptions, QualitySuppression};
 mod duplication_policy;
 
 use super::policy_schema::{
-    PathScopePolicyFile, QualityPolicyFile, QualityRuleMetadataOverrideFile,
+    GitRiskPolicyFile, PathScopePolicyFile, QualityPolicyFile, QualityRuleMetadataOverrideFile,
     QualityScopePolicyFile, QualitySuppressionFile, QualityThresholdOverrides,
-    StructuralPolicyFile, StructuralUnmatchedBehavior, parse_quality_policy_file,
+    StructuralPolicyFile, StructuralUnmatchedBehavior, TestRiskPolicyFile,
+    parse_quality_policy_file,
 };
 use super::rule_metadata::{RuleMetadata, default_rule_metadata_map};
 pub(crate) use duplication_policy::{DuplicationPolicy, duplication_policy_from_file};
@@ -22,7 +23,9 @@ pub(crate) use duplication_policy::{DuplicationPolicy, duplication_policy_from_f
 pub(crate) struct QualityPolicy {
     pub(crate) thresholds: QualityThresholds,
     pub(crate) quality_scope: QualityScopePolicy,
-    pub(crate) structural: Option<StructuralPolicy>,
+    pub(crate) layering: Option<StructuralPolicy>,
+    pub(crate) git_risk: GitRiskPolicy,
+    pub(crate) test_risk: TestRiskPolicy,
     pub(crate) duplication: DuplicationPolicy,
     pub(crate) rule_metadata: BTreeMap<String, RuleMetadata>,
     pub(crate) path_scopes: Vec<PathScopePolicy>,
@@ -32,6 +35,7 @@ pub(crate) struct QualityPolicy {
 #[derive(Debug, Clone)]
 pub(crate) struct EffectiveQualityPolicy {
     pub(crate) thresholds: QualityThresholds,
+    pub(crate) git_risk: GitRiskPolicy,
     rule_metadata: BTreeMap<String, RuleMetadata>,
     suppression_matches: Vec<QualitySuppressionMatch>,
 }
@@ -102,6 +106,38 @@ pub(crate) struct StructuralPolicy {
     pub(crate) allowed_directions: Vec<StructuralDirection>,
     pub(crate) forbidden_edges: Vec<StructuralForbiddenEdge>,
     pub(crate) unmatched_behavior: StructuralUnmatchedBehavior,
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct GitRiskPolicy {
+    pub(crate) enabled: bool,
+    pub(crate) recent_days: u32,
+    pub(crate) min_commits_for_ownership: i64,
+    pub(crate) max_recent_commits_per_file: i64,
+    pub(crate) max_recent_churn_lines_per_file: i64,
+    pub(crate) max_primary_author_share_bps: i64,
+    pub(crate) max_cochange_neighbors_per_file: i64,
+}
+
+impl Default for GitRiskPolicy {
+    fn default() -> Self {
+        git_risk_policy_from_file(GitRiskPolicyFile::default())
+    }
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct TestRiskPolicy {
+    pub(crate) enabled: bool,
+    pub(crate) test_paths: Vec<String>,
+    pub(crate) nearby_max_directory_distance: usize,
+    pub(crate) entrypoint_globs: Vec<String>,
+    pub(crate) hotspot_requires_test_evidence_min_score: f64,
+}
+
+impl Default for TestRiskPolicy {
+    fn default() -> Self {
+        test_risk_policy_from_file(TestRiskPolicyFile::default())
+    }
 }
 
 impl StructuralPolicy {
@@ -204,7 +240,9 @@ pub(crate) fn default_quality_policy() -> QualityPolicy {
             max_duplicate_density_bps: super::metrics::MAX_DUPLICATE_DENSITY_BPS,
         },
         quality_scope: QualityScopePolicy::default(),
-        structural: None,
+        layering: None,
+        git_risk: GitRiskPolicy::default(),
+        test_risk: TestRiskPolicy::default(),
         duplication: DuplicationPolicy::default(),
         rule_metadata: default_rule_metadata_map(),
         path_scopes: Vec::new(),
@@ -236,6 +274,7 @@ impl QualityPolicy {
 
         EffectiveQualityPolicy {
             thresholds,
+            git_risk: self.git_risk.clone(),
             rule_metadata,
             suppression_matches,
         }
@@ -276,7 +315,15 @@ fn quality_policy_from_file(parsed: QualityPolicyFile) -> Result<QualityPolicy> 
             })
             .collect(),
     );
-    policy.structural = parsed.structural.map(structural_policy_from_file);
+    policy.layering = parsed.layering.map(structural_policy_from_file);
+    policy.git_risk = parsed
+        .git_risk
+        .map(git_risk_policy_from_file)
+        .unwrap_or_default();
+    policy.test_risk = parsed
+        .test_risk
+        .map(test_risk_policy_from_file)
+        .unwrap_or_default();
     policy.duplication = duplication_policy_from_file(None, None, parsed.duplication)?;
     policy.path_scopes = parsed
         .path_scopes
@@ -420,7 +467,7 @@ fn apply_threshold_overrides(
 }
 
 pub(crate) fn load_quality_policy_digest(project_root: &Path) -> Result<String> {
-    const QUALITY_ENGINE_DIGEST_SALT: &str = "quality-engine-v4-duplication-semantics";
+    const QUALITY_ENGINE_DIGEST_SALT: &str = "quality-engine-v5-wave3-structural-risk";
     let policy_path = project_root.join("rmu-quality-policy.json");
     if !policy_path.exists() {
         return Ok(crate::utils::hash_bytes(
@@ -500,5 +547,27 @@ fn structural_policy_from_file(parsed: StructuralPolicyFile) -> StructuralPolicy
             })
             .collect(),
         unmatched_behavior: parsed.unmatched_behavior,
+    }
+}
+
+fn git_risk_policy_from_file(parsed: GitRiskPolicyFile) -> GitRiskPolicy {
+    GitRiskPolicy {
+        enabled: parsed.enabled,
+        recent_days: parsed.recent_days,
+        min_commits_for_ownership: parsed.min_commits_for_ownership,
+        max_recent_commits_per_file: parsed.max_recent_commits_per_file,
+        max_recent_churn_lines_per_file: parsed.max_recent_churn_lines_per_file,
+        max_primary_author_share_bps: parsed.max_primary_author_share_bps,
+        max_cochange_neighbors_per_file: parsed.max_cochange_neighbors_per_file,
+    }
+}
+
+fn test_risk_policy_from_file(parsed: TestRiskPolicyFile) -> TestRiskPolicy {
+    TestRiskPolicy {
+        enabled: parsed.enabled,
+        test_paths: parsed.test_paths,
+        nearby_max_directory_distance: parsed.nearby_max_directory_distance,
+        entrypoint_globs: parsed.entrypoint_globs,
+        hotspot_requires_test_evidence_min_score: parsed.hotspot_requires_test_evidence_min_score,
     }
 }

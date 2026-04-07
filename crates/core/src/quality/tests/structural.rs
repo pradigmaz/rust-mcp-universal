@@ -1,5 +1,5 @@
 use crate::quality::{
-    CrossLayerFacts, IndexedQualityMetrics, StructuralFacts, build_indexed_quality_facts,
+    IndexedQualityMetrics, LayeringFacts, StructuralFacts, build_indexed_quality_facts,
     default_quality_policy, evaluate_quality,
 };
 
@@ -16,11 +16,13 @@ fn structural_rules_emit_metrics_and_violations() {
         fan_in_count: Some(25),
         fan_out_count: Some(24),
         cycle_member: true,
-        cross_layer: Some(CrossLayerFacts {
-            edge_count: 2,
-            message: "zone `ui` depends on forbidden zone `data` (2 edge(s))".to_string(),
-        }),
         orphan_module: false,
+    };
+    facts.layering = LayeringFacts {
+        zone_id: Some("ui".to_string()),
+        forbidden_edge_count: 2,
+        primary_message: Some("zone `ui` depends on forbidden zone `data`".to_string()),
+        ..LayeringFacts::default()
     };
 
     let evaluation = evaluate_quality(
@@ -77,6 +79,14 @@ fn structural_rules_emit_metrics_and_violations() {
             .violations
             .iter()
             .any(|violation| violation.rule_id == "cross_layer_dependency")
+    );
+    assert!(
+        evaluation
+            .snapshot
+            .metrics
+            .iter()
+            .any(|metric| metric.metric_id == "layering_forbidden_edge_count"
+                && metric.metric_value == 2)
     );
 }
 

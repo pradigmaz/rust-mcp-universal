@@ -7,7 +7,6 @@ struct FanInRule;
 struct FanOutRule;
 struct CycleMemberRule;
 struct HubModuleRule;
-struct CrossLayerDependencyRule;
 struct OrphanModuleRule;
 
 pub(super) fn rules() -> Vec<Box<dyn QualityRule>> {
@@ -16,7 +15,6 @@ pub(super) fn rules() -> Vec<Box<dyn QualityRule>> {
         Box::new(FanOutRule),
         Box::new(CycleMemberRule),
         Box::new(HubModuleRule),
-        Box::new(CrossLayerDependencyRule),
         Box::new(OrphanModuleRule),
     ]
 }
@@ -124,30 +122,6 @@ impl QualityRule for HubModuleRule {
                     None,
                 )
             }))
-    }
-}
-
-impl QualityRule for CrossLayerDependencyRule {
-    fn name(&self) -> &'static str {
-        "cross_layer_dependency"
-    }
-
-    fn metric(&self, _ctx: &RuleContext<'_>) -> Option<crate::quality::QualityMetricEntry> {
-        None
-    }
-
-    fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
-        Ok(ctx.facts.structural.cross_layer.as_ref().map(|facts| {
-            explicit_violation(
-                ctx,
-                self.name(),
-                facts.edge_count,
-                0,
-                facts.message.clone(),
-                None,
-                None,
-            )
-        }))
     }
 }
 

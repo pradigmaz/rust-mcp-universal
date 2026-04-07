@@ -24,7 +24,7 @@ fn indexing_persists_quality_snapshot_and_workspace_summary() -> anyhow::Result<
     assert!(stored.is_some());
 
     let brief = engine.workspace_brief()?;
-    assert_eq!(brief.quality_summary.ruleset_id, "quality-core-v11");
+    assert_eq!(brief.quality_summary.ruleset_id, "quality-core-v12");
     assert_eq!(brief.quality_summary.status.as_str(), "ready");
     assert_eq!(brief.quality_summary.evaluated_files, 1);
     assert_eq!(brief.quality_summary.violating_files, 1);
@@ -56,7 +56,7 @@ fn quality_policy_overrides_default_thresholds() -> anyhow::Result<()> {
     write_project_file(
         &root,
         "rmu-quality-policy.json",
-        r#"{"version":3,"thresholds":{"max_non_empty_lines_default":400}}"#,
+        r#"{"version":4,"thresholds":{"max_non_empty_lines_default":400}}"#,
     )?;
 
     let engine = Engine::new(root.clone(), Some(root.join(".rmu/index.db")))?;
@@ -187,7 +187,8 @@ fn rule_violations_keep_suppressed_entries_auditable() -> anyhow::Result<()> {
         &root,
         "rmu-quality-policy.json",
         r#"{
-            "version":3,
+            "version":4,
+            "test_risk":{"enabled":false},
             "suppressions":[
                 {
                     "id":"legacy-line-length",

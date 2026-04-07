@@ -36,8 +36,7 @@ pub(super) fn load_quality_hotspots(
         Ok(policy) => (policy, scan.summary.status),
         Err(_) => (default_quality_policy(), QualityStatus::Degraded),
     };
-    let mut buckets =
-        aggregate_buckets(&scan.hits, options.aggregation, policy.structural.as_ref())?;
+    let mut buckets = aggregate_buckets(&scan.hits, options.aggregation, policy.layering.as_ref())?;
     buckets.sort_by(|left, right| compare_buckets(left, right, options.sort_by));
 
     let summary = QualityHotspotsSummary {
@@ -179,7 +178,9 @@ fn build_structural_signals(hits: &[&RuleViolationFileHit]) -> QualityHotspotStr
             match violation.rule_id.as_str() {
                 "module_cycle_member" => signals.module_cycle_member += 1,
                 "hub_module" => signals.hub_module += 1,
-                "cross_layer_dependency" => signals.cross_layer_dependency += 1,
+                "cross_layer_dependency" | "layering_unmatched_zone_dependency" => {
+                    signals.cross_layer_dependency += 1
+                }
                 _ => {}
             }
         }
@@ -328,7 +329,9 @@ impl ModuleBucketMatcher {
         match matched.as_slice() {
             [zone_id] => Ok(Some(zone_id.clone())),
             [] => match self.unmatched_behavior {
-                StructuralUnmatchedBehavior::Allow => Ok(Some(UNMATCHED_MODULE_BUCKET.to_string())),
+                StructuralUnmatchedBehavior::Allow | StructuralUnmatchedBehavior::Violate => {
+                    Ok(Some(UNMATCHED_MODULE_BUCKET.to_string()))
+                }
                 StructuralUnmatchedBehavior::Ignore => Ok(None),
             },
             _ => bail!(

@@ -14,6 +14,63 @@ Quality surface нужен для обычной практической зад
 
 Если упростить, quality surface показывает не баги, а накопившуюся структурную нагрузку.
 
+## Wave 3: structural risk
+
+Начиная с Wave 3 quality surface показывает не только shape-факты файла, но и практический change risk.
+
+Внутри quality surface теперь есть три отдельных модуля:
+
+- `layering` - зоны, допустимые направления зависимостей, forbidden edges и unmatched zone edges
+- `git_risk` - recent churn, число авторов, ownership concentration и co-change neighbors
+- `test_risk` - есть ли рядом test evidence для public surface, hotspot-файлов и integration entrypoints
+
+Отдельных top-level команд для этих модулей нет. Они поднимаются через те же surfaces:
+
+- `rule_violations` - новые rule ids и метрики по конкретным файлам
+- `quality_hotspots` - вклад этих сигналов в risk score и hotspot ranking
+- `quality_snapshot` - baseline и regression view по проекту
+
+### Policy v4
+
+Для structural risk используется quality policy версии `4`.
+
+- старый блок `structural` заменён на `layering`
+- добавлен блок `git_risk`
+- добавлен блок `test_risk`
+
+Если в проекте осталась policy версии `3`, Wave 3 сигналы не загрузятся, пока файл не будет мигрирован.
+
+### Новые rule ids
+
+- `cross_layer_dependency`
+- `layering_unmatched_zone_dependency`
+- `high_git_churn`
+- `ownership_concentration`
+- `high_change_coupling`
+- `public_surface_without_tests`
+- `hotspot_without_test_evidence`
+- `integration_entry_without_tests`
+
+### Новые метрики
+
+- `layering_forbidden_edge_count`
+- `layering_out_of_direction_edge_count`
+- `layering_unmatched_edge_count`
+- `git_recent_commit_count`
+- `git_recent_author_count`
+- `git_recent_churn_lines`
+- `git_primary_author_share_bps`
+- `git_cochange_neighbor_count`
+- `test_nearby_test_file_count`
+- `test_nearby_integration_test_file_count`
+
+### Практические замечания
+
+- `git_risk` использует recent window, по умолчанию `90` дней
+- `git_risk` quietly skip'ается вне git-репозитория
+- `test_risk` в Wave 3 опирается только на static adjacency, без coverage traces
+- `layering` усиливает structural surface, но не заменяет graph-shape rules вроде `max_fan_in_per_file` и `module_cycle_member`
+
 ## С чего начинать
 
 Обычно порядок такой:

@@ -7,16 +7,16 @@ use super::scope::{apply_quality_scope_policy, build_full_quality_refresh_plan};
 use super::status::{
     write_quality_status_degraded, write_quality_status_ready, write_quality_status_unavailable,
 };
-use super::structural::load_structural_facts;
+use super::structural::{load_graph_structural_facts, load_layering_facts};
 use crate::engine::Engine;
 use crate::engine::storage::{
     UpsertQualitySnapshotInput, remove_path_quality, upsert_quality_snapshot,
 };
 use crate::quality::{
     DuplicationCandidate, IndexedQualityMetrics, analyze_duplication, build_indexed_quality_facts,
-    build_oversize_quality_facts, default_quality_policy, evaluate_quality, load_quality_policy,
-    load_quality_policy_digest, quality_metrics_hash, suppressed_violations_hash, violations_hash,
-    write_duplication_artifact,
+    build_oversize_quality_facts, default_quality_policy, evaluate_quality, load_git_risk_facts,
+    load_quality_policy, load_quality_policy_digest, load_test_risk_facts, quality_metrics_hash,
+    suppressed_violations_hash, violations_hash, write_duplication_artifact,
 };
 use crate::utils::{INDEX_FILE_LIMIT, infer_language, normalized_path_to_fs_path};
 
@@ -103,22 +103,45 @@ fn apply_quality_refresh(engine: &Engine, plan: super::scope::QualityRefreshPlan
             super::scope::QualityRefreshPlan::default()
         }
     };
-    let structural_facts = match load_structural_facts(&conn, &plan.refresh_paths, &policy) {
+    let structural_facts = match load_graph_structural_facts(&conn, &plan.refresh_paths) {
         Ok(facts) => facts,
         Err(_) => {
             degraded = true;
             if last_error_rule_id.is_none() {
-                last_error_rule_id = Some("structural_policy".to_string());
+                last_error_rule_id = Some("graph_structural".to_string());
             }
             std::collections::HashMap::new()
         }
     };
+    let layering_facts = match load_layering_facts(&conn, &plan.refresh_paths, &policy) {
+        Ok(facts) => facts,
+        Err(_) => {
+            degraded = true;
+            if last_error_rule_id.is_none() {
+                last_error_rule_id = Some("layering".to_string());
+            }
+            std::collections::HashMap::new()
+        }
+    };
+    let git_risk_facts =
+        match load_git_risk_facts(&engine.project_root, &plan.refresh_paths, &policy.git_risk) {
+            Ok(facts) => facts,
+            Err(_) => {
+                degraded = true;
+                if last_error_rule_id.is_none() {
+                    last_error_rule_id = Some("git_risk".to_string());
+                }
+                std::collections::HashMap::new()
+            }
+        };
 
     let mut refresh_inputs = Vec::new();
     let mut deleted_paths = plan.deleted_paths.clone();
     for path in sorted_paths(&plan.refresh_paths) {
         let structural = structural_facts.get(&path).cloned().unwrap_or_default();
-        match build_refresh_input(&conn, engine, &path, structural) {
+        let layering = layering_facts.get(&path).cloned().unwrap_or_default();
+        let git_risk = git_risk_facts.get(&path).cloned().unwrap_or_default();
+        match build_refresh_input(&conn, engine, &path, structural, layering, git_risk) {
             Ok(Some(input)) => refresh_inputs.push(input),
             Ok(None) => {
                 deleted_paths.insert(path);
@@ -126,6 +149,23 @@ fn apply_quality_refresh(engine: &Engine, plan: super::scope::QualityRefreshPlan
             Err(_) => degraded = true,
         }
     }
+    let test_risk_facts = match load_test_risk_facts(
+        &engine.project_root,
+        &refresh_inputs
+            .iter()
+            .map(|input| (input.path.as_str(), &input.facts))
+            .collect::<Vec<_>>(),
+        &policy.test_risk,
+    ) {
+        Ok(facts) => facts,
+        Err(_) => {
+            degraded = true;
+            if last_error_rule_id.is_none() {
+                last_error_rule_id = Some("test_risk".to_string());
+            }
+            std::collections::HashMap::new()
+        }
+    };
 
     let duplication = analyze_duplication(
         &policy,
@@ -146,6 +186,10 @@ fn apply_quality_refresh(engine: &Engine, plan: super::scope::QualityRefreshPlan
     for mut input in refresh_inputs {
         input.facts.duplication = duplication
             .file_facts
+            .get(&input.path)
+            .cloned()
+            .unwrap_or_default();
+        input.facts.test_risk = test_risk_facts
             .get(&input.path)
             .cloned()
             .unwrap_or_default();
@@ -239,6 +283,8 @@ fn build_refresh_input(
     engine: &Engine,
     path: &str,
     structural: crate::quality::StructuralFacts,
+    layering: crate::quality::LayeringFacts,
+    git_risk: crate::quality::GitRiskFacts,
 ) -> Result<Option<QualityRefreshInput>> {
     let abs_path = engine.project_root.join(normalized_path_to_fs_path(path));
     let metadata = match fs::metadata(&abs_path) {
@@ -252,6 +298,8 @@ fn build_refresh_input(
         let mut facts =
             build_oversize_quality_facts(path, &language, metadata.len(), source_mtime_unix_ms);
         facts.structural = structural;
+        facts.layering = layering;
+        facts.git_risk = git_risk;
         let source_text = fs::read(&abs_path).ok().and_then(|bytes| {
             (!bytes.contains(&0)).then(|| String::from_utf8_lossy(&bytes).to_string())
         });
@@ -280,6 +328,8 @@ fn build_refresh_input(
         &full_text,
     );
     facts.structural = structural;
+    facts.layering = layering;
+    facts.git_risk = git_risk;
     Ok(Some(QualityRefreshInput {
         path: path.to_string(),
         language,

@@ -24,6 +24,7 @@
 - показывать, что именно попадёт в индекс, ещё до запуска индексации
 - объяснять, почему retrieval выбрал именно эти файлы
 - поднимать quality-отчёты и hotspots по файлам и директориям
+- показывать structural risk через `rule_violations`, `quality_hotspots` и `quality_snapshot`
 - отдавать тот же функционал через MCP
 
 ## Когда это полезно
@@ -32,6 +33,18 @@
 - нужно дать агенту короткий и релевантный стартовый контекст
 - нужен поиск по смыслу, а не только по точному совпадению строки
 - нужно одинаковое поведение из терминала и из MCP-клиента
+
+## Quality Surface
+
+Wave 3 расширяет quality surface от symptom-only сигналов к structural risk:
+
+- `layering` для зон, направлений зависимостей и cross-layer нарушений
+- `git_risk` для churn, ownership concentration и change coupling
+- `test_risk` для статического test evidence вокруг public и hotspot-путей
+
+Отдельных top-level команд не добавлялось. Эти сигналы выходят через уже существующие `rule_violations`, `quality_hotspots` и `quality_snapshot`.
+
+Для quality policy используется версия `4`. Ключ `structural` заменён на `layering`, а рядом появились блоки `git_risk` и `test_risk`.
 
 ## Требования
 

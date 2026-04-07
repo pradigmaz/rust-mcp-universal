@@ -58,6 +58,9 @@ pub(crate) fn build_indexed_quality_facts(
         file_kind: classify_file_kind(rel_path),
         hotspots,
         structural: super::StructuralFacts::default(),
+        layering: super::LayeringFacts::default(),
+        git_risk: super::GitRiskFacts::default(),
+        test_risk: super::TestRiskFacts::default(),
         duplication: super::DuplicationFacts::default(),
     }
 }
@@ -81,6 +84,9 @@ pub(crate) fn build_oversize_quality_facts(
         file_kind: classify_file_kind(rel_path),
         hotspots: super::HotspotFacts::default(),
         structural: super::StructuralFacts::default(),
+        layering: super::LayeringFacts::default(),
+        git_risk: super::GitRiskFacts::default(),
+        test_risk: super::TestRiskFacts::default(),
         duplication: super::DuplicationFacts::default(),
     }
 }

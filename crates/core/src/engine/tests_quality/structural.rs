@@ -10,9 +10,9 @@ fn rule_violations_expose_structural_hotspots() -> anyhow::Result<()> {
         &root,
         "rmu-quality-policy.json",
         r#"{
-            "version":3,
+            "version":4,
             "thresholds":{"max_fan_in_per_file":1,"max_fan_out_per_file":1},
-            "structural":{
+            "layering":{
                 "zones":[
                     {"id":"ui","paths":["src/ui/**"]},
                     {"id":"domain","paths":["src/domain/**"]},

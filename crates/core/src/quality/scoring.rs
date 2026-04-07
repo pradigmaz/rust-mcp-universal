@@ -14,6 +14,9 @@ impl Default for QualityRiskScoreWeights {
             nesting: 1.0,
             function_length: 1.0,
             complexity: 1.25,
+            layering: 1.35,
+            git_risk: 1.15,
+            test_risk: 1.25,
             duplication: 1.15,
         }
     }
@@ -31,6 +34,9 @@ pub(crate) fn compute_file_risk_score(
         + components.nesting * weights.nesting
         + components.function_length * weights.function_length
         + components.complexity * weights.complexity
+        + components.layering * weights.layering
+        + components.git_risk * weights.git_risk
+        + components.test_risk * weights.test_risk
         + components.duplication * weights.duplication;
     QualityRiskScoreBreakdown {
         score,
@@ -54,6 +60,9 @@ pub(crate) fn compute_hit_risk_score(hit: &RuleViolationFileHit) -> QualityRiskS
             nesting: metric_value(hit, "max_nesting_depth"),
             function_length: metric_value(hit, "max_function_lines") / 50.0,
             complexity: complexity_component(hit),
+            layering: layering_component(hit),
+            git_risk: git_risk_component(hit),
+            test_risk: test_risk_component(hit),
             duplication: duplication_component(hit),
         },
         QualityRiskScoreWeights::default(),
@@ -71,6 +80,49 @@ fn duplication_component(hit: &RuleViolationFileHit) -> f64 {
     let blocks = metric_value(hit, "duplicate_block_count") / 2.0;
     let peers = metric_value(hit, "duplicate_peer_count") / 2.0;
     density.max(blocks + peers)
+}
+
+fn layering_component(hit: &RuleViolationFileHit) -> f64 {
+    metric_value(hit, "layering_forbidden_edge_count")
+        .max(metric_value(hit, "layering_out_of_direction_edge_count"))
+        .max(metric_value(hit, "layering_unmatched_edge_count"))
+}
+
+fn git_risk_component(hit: &RuleViolationFileHit) -> f64 {
+    let recent_commits = metric_value(hit, "git_recent_commit_count") / 6.0;
+    let recent_churn = metric_value(hit, "git_recent_churn_lines") / 200.0;
+    let primary_owner_share = metric_value(hit, "git_primary_author_share_bps") / 5_000.0;
+    let cochange_neighbors = metric_value(hit, "git_cochange_neighbor_count") / 5.0;
+    recent_commits
+        .max(recent_churn)
+        .max(primary_owner_share)
+        .max(cochange_neighbors)
+}
+
+fn test_risk_component(hit: &RuleViolationFileHit) -> f64 {
+    let mut score = 0.0_f64;
+    if hit
+        .violations
+        .iter()
+        .any(|violation| violation.rule_id == "hotspot_without_test_evidence")
+    {
+        score = score.max(2.0);
+    }
+    if hit
+        .violations
+        .iter()
+        .any(|violation| violation.rule_id == "public_surface_without_tests")
+    {
+        score = score.max(1.5);
+    }
+    if hit
+        .violations
+        .iter()
+        .any(|violation| violation.rule_id == "integration_entry_without_tests")
+    {
+        score = score.max(1.0);
+    }
+    score
 }
 
 fn metric_value(hit: &RuleViolationFileHit, metric_id: &str) -> f64 {

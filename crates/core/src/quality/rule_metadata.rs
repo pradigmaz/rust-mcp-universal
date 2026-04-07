@@ -55,7 +55,19 @@ pub(crate) fn default_rule_metadata(rule_id: &str) -> Option<RuleMetadata> {
             severity: QualitySeverity::High,
             category: QualityCategory::Risk,
         },
-        "module_cycle_member" | "cross_layer_dependency" | "orphan_module" => RuleMetadata {
+        "high_git_churn"
+        | "ownership_concentration"
+        | "high_change_coupling"
+        | "public_surface_without_tests"
+        | "hotspot_without_test_evidence"
+        | "integration_entry_without_tests" => RuleMetadata {
+            severity: QualitySeverity::High,
+            category: QualityCategory::Risk,
+        },
+        "module_cycle_member"
+        | "cross_layer_dependency"
+        | "layering_unmatched_zone_dependency"
+        | "orphan_module" => RuleMetadata {
             severity: QualitySeverity::High,
             category: QualityCategory::Architecture,
         },
@@ -95,6 +107,13 @@ fn known_rule_ids() -> &'static [&'static str] {
         "module_cycle_member",
         "hub_module",
         "cross_layer_dependency",
+        "layering_unmatched_zone_dependency",
         "orphan_module",
+        "high_git_churn",
+        "ownership_concentration",
+        "high_change_coupling",
+        "public_surface_without_tests",
+        "hotspot_without_test_evidence",
+        "integration_entry_without_tests",
     ]
 }

@@ -6,15 +6,14 @@ use anyhow::{Result, bail};
 use crate::index_scope::IndexScope;
 use crate::model::IndexingOptions;
 use crate::quality::{
-    CrossLayerFacts, QualityPolicy, StructuralFacts, StructuralPolicy, StructuralUnmatchedBehavior,
+    LayeringFacts, QualityPolicy, StructuralFacts, StructuralPolicy, StructuralUnmatchedBehavior,
 };
 
 const ORPHAN_ENTRYPOINTS: &[&str] = &["main", "lib", "mod", "index", "__init__"];
 
-pub(super) fn load_structural_facts(
+pub(super) fn load_graph_structural_facts(
     conn: &rusqlite::Connection,
     active_paths: &HashSet<String>,
-    policy: &QualityPolicy,
 ) -> Result<HashMap<String, StructuralFacts>> {
     let (outgoing, incoming) = load_direct_neighbors(conn, active_paths)?;
     let mut facts = active_paths
@@ -34,7 +33,8 @@ pub(super) fn load_structural_facts(
                 StructuralFacts {
                     fan_in_count: Some(fan_in),
                     fan_out_count: Some(fan_out),
-                    ..StructuralFacts::default()
+                    cycle_member: false,
+                    orphan_module: fan_in == 0 && fan_out == 0,
                 },
             )
         })
@@ -46,70 +46,68 @@ pub(super) fn load_structural_facts(
         }
     }
 
-    let Some(structural_policy) = policy
-        .structural
-        .as_ref()
-        .filter(|policy| policy.has_zones())
-    else {
+    for (path, entry) in &mut facts {
+        if is_orphan_entrypoint(path) {
+            entry.orphan_module = false;
+        }
+    }
+
+    Ok(facts)
+}
+
+pub(super) fn load_layering_facts(
+    conn: &rusqlite::Connection,
+    active_paths: &HashSet<String>,
+    policy: &QualityPolicy,
+) -> Result<HashMap<String, LayeringFacts>> {
+    let mut facts = active_paths
+        .iter()
+        .cloned()
+        .map(|path| (path, LayeringFacts::default()))
+        .collect::<HashMap<_, _>>();
+    let Some(layering_policy) = policy.layering.as_ref().filter(|policy| policy.has_zones()) else {
         return Ok(facts);
     };
+    let (outgoing, _) = load_direct_neighbors(conn, active_paths)?;
+    let zone_matches = build_zone_matches(active_paths, layering_policy)?;
 
-    let zone_matches = build_zone_matches(active_paths, structural_policy)?;
-    let mut cross_layer = HashMap::<String, (i64, String)>::new();
+    for (path, zone_id) in &zone_matches {
+        if let Some(entry) = facts.get_mut(path) {
+            entry.zone_id = zone_id.clone();
+        }
+    }
 
     for (src_path, neighbors) in &outgoing {
         let src_zone = zone_matches.get(src_path).and_then(|zone| zone.as_deref());
         for dst_path in neighbors {
             let dst_zone = zone_matches.get(dst_path).and_then(|zone| zone.as_deref());
-            let Some((src_zone, dst_zone)) =
-                matched_zone_pair(src_zone, dst_zone, structural_policy.unmatched_behavior)
-            else {
+            let Some(entry) = facts.get_mut(src_path) else {
                 continue;
             };
-            if src_zone == dst_zone {
-                continue;
-            }
-            if let Some(message) = cross_layer_message(structural_policy, src_zone, dst_zone) {
-                let entry = cross_layer
-                    .entry(src_path.clone())
-                    .or_insert((0, message.clone()));
-                entry.0 += 1;
-                if entry.1.is_empty() {
-                    entry.1 = message;
+            match (src_zone, dst_zone) {
+                (Some(src_zone), Some(dst_zone)) if src_zone == dst_zone => {}
+                (Some(src_zone), Some(dst_zone)) => {
+                    if let Some(message) =
+                        forbidden_edge_message(layering_policy, src_zone, dst_zone)
+                    {
+                        entry.forbidden_edge_count += 1;
+                        entry.primary_message.get_or_insert(message);
+                    } else if let Some(message) =
+                        out_of_direction_message(layering_policy, src_zone, dst_zone)
+                    {
+                        entry.out_of_direction_edge_count += 1;
+                        entry.primary_message.get_or_insert(message);
+                    }
                 }
-            }
-        }
-    }
-
-    for (path, (edge_count, message)) in cross_layer {
-        if let Some(entry) = facts.get_mut(&path) {
-            entry.cross_layer = Some(CrossLayerFacts {
-                edge_count,
-                message: if edge_count > 1 {
-                    format!("{message} ({edge_count} edge(s))")
-                } else {
-                    message
-                },
-            });
-        }
-    }
-
-    for path in active_paths {
-        let Some(zone_id) = zone_matches.get(path).and_then(|zone| zone.as_deref()) else {
-            continue;
-        };
-        let fan_in = facts
-            .get(path)
-            .and_then(|entry| entry.fan_in_count)
-            .unwrap_or_default();
-        let fan_out = facts
-            .get(path)
-            .and_then(|entry| entry.fan_out_count)
-            .unwrap_or_default();
-        if fan_in == 0 && fan_out == 0 && !is_orphan_entrypoint(path) {
-            if let Some(entry) = facts.get_mut(path) {
-                let _ = zone_id;
-                entry.orphan_module = true;
+                (Some(src_zone), None) | (None, Some(src_zone)) => {
+                    if layering_policy.unmatched_behavior == StructuralUnmatchedBehavior::Violate {
+                        entry.unmatched_edge_count += 1;
+                        entry.primary_message.get_or_insert_with(|| {
+                            format!("zone `{src_zone}` depends on a path outside declared layering zones")
+                        });
+                    }
+                }
+                (None, None) => {}
             }
         }
     }
@@ -219,7 +217,7 @@ fn build_zone_matches(
             .collect::<Vec<_>>();
         if matched.len() > 1 {
             bail!(
-                "structural policy matches path `{path}` to multiple zones: {}",
+                "layering policy matches path `{path}` to multiple zones: {}",
                 matched.join(", ")
             );
         }
@@ -228,41 +226,31 @@ fn build_zone_matches(
     Ok(matches)
 }
 
-fn matched_zone_pair<'a>(
-    src_zone: Option<&'a str>,
-    dst_zone: Option<&'a str>,
-    unmatched_behavior: StructuralUnmatchedBehavior,
-) -> Option<(&'a str, &'a str)> {
-    match (src_zone, dst_zone) {
-        (Some(src_zone), Some(dst_zone)) => Some((src_zone, dst_zone)),
-        (None, _) | (_, None) => match unmatched_behavior {
-            StructuralUnmatchedBehavior::Allow | StructuralUnmatchedBehavior::Ignore => None,
-        },
-    }
-}
-
-fn cross_layer_message(
+fn forbidden_edge_message(
     policy: &StructuralPolicy,
     src_zone: &str,
     dst_zone: &str,
 ) -> Option<String> {
-    if let Some(edge) = policy
+    policy
         .forbidden_edges
         .iter()
         .find(|edge| edge.from == src_zone && edge.to == dst_zone)
-    {
-        return Some(match &edge.reason {
+        .map(|edge| match &edge.reason {
             Some(reason) => {
                 format!("zone `{src_zone}` depends on forbidden zone `{dst_zone}`: {reason}")
             }
             None => format!("zone `{src_zone}` depends on forbidden zone `{dst_zone}`"),
-        });
-    }
+        })
+}
 
+fn out_of_direction_message(
+    policy: &StructuralPolicy,
+    src_zone: &str,
+    dst_zone: &str,
+) -> Option<String> {
     if policy.allowed_directions.is_empty() {
         return None;
     }
-
     if policy
         .allowed_directions
         .iter()

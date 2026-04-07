@@ -10,7 +10,7 @@ fn rule_violations_expose_hotspot_locations_and_sources() -> anyhow::Result<()> 
     write_project_file(
         &root,
         "rmu-quality-policy.json",
-        r#"{"version":3,"thresholds":{"max_function_lines":3,"max_nesting_depth":2,"max_parameters_per_function":3,"max_export_count_per_file":2,"max_class_member_count":2,"max_todo_count_per_file":1}}"#,
+        r#"{"version":4,"thresholds":{"max_function_lines":3,"max_nesting_depth":2,"max_parameters_per_function":3,"max_export_count_per_file":2,"max_class_member_count":2,"max_todo_count_per_file":1}}"#,
     )?;
     write_project_file(
         &root,
@@ -135,7 +135,7 @@ fn rule_violations_and_hotspots_expose_complexity_contract() -> anyhow::Result<(
     write_project_file(
         &root,
         "rmu-quality-policy.json",
-        r#"{"version":3,"thresholds":{"max_cyclomatic_complexity":2,"max_cognitive_complexity":2}}"#,
+        r#"{"version":4,"thresholds":{"max_cyclomatic_complexity":2,"max_cognitive_complexity":2}}"#,
     )?;
     write_project_file(
         &root,
@@ -215,8 +215,8 @@ fn quality_hotspots_directory_and_module_modes_group_deterministically() -> anyh
         &root,
         "rmu-quality-policy.json",
         r#"{
-            "version":3,
-            "structural":{
+            "version":4,
+            "layering":{
                 "zones":[
                     {"id":"ui","paths":["src/ui/**"]},
                     {"id":"core","paths":["src/core/**"]}
@@ -288,7 +288,7 @@ fn complexity_can_outrank_long_linear_files_in_hotspots() -> anyhow::Result<()> 
         &root,
         "rmu-quality-policy.json",
         r#"{
-            "version":3,
+            "version":4,
             "thresholds":{
                 "max_non_empty_lines_default":50,
                 "max_cyclomatic_complexity":2,
@@ -329,7 +329,7 @@ fn rule_violations_and_hotspots_expose_duplication_contract() -> anyhow::Result<
     write_project_file(
         &root,
         "rmu-quality-policy.json",
-        r#"{"version":3,"thresholds":{"max_duplicate_block_count":0,"max_duplicate_density_bps":500}}"#,
+        r#"{"version":4,"thresholds":{"max_duplicate_block_count":0,"max_duplicate_density_bps":500}}"#,
     )?;
     write_project_file(
         &root,
@@ -417,7 +417,7 @@ fn same_file_duplication_stays_out_of_file_level_quality_signal() -> anyhow::Res
     write_project_file(
         &root,
         "rmu-quality-policy.json",
-        r#"{"version":3,"thresholds":{"max_duplicate_block_count":0,"max_duplicate_density_bps":500}}"#,
+        r#"{"version":4,"thresholds":{"max_duplicate_block_count":0,"max_duplicate_density_bps":500}}"#,
     )?;
     write_project_file(
         &root,

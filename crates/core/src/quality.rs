@@ -9,6 +9,10 @@ mod complexity;
 mod duplication;
 #[path = "quality/evaluate.rs"]
 mod evaluate;
+#[path = "quality/git_risk.rs"]
+mod git_risk;
+#[path = "quality/layering.rs"]
+mod layering;
 #[path = "quality/location.rs"]
 mod location;
 #[path = "quality/metrics.rs"]
@@ -23,9 +27,11 @@ mod rule_metadata;
 mod rules;
 #[path = "quality/scoring.rs"]
 mod scoring;
+#[path = "quality/test_risk.rs"]
+mod test_risk;
 
-pub(crate) const QUALITY_RULESET_ID: &str = "quality-core-v11";
-pub(crate) const CURRENT_QUALITY_RULESET_VERSION: i64 = 11;
+pub(crate) const QUALITY_RULESET_ID: &str = "quality-core-v12";
+pub(crate) const CURRENT_QUALITY_RULESET_VERSION: i64 = 12;
 
 #[derive(Debug, Clone)]
 pub(crate) struct QualityMetricEntry {
@@ -92,19 +98,39 @@ impl HotspotFacts {
     }
 }
 
-#[derive(Debug, Clone)]
-pub(crate) struct CrossLayerFacts {
-    pub(crate) edge_count: i64,
-    pub(crate) message: String,
-}
-
 #[derive(Debug, Clone, Default)]
 pub(crate) struct StructuralFacts {
     pub(crate) fan_in_count: Option<i64>,
     pub(crate) fan_out_count: Option<i64>,
     pub(crate) cycle_member: bool,
-    pub(crate) cross_layer: Option<CrossLayerFacts>,
     pub(crate) orphan_module: bool,
+}
+
+#[derive(Debug, Clone, Default)]
+pub(crate) struct LayeringFacts {
+    pub(crate) zone_id: Option<String>,
+    pub(crate) forbidden_edge_count: i64,
+    pub(crate) out_of_direction_edge_count: i64,
+    pub(crate) unmatched_edge_count: i64,
+    pub(crate) primary_message: Option<String>,
+}
+
+#[derive(Debug, Clone, Default)]
+pub(crate) struct GitRiskFacts {
+    pub(crate) recent_commit_count: i64,
+    pub(crate) recent_author_count: i64,
+    pub(crate) recent_churn_lines: i64,
+    pub(crate) primary_author_share_bps: i64,
+    pub(crate) cochange_neighbor_count: i64,
+}
+
+#[derive(Debug, Clone, Default)]
+pub(crate) struct TestRiskFacts {
+    pub(crate) nearby_test_file_count: i64,
+    pub(crate) nearby_integration_test_file_count: i64,
+    pub(crate) has_public_surface: bool,
+    pub(crate) is_hotspot_candidate: bool,
+    pub(crate) is_integration_entry: bool,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -151,6 +177,9 @@ pub(crate) struct QualityCandidateFacts {
     pub(crate) file_kind: metrics::FileKind,
     pub(crate) hotspots: HotspotFacts,
     pub(crate) structural: StructuralFacts,
+    pub(crate) layering: LayeringFacts,
+    pub(crate) git_risk: GitRiskFacts,
+    pub(crate) test_risk: TestRiskFacts,
     pub(crate) duplication: DuplicationFacts,
 }
 
@@ -168,14 +197,16 @@ pub(crate) use duplication::{
 pub(crate) use evaluate::{
     build_indexed_quality_facts, build_oversize_quality_facts, evaluate_quality,
 };
+pub(crate) use git_risk::load_git_risk_facts;
 pub(crate) use metrics::quality_metrics_hash;
 pub(crate) use policy::{
-    EffectiveQualityPolicy, QualityPolicy, QualityThresholds, StructuralPolicy,
-    default_quality_policy, load_quality_policy, load_quality_policy_digest,
+    EffectiveQualityPolicy, GitRiskPolicy, QualityPolicy, QualityThresholds, StructuralPolicy,
+    TestRiskPolicy, default_quality_policy, load_quality_policy, load_quality_policy_digest,
 };
 pub(crate) use policy_schema::StructuralUnmatchedBehavior;
 pub(crate) use rule_metadata::is_known_rule_id;
 pub(crate) use scoring::compute_hit_risk_score;
+pub(crate) use test_risk::load_test_risk_facts;
 
 pub(crate) fn violations_hash(violations: &[QualityViolationEntry]) -> String {
     let mut bytes = Vec::new();

@@ -13,7 +13,10 @@ mod basic;
 mod complexity;
 mod duplication;
 mod file_hotspots;
+mod git_risk;
+mod layering;
 mod structural;
+mod test_risk;
 
 #[derive(Debug, Clone)]
 pub(crate) struct RuleEvaluationResult {
@@ -189,6 +192,9 @@ fn default_rules() -> Vec<Box<dyn QualityRule>> {
     rules.extend(complexity::rules());
     rules.extend(duplication::rules());
     rules.extend(structural::rules());
+    rules.extend(layering::rules());
+    rules.extend(git_risk::rules());
+    rules.extend(test_risk::rules());
     rules
 }
 
