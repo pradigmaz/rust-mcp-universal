@@ -246,3 +246,86 @@ pub(super) fn path_role_prior(
 
     prior.clamp(-0.060, 0.030)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn assert_profile(
+        profile: FusionProfile,
+        lexical_weight: f32,
+        semantic_file_weight: f32,
+        semantic_chunk_weight: f32,
+        graph_weight: f32,
+        probe_factor: f32,
+    ) {
+        assert!((profile.lexical_weight - lexical_weight).abs() < f32::EPSILON);
+        assert!((profile.semantic_file_weight - semantic_file_weight).abs() < f32::EPSILON);
+        assert!((profile.semantic_chunk_weight - semantic_chunk_weight).abs() < f32::EPSILON);
+        assert!((profile.graph_weight - graph_weight).abs() < f32::EPSILON);
+        assert!((profile.probe_factor - probe_factor).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn explicit_agent_modes_use_first_class_fusion_profiles() {
+        assert_profile(
+            derive_fusion_profile("", None, Some(AgentIntentMode::EntrypointMap)),
+            0.46,
+            0.18,
+            0.16,
+            0.20,
+            1.05,
+        );
+        assert_profile(
+            derive_fusion_profile("", None, Some(AgentIntentMode::TestMap)),
+            0.32,
+            0.20,
+            0.22,
+            0.26,
+            1.10,
+        );
+        assert_profile(
+            derive_fusion_profile("", None, Some(AgentIntentMode::ReviewPrep)),
+            0.28,
+            0.24,
+            0.24,
+            0.24,
+            1.20,
+        );
+        assert_profile(
+            derive_fusion_profile("", None, Some(AgentIntentMode::ApiContractMap)),
+            0.38,
+            0.20,
+            0.18,
+            0.24,
+            1.10,
+        );
+        assert_profile(
+            derive_fusion_profile("", None, Some(AgentIntentMode::RuntimeSurface)),
+            0.30,
+            0.22,
+            0.20,
+            0.28,
+            1.20,
+        );
+        assert_profile(
+            derive_fusion_profile("", None, Some(AgentIntentMode::RefactorSurface)),
+            0.26,
+            0.24,
+            0.22,
+            0.28,
+            1.22,
+        );
+    }
+
+    #[test]
+    fn seed_fusion_profile_keeps_weights_but_drops_graph_component() {
+        let profile = derive_fusion_profile("", None, Some(AgentIntentMode::RuntimeSurface));
+        let seeded = seed_fusion_profile(profile);
+        assert_eq!(seeded.graph_weight, 0.0);
+        assert_eq!(seeded.lexical_weight, profile.lexical_weight);
+        assert_eq!(seeded.semantic_file_weight, profile.semantic_file_weight);
+        assert_eq!(seeded.semantic_chunk_weight, profile.semantic_chunk_weight);
+        assert_eq!(seeded.probe_factor, profile.probe_factor);
+    }
+}

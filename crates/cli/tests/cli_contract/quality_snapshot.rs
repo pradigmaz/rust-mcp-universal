@@ -49,7 +49,10 @@ fn quality_snapshot_persists_wave_history_and_self_baseline() {
         .expect("before dir entry")
         .path();
     assert!(before_root.join("snapshot.report.json").exists());
-    assert_eq!(before["snapshot"]["snapshot_kind"], serde_json::json!("before"));
+    assert_eq!(
+        before["snapshot"]["snapshot_kind"],
+        serde_json::json!("before")
+    );
 
     let after = run_quality_snapshot(
         project.path(),

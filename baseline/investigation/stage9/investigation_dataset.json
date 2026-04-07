@@ -455,6 +455,53 @@
                                      "expected_semantic_state":  "unavailable_fail_open",
                                      "semantic_fail_open_case":  true
                                  }
+                  },
+                  {
+                      "id":  "contract-trace-origin-service",
+                      "tool":  "contract_trace",
+                      "fixture":  "mixed_app",
+                      "seed":  "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+                      "seed_kind":  "path",
+                      "expected_capability_status":  "supported",
+                      "expected_assertions":  [
+                                                  {
+                                                      "kind":  "contains_chain_role",
+                                                      "value":  "service"
+                                                  },
+                                                  {
+                                                      "kind":  "contains_chain_role",
+                                                      "value":  "schema_or_model"
+                                                  },
+                                                  {
+                                                      "kind":  "recommended_target_role",
+                                                      "value":  "schema_or_model"
+                                                  },
+                                                  {
+                                                      "kind":  "recommended_target_path",
+                                                      "value":  "baseline/investigation/fixtures/mixed_app/src/queries/origin_query.sql"
+                                                  }
+                                              ],
+                      "labels":  {
+                                     "expected_variant_entry_paths":  [
+                                                                          "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+                                                                          "baseline/investigation/fixtures/mixed_app/src/queries/origin_query.sql",
+                                                                          "baseline/investigation/fixtures/mixed_app/tests/test_origin_flow.py"
+                                                                      ],
+                                     "expected_route_segments":  [
+                                                                     {
+                                                                         "path":  "baseline/investigation/fixtures/mixed_app/src/services/origin_service.rs",
+                                                                         "kind":  "service"
+                                                                     },
+                                                                     {
+                                                                         "path":  "baseline/investigation/fixtures/mixed_app/src/queries/origin_query.sql",
+                                                                         "kind":  "schema_or_model"
+                                                                     },
+                                                                     {
+                                                                         "path":  "baseline/investigation/fixtures/mixed_app/tests/test_origin_flow.py",
+                                                                         "kind":  "test"
+                                                                     }
+                                                                 ]
+                                 }
                   }
               ]
 }

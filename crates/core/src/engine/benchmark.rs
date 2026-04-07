@@ -155,7 +155,7 @@ impl Engine {
                 semantic_fail_mode: options.semantic_fail_mode,
                 privacy_mode: options.privacy_mode,
                 context_mode: None,
-        agent_intent_mode: None,
+                agent_intent_mode: None,
             };
 
             let started = Instant::now();

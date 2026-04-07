@@ -503,3 +503,82 @@ impl SearchIntent {
         None
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn explicit_agent_modes_map_to_expected_intent_contracts() {
+        let entrypoint = SearchIntent::from_agent_mode(AgentIntentMode::EntrypointMap);
+        assert!(entrypoint.prefers_backend);
+        assert!(entrypoint.wants_api_surface);
+        assert!(entrypoint.wants_service_layer);
+        assert!(entrypoint.wants_entrypoints);
+        assert!(!entrypoint.wants_tests);
+        assert!(!entrypoint.wants_mod_runtime);
+
+        let test_map = SearchIntent::from_agent_mode(AgentIntentMode::TestMap);
+        assert!(test_map.wants_tests);
+        assert!(test_map.prefers_backend);
+        assert!(test_map.wants_service_layer);
+        assert!(!test_map.wants_api_surface);
+        assert!(!test_map.wants_mod_runtime);
+
+        let review_prep = SearchIntent::from_agent_mode(AgentIntentMode::ReviewPrep);
+        assert!(review_prep.prefers_backend);
+        assert!(review_prep.prefers_frontend);
+        assert!(review_prep.prefers_database);
+        assert!(review_prep.wants_api_surface);
+        assert!(review_prep.wants_service_layer);
+        assert!(review_prep.wants_architecture);
+        assert!(review_prep.wants_entrypoints);
+        assert!(review_prep.wants_auth_boundary);
+        assert!(review_prep.wants_tests);
+        assert!(review_prep.wants_mod_runtime);
+        assert!(review_prep.wants_migration);
+
+        let api_contract = SearchIntent::from_agent_mode(AgentIntentMode::ApiContractMap);
+        assert!(api_contract.prefers_backend);
+        assert!(api_contract.wants_api_surface);
+        assert!(api_contract.wants_service_layer);
+        assert!(api_contract.wants_entrypoints);
+        assert!(!api_contract.wants_tests);
+        assert!(!api_contract.wants_mod_runtime);
+
+        let runtime_surface = SearchIntent::from_agent_mode(AgentIntentMode::RuntimeSurface);
+        assert!(runtime_surface.prefers_backend);
+        assert!(runtime_surface.prefers_frontend);
+        assert!(runtime_surface.wants_hook);
+        assert!(runtime_surface.wants_mod_runtime);
+        assert!(!runtime_surface.wants_tests);
+
+        let refactor_surface = SearchIntent::from_agent_mode(AgentIntentMode::RefactorSurface);
+        assert!(refactor_surface.prefers_backend);
+        assert!(refactor_surface.prefers_frontend);
+        assert!(refactor_surface.wants_service_layer);
+        assert!(refactor_surface.wants_architecture);
+        assert!(refactor_surface.wants_tests);
+        assert!(refactor_surface.wants_mod_runtime);
+        assert!(!refactor_surface.wants_api_surface);
+    }
+
+    #[test]
+    fn resolve_prefers_explicit_mode_then_inferred_then_default() {
+        let (_, explicit) = SearchIntent::resolve(
+            "auth boundary tests nearby backend frontend",
+            Some(AgentIntentMode::RefactorSurface),
+        );
+        assert_eq!(explicit.mode, AgentIntentMode::RefactorSurface);
+        assert_eq!(explicit.source, ModeResolutionSource::Explicit);
+
+        let (_, inferred) =
+            SearchIntent::resolve("auth boundary tests nearby backend frontend", None);
+        assert_eq!(inferred.mode, AgentIntentMode::TestMap);
+        assert_eq!(inferred.source, ModeResolutionSource::Inferred);
+
+        let (_, fallback) = SearchIntent::resolve("mystery", None);
+        assert_eq!(fallback.mode, AgentIntentMode::EntrypointMap);
+        assert_eq!(fallback.source, ModeResolutionSource::Default);
+    }
+}

@@ -57,8 +57,7 @@ pub(super) fn quality_snapshot(args: &Value, state: &mut ServerState) -> Result<
             })
             .transpose()?
             .unwrap_or(QualityProjectSnapshotCompareAgainst::None);
-    let auto_index =
-        parse_optional_bool(args, "quality_snapshot", "auto_index")?.unwrap_or(true);
+    let auto_index = parse_optional_bool(args, "quality_snapshot", "auto_index")?.unwrap_or(true);
     let persist_artifacts =
         parse_optional_bool(args, "quality_snapshot", "persist_artifacts")?.unwrap_or(true);
     let promote_self_baseline =
@@ -78,7 +77,8 @@ pub(super) fn quality_snapshot(args: &Value, state: &mut ServerState) -> Result<
     .map_err(|err| tool_domain_error(err.to_string()))?;
 
     if auto_index {
-        ensure_query_index_ready(&engine, true).map_err(|err| tool_domain_error(err.to_string()))?;
+        ensure_query_index_ready(&engine, true)
+            .map_err(|err| tool_domain_error(err.to_string()))?;
     }
 
     let capture = engine

@@ -71,6 +71,12 @@ pub(super) fn preflight_validate(command: &Command) -> Result<()> {
             limit,
             ..
         }
+        | Command::ContractTrace {
+            seed,
+            seed_kind,
+            limit,
+            ..
+        }
         | Command::DivergenceReport {
             seed,
             seed_kind,
@@ -249,7 +255,8 @@ pub(super) fn preflight_validate(command: &Command) -> Result<()> {
             {
                 bail!("`output_root` must be non-empty when provided");
             }
-            if rmu_core::QualityProjectSnapshotCompareAgainst::parse(&args.compare_against).is_none()
+            if rmu_core::QualityProjectSnapshotCompareAgainst::parse(&args.compare_against)
+                .is_none()
             {
                 bail!("`compare_against` must be one of: none, self_baseline, wave_before");
             }

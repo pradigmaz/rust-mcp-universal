@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CanonicalProvenance",
+  "type": "object",
+  "required": ["basis", "derivation", "freshness", "strength"],
+  "properties": {
+    "basis": {
+      "type": "string",
+      "oneOf": [
+        { "const": "indexed" },
+        { "const": "preview_fallback" },
+        { "const": "graph_derived" },
+        { "const": "heuristic" },
+        { "const": "mixed" }
+      ]
+    },
+    "derivation": { "type": "string" },
+    "freshness": {
+      "type": "string",
+      "oneOf": [
+        { "const": "index_snapshot" },
+        { "const": "live_read" },
+        { "const": "unknown" }
+      ]
+    },
+    "strength": {
+      "type": "string",
+      "oneOf": [
+        { "const": "strong" },
+        { "const": "moderate" },
+        { "const": "weak" },
+        { "const": "fallback_only" }
+      ]
+    },
+    "reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

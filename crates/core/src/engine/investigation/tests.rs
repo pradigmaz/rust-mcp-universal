@@ -263,3 +263,49 @@ fn divergence_report_emits_axes_for_multiple_candidates() -> anyhow::Result<()> 
     let _ = fs::remove_dir_all(project_dir);
     Ok(())
 }
+
+#[test]
+fn contract_trace_surfaces_generated_lineage_and_actionability() -> anyhow::Result<()> {
+    let project_dir = temp_project_dir("rmu-investigation-contract-trace");
+    fs::create_dir_all(project_dir.join("src/services"))?;
+    fs::create_dir_all(project_dir.join("src/generated"))?;
+    fs::create_dir_all(project_dir.join("frontend/src"))?;
+    fs::create_dir_all(project_dir.join("migrations"))?;
+    fs::create_dir_all(project_dir.join("tests"))?;
+    fs::write(
+        project_dir.join("src/services/origin_service.rs"),
+        "pub fn origin_resolution(key: &str) { origin_resolution_validator(key); helper_query(); }\nfn helper_query() {}\n",
+    )?;
+    fs::write(
+        project_dir.join("src/services/origin_validator.rs"),
+        "pub fn origin_resolution_validator(key: &str) { assert!(!key.is_empty()); }\n",
+    )?;
+    fs::write(
+        project_dir.join("src/generated/origin_client.generated.ts"),
+        "// generated file - do not edit\nexport function originResolutionClient(key: string) { return `/api/origin/${key}`; }\n",
+    )?;
+    fs::write(
+        project_dir.join("frontend/src/origin_page.tsx"),
+        "import { originResolutionClient } from '../../src/generated/origin_client.generated';\nexport function OriginPage() { return originResolutionClient('ok'); }\n",
+    )?;
+    fs::write(
+        project_dir.join("migrations/001_create_origins.sql"),
+        "CREATE TABLE origins (id INTEGER PRIMARY KEY, origin_key TEXT NOT NULL);\n",
+    )?;
+    fs::write(
+        project_dir.join("tests/test_origin_resolution.py"),
+        "def test_origin_resolution():\n    assert True\n",
+    )?;
+
+    let engine = Engine::new(project_dir.clone(), Some(project_dir.join(".rmu/index.db")))?;
+    let _ = engine.ensure_index_ready_with_policy(true)?;
+    let result = engine.contract_trace("origin_resolution", ConceptSeedKind::Query, 5)?;
+
+    assert!(!result.chain.is_empty());
+    assert!(!result.actionability.next_steps.is_empty());
+    assert!(result.contract_breaks.iter().all(|item| !item.reason.is_empty()));
+    assert!(result.chain.iter().any(|link| link.generated_lineage.is_some()));
+
+    let _ = fs::remove_dir_all(project_dir);
+    Ok(())
+}

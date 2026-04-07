@@ -129,6 +129,7 @@ pub(super) fn tool_label(tool: InvestigationBenchmarkTool) -> &'static str {
         InvestigationBenchmarkTool::RouteTrace => "route_trace",
         InvestigationBenchmarkTool::ConstraintEvidence => "constraint_evidence",
         InvestigationBenchmarkTool::ConceptCluster => "concept_cluster",
+        InvestigationBenchmarkTool::ContractTrace => "contract_trace",
         InvestigationBenchmarkTool::DivergenceReport => "divergence_report",
     }
 }
@@ -153,6 +154,10 @@ pub(super) fn run_tool(
         }
         InvestigationBenchmarkTool::ConceptCluster => {
             serde_json::to_value(engine.concept_cluster(seed, seed_kind, limit)?)
+                .map_err(Into::into)
+        }
+        InvestigationBenchmarkTool::ContractTrace => {
+            serde_json::to_value(engine.contract_trace(seed, seed_kind, limit)?)
                 .map_err(Into::into)
         }
         InvestigationBenchmarkTool::DivergenceReport => {

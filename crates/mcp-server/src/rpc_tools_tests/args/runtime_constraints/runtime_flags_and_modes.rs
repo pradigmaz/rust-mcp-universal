@@ -111,10 +111,26 @@ pub(super) fn cases() -> Vec<RuntimeConstraintCase> {
             json!({"query": "q", "semantic_fail_mode": ""}),
             "non-empty `semantic_fail_mode`",
         ),
+        ("query_report", json!({"query": "q", "mode": true}), "string `mode`"),
+        (
+            "query_report",
+            json!({"query": "q", "mode": "unknown_mode"}),
+            "`mode` must be one of: entrypoint_map, test_map, review_prep, api_contract_map, runtime_surface, refactor_surface",
+        ),
         (
             "agent_bootstrap",
             json!({"semantic_fail_mode": "fast"}),
             "`semantic_fail_mode` must be one of: fail_open, fail_closed",
+        ),
+        (
+            "agent_bootstrap",
+            json!({"profile": true}),
+            "string `profile`",
+        ),
+        (
+            "agent_bootstrap",
+            json!({"profile": "cheap"}),
+            "`profile` must be one of: fast, investigation_summary, report, full",
         ),
     ]
 }

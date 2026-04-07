@@ -164,7 +164,11 @@ fn summarize_provenance(snapshot: &SharedInvestigationSnapshot) -> CanonicalProv
     let strength = if unsupported_sources_present {
         CanonicalStrength::Weak
     } else if snapshot.route_trace.unresolved_gaps.is_empty()
-        && snapshot.constraint_evidence.items.iter().any(|item| item.strength == "strong")
+        && snapshot
+            .constraint_evidence
+            .items
+            .iter()
+            .any(|item| item.strength == "strong")
     {
         CanonicalStrength::Strong
     } else {
@@ -176,14 +180,20 @@ fn summarize_provenance(snapshot: &SharedInvestigationSnapshot) -> CanonicalProv
             "cluster_capability:{}",
             snapshot.concept_cluster.capability_status
         ),
-        format!("route_capability:{}", snapshot.route_trace.capability_status),
+        format!(
+            "route_capability:{}",
+            snapshot.route_trace.capability_status
+        ),
         format!(
             "constraint_capability:{}",
             snapshot.constraint_evidence.capability_status
         ),
     ];
     if let Some(divergence) = snapshot.divergence.as_ref() {
-        reasons.push(format!("divergence_capability:{}", divergence.capability_status));
+        reasons.push(format!(
+            "divergence_capability:{}",
+            divergence.capability_status
+        ));
     }
     if unsupported_sources_present {
         reasons.push("unsupported_sources_present".to_string());

@@ -6,8 +6,8 @@ mod types;
 
 pub use modes::{
     AgentIntentMode, BootstrapProfile, CanonicalBasis, CanonicalFreshness, CanonicalStrength,
-    ContextMode, DegradationReason, MigrationMode, ModeResolutionSource, PrivacyMode,
-    RolloutPhase, SemanticFailMode,
+    ContextMode, DegradationReason, MigrationMode, ModeResolutionSource, PrivacyMode, RolloutPhase,
+    SemanticFailMode,
 };
 pub use types::*;
 

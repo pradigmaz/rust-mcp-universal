@@ -156,12 +156,13 @@ fn metrics_by_tool(
     metrics.iter().map(|metric| (metric.tool, metric)).collect()
 }
 
-fn ordered_tools() -> [InvestigationBenchmarkTool; 5] {
+fn ordered_tools() -> [InvestigationBenchmarkTool; 6] {
     [
         InvestigationBenchmarkTool::SymbolBody,
         InvestigationBenchmarkTool::RouteTrace,
         InvestigationBenchmarkTool::ConstraintEvidence,
         InvestigationBenchmarkTool::ConceptCluster,
+        InvestigationBenchmarkTool::ContractTrace,
         InvestigationBenchmarkTool::DivergenceReport,
     ]
 }

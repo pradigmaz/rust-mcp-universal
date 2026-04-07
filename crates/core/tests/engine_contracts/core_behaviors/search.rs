@@ -75,7 +75,7 @@ pub fn related_files() {
             semantic_fail_mode: SemanticFailMode::FailOpen,
             privacy_mode: PrivacyMode::Off,
             context_mode: None,
-        agent_intent_mode: None,
+            agent_intent_mode: None,
         })?;
         assert_eq!(
             hits.first().map(|hit| hit.path.as_str()),

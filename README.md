@@ -148,6 +148,15 @@ Linux и macOS:
 }
 ```
 
+### WSL on Windows
+
+Если `rmu-mcp-server` запущен из Windows, а workspace лежит в WSL, передавайте root как:
+
+- UNC path: `\\wsl.localhost\<Distro>\home\<user>\repo`
+- file URI: `file://wsl.localhost/<Distro>/home/<user>/repo`
+
+`set_project_path` теперь принимает те же формы. Если сервер RMU запускается внутри самой WSL-среды, используйте обычную Linux/macOS настройку.
+
 Fresh launcher:
 
 - Windows: `scripts/rmu-mcp-server-fresh.cmd`

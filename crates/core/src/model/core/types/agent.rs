@@ -59,7 +59,7 @@ pub struct AgentQueryBundle {
 pub struct AgentBootstrap {
     pub brief: WorkspaceBrief,
     pub profile: BootstrapProfile,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub degradation_reasons: Vec<DegradationReason>,
     #[serde(default)]
     pub deepen_available: bool,

@@ -61,6 +61,7 @@ pub(super) fn evaluate_case_metrics(
         .count();
 
     let variants = payload["variants"].as_array().cloned().unwrap_or_default();
+    let chain = payload["chain"].as_array().cloned().unwrap_or_default();
     let cluster_metrics = evaluate_cluster_metrics(labels, &variants);
     snapshot.top_variant_match = cluster_metrics.top_variant_match;
     snapshot.semantic_state_present = cluster_metrics.semantic_state_present;
@@ -69,11 +70,17 @@ pub(super) fn evaluate_case_metrics(
     snapshot.semantic_fail_open_visible = cluster_metrics.semantic_fail_open_visible;
     snapshot.low_signal_semantic_false_penalty = cluster_metrics.low_signal_semantic_false_penalty;
     let route_paths = route_trace_paths(payload);
+    let chain_paths = contract_trace_paths(&chain);
     if !labels.expected_variant_entry_paths.is_empty() {
         snapshot.expected_variant_count = labels.expected_variant_entry_paths.len();
         snapshot.route_success_at_1 = if case.tool == InvestigationBenchmarkTool::RouteTrace {
             Some(found_expected_route_entry(
                 route_paths.iter().copied().take(1),
+                &labels.expected_variant_entry_paths,
+            ))
+        } else if case.tool == InvestigationBenchmarkTool::ContractTrace {
+            Some(found_expected_contract_entry(
+                chain_paths.iter().map(String::as_str).take(1),
                 &labels.expected_variant_entry_paths,
             ))
         } else {
@@ -87,6 +94,11 @@ pub(super) fn evaluate_case_metrics(
                 route_paths.iter().copied().take(3),
                 &labels.expected_variant_entry_paths,
             ))
+        } else if case.tool == InvestigationBenchmarkTool::ContractTrace {
+            Some(found_expected_contract_entry(
+                chain_paths.iter().map(String::as_str).take(3),
+                &labels.expected_variant_entry_paths,
+            ))
         } else {
             Some(found_expected_entry_path(
                 variants.iter().take(3),
@@ -97,6 +109,11 @@ pub(super) fn evaluate_case_metrics(
             if case.tool == InvestigationBenchmarkTool::RouteTrace {
                 count_expected_route_entry_paths(
                     route_paths.iter().copied().take(3),
+                    &labels.expected_variant_entry_paths,
+                )
+            } else if case.tool == InvestigationBenchmarkTool::ContractTrace {
+                count_expected_contract_entry_paths(
+                    chain_paths.iter().map(String::as_str).take(3),
                     &labels.expected_variant_entry_paths,
                 )
             } else {
@@ -115,6 +132,8 @@ pub(super) fn evaluate_case_metrics(
                 .take(3)
                 .flat_map(|route| route["segments"].as_array().into_iter().flatten())
                 .collect()
+        } else if case.tool == InvestigationBenchmarkTool::ContractTrace {
+            chain.iter().take(3).collect()
         } else {
             variants
                 .iter()
@@ -123,7 +142,17 @@ pub(super) fn evaluate_case_metrics(
                 .collect()
         };
         for segment in segment_iter {
-            if let (Some(path), Some(kind)) = (segment["path"].as_str(), segment["kind"].as_str()) {
+            let kind = if case.tool == InvestigationBenchmarkTool::ContractTrace {
+                segment["role"].as_str()
+            } else {
+                segment["kind"].as_str()
+            };
+            let path = if case.tool == InvestigationBenchmarkTool::ContractTrace {
+                segment["anchor"]["path"].as_str()
+            } else {
+                segment["path"].as_str()
+            };
+            if let (Some(path), Some(kind)) = (path, kind) {
                 actual
                     .entry(path.to_string())
                     .or_default()
@@ -144,6 +173,7 @@ pub(super) fn evaluate_case_metrics(
         case.tool,
         InvestigationBenchmarkTool::ConstraintEvidence
             | InvestigationBenchmarkTool::ConceptCluster
+            | InvestigationBenchmarkTool::ContractTrace
             | InvestigationBenchmarkTool::DivergenceReport
     ) {
         let constraints = payload["items"]
@@ -299,6 +329,44 @@ fn evidence_counts(
             count_constraint(item, &mut counts);
         }
     }
+    if matches!(tool, InvestigationBenchmarkTool::ContractTrace) {
+        for link in payload["chain"].as_array().into_iter().flatten() {
+            count_field(link["role"].as_str(), &mut counts);
+            count_field(link["source_kind"].as_str(), &mut counts);
+            count_field(link["evidence"].as_str(), &mut counts);
+            count_number(link["confidence"].as_f64(), &mut counts);
+            count_number(link["rank_score"].as_f64(), &mut counts);
+            count_field(link["rank_reason"].as_str(), &mut counts);
+            count_anchor(&link["anchor"], &mut counts);
+            if let Some(lineage) = link.get("generated_lineage") {
+                count_field(lineage["status"].as_str(), &mut counts);
+                if lineage["status"].as_str().is_some_and(|status| {
+                    status != "not_generated" && status != "generated_unknown_source"
+                }) {
+                    count_field(lineage["source_of_truth_path"].as_str(), &mut counts);
+                }
+            }
+        }
+        count_bool(payload["manual_review_required"].as_bool(), &mut counts);
+        count_number(payload["confidence"].as_f64(), &mut counts);
+        for break_item in payload["contract_breaks"].as_array().into_iter().flatten() {
+            count_field(break_item["reason"].as_str(), &mut counts);
+            count_field(break_item["expected_role"].as_str(), &mut counts);
+            count_field(break_item["last_resolved_path"].as_str(), &mut counts);
+        }
+        count_field(payload["actionability"]["recommended_target_path"].as_str(), &mut counts);
+        count_field(payload["actionability"]["recommended_target_role"].as_str(), &mut counts);
+        count_field(payload["actionability"]["reason"].as_str(), &mut counts);
+        count_non_empty_array(payload["actionability"]["related_tests"].as_array(), &mut counts);
+        count_non_empty_array(payload["actionability"]["adjacent_paths"].as_array(), &mut counts);
+        count_non_empty_array(payload["actionability"]["checks"].as_array(), &mut counts);
+        count_non_empty_array(payload["actionability"]["rollback_sensitive_paths"].as_array(), &mut counts);
+        count_bool(payload["actionability"]["manual_review_required"].as_bool(), &mut counts);
+        for step in payload["actionability"]["next_steps"].as_array().into_iter().flatten() {
+            count_field(step["kind"].as_str(), &mut counts);
+            count_field(step["detail"].as_str(), &mut counts);
+        }
+    }
     if matches!(tool, InvestigationBenchmarkTool::DivergenceReport) {
         count_field(payload["surface_kind"].as_str(), &mut counts);
         count_field(payload["overall_severity"].as_str(), &mut counts);
@@ -371,4 +439,33 @@ fn count_non_empty_array(value: Option<&Vec<Value>>, counts: &mut (usize, usize)
     if value.is_some_and(|items| !items.is_empty()) {
         counts.0 += 1;
     }
+}
+
+fn contract_trace_paths(chain: &[Value]) -> Vec<String> {
+    chain
+        .iter()
+        .filter_map(|link| link["anchor"]["path"].as_str())
+        .map(ToString::to_string)
+        .collect()
+}
+
+fn found_expected_contract_entry<'a>(
+    actual_paths: impl Iterator<Item = &'a str>,
+    expected_paths: &[String],
+) -> bool {
+    let actual = actual_paths.collect::<Vec<_>>();
+    expected_paths
+        .iter()
+        .any(|expected| actual.contains(&expected.as_str()))
+}
+
+fn count_expected_contract_entry_paths<'a>(
+    actual_paths: impl Iterator<Item = &'a str>,
+    expected_paths: &[String],
+) -> usize {
+    let actual = actual_paths.collect::<Vec<_>>();
+    expected_paths
+        .iter()
+        .filter(|expected| actual.contains(&expected.as_str()))
+        .count()
 }

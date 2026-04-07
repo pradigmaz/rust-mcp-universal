@@ -30,6 +30,7 @@ fn stage9_gold_datasets_cover_aggregate_dataset_without_case_drift() {
         root.join("baseline/investigation/stage9/gold/route_trace_dataset.json"),
         root.join("baseline/investigation/stage9/gold/constraint_evidence_dataset.json"),
         root.join("baseline/investigation/stage9/gold/concept_cluster_dataset.json"),
+        root.join("baseline/investigation/stage9/gold/contract_trace_dataset.json"),
         root.join("baseline/investigation/stage9/gold/divergence_report_dataset.json"),
     ];
     let union_ids = gold_paths

@@ -219,6 +219,22 @@ pub(super) fn run(prepared: PreparedRun) -> Result<()> {
                 privacy_mode,
             },
         ),
+        Command::ContractTrace {
+            seed,
+            seed_kind,
+            limit,
+            auto_index,
+        } => query::run_contract_trace(
+            required_engine(engine)?,
+            json,
+            query::InvestigationArgs {
+                seed,
+                seed_kind: parse_seed_kind(&seed_kind)?,
+                limit,
+                auto_index,
+                privacy_mode,
+            },
+        ),
         Command::DivergenceReport {
             seed,
             seed_kind,
@@ -319,10 +335,7 @@ pub(super) fn run(prepared: PreparedRun) -> Result<()> {
             json,
             query::ReportArgs {
                 query,
-                mode: mode
-                    .as_deref()
-                    .map(parse_agent_intent_mode)
-                    .transpose()?,
+                mode: mode.as_deref().map(parse_agent_intent_mode).transpose()?,
                 limit,
                 semantic,
                 auto_index,
@@ -439,10 +452,7 @@ pub(super) fn run(prepared: PreparedRun) -> Result<()> {
             json,
             query::AgentArgs {
                 query,
-                mode: mode
-                    .as_deref()
-                    .map(parse_agent_intent_mode)
-                    .transpose()?,
+                mode: mode.as_deref().map(parse_agent_intent_mode).transpose()?,
                 profile: profile
                     .as_deref()
                     .map(parse_bootstrap_profile)

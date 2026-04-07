@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ContractTraceResult",
+  "type": "object",
+  "required": [
+    "seed",
+    "chain",
+    "contract_breaks",
+    "actionability",
+    "manual_review_required",
+    "capability_status",
+    "unsupported_sources",
+    "confidence"
+  ],
+  "properties": {
+    "seed": {
+      "type": "object",
+      "required": ["seed", "seed_kind"],
+      "properties": {
+        "seed": { "type": "string" },
+        "seed_kind": { "type": "string" }
+      }
+    },
+    "chain": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "role",
+          "anchor",
+          "source_kind",
+          "evidence",
+          "confidence",
+          "rank_score",
+          "rank_reason"
+        ],
+        "properties": {
+          "role": { "type": "string" },
+          "anchor": {
+            "type": "object",
+            "required": ["path", "language"],
+            "properties": {
+              "path": { "type": "string" },
+              "language": { "type": "string" },
+              "symbol": { "type": "string" },
+              "kind": { "type": "string" },
+              "line": { "type": "integer", "minimum": 0 },
+              "column": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "source_kind": { "type": "string" },
+          "evidence": { "type": "string" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "generated_lineage": {
+            "type": "object",
+            "required": ["status", "detection_basis", "confidence"],
+            "properties": {
+              "status": { "type": "string" },
+              "detection_basis": { "type": "string" },
+              "source_of_truth_path": { "type": "string" },
+              "source_of_truth_kind": { "type": "string" },
+              "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          },
+          "rank_score": { "type": "number" },
+          "rank_reason": { "type": "string" }
+        }
+      }
+    },
+    "contract_breaks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["expected_role", "reason"],
+        "properties": {
+          "expected_role": { "type": "string" },
+          "reason": { "type": "string" },
+          "last_resolved_path": { "type": "string" }
+        }
+      }
+    },
+    "actionability": {
+      "type": "object",
+      "required": [
+        "reason",
+        "next_steps",
+        "related_tests",
+        "adjacent_paths",
+        "checks",
+        "rollback_sensitive_paths",
+        "manual_review_required"
+      ],
+      "properties": {
+        "recommended_target_path": { "type": "string" },
+        "recommended_target_role": { "type": "string" },
+        "reason": { "type": "string" },
+        "next_steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["kind", "detail"],
+            "properties": {
+              "kind": { "type": "string" },
+              "detail": { "type": "string" }
+            }
+          }
+        },
+        "related_tests": { "type": "array", "items": { "type": "string" } },
+        "adjacent_paths": { "type": "array", "items": { "type": "string" } },
+        "checks": { "type": "array", "items": { "type": "string" } },
+        "rollback_sensitive_paths": { "type": "array", "items": { "type": "string" } },
+        "manual_review_required": { "type": "boolean" }
+      }
+    },
+    "manual_review_required": { "type": "boolean" },
+    "capability_status": { "type": "string" },
+    "unsupported_sources": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+  }
+}

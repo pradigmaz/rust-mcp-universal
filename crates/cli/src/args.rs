@@ -151,6 +151,16 @@ pub(crate) enum Command {
         #[arg(long, default_value_t = false)]
         auto_index: bool,
     },
+    ContractTrace {
+        #[arg(long)]
+        seed: String,
+        #[arg(long)]
+        seed_kind: String,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+        #[arg(long, default_value_t = false)]
+        auto_index: bool,
+    },
     DivergenceReport {
         #[arg(long)]
         seed: String,

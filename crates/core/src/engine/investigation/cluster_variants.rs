@@ -18,6 +18,7 @@ use super::common::build_anchor;
 use super::common::normalized_values;
 use super::constraint_relevance::retain_relevant_constraints;
 use super::constraints::collect_constraint_evidence;
+use super::generated_lineage::infer_generated_lineage;
 use super::route::build_route;
 
 pub(super) fn build_variants(
@@ -113,6 +114,7 @@ fn build_variant(
                 .flatten()
                 .map(|item| item.anchor)
         });
+    let generated_lineage = infer_generated_lineage(engine, &entry_anchor, &route);
     let paths = constraint_relevant_paths(candidate, &canonical_candidate, &route);
     let constraints = retain_relevant_constraints(
         seed,
@@ -171,6 +173,7 @@ fn build_variant(
         id: format!("variant:{}", entry_anchor.path),
         entry_anchor,
         body_anchor,
+        generated_lineage,
         route,
         constraints,
         related_tests,

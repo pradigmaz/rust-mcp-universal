@@ -71,6 +71,18 @@ pub(super) fn divergence_report(args: &Value, state: &mut ServerState) -> Result
     )
 }
 
+pub(super) fn contract_trace(args: &Value, state: &mut ServerState) -> Result<Value> {
+    run_investigation(
+        args,
+        state,
+        "contract_trace",
+        |engine, seed, seed_kind, limit| {
+            serde_json::to_value(engine.contract_trace(seed, seed_kind, limit)?)
+                .map_err(Into::into)
+        },
+    )
+}
+
 fn run_investigation(
     args: &Value,
     state: &mut ServerState,

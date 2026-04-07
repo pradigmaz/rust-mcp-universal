@@ -1,7 +1,6 @@
 use crate::model::{
-    BootstrapProfile, CanonicalBasis, CanonicalFreshness, CanonicalProvenance,
-    CanonicalStrength, ContextSelection, DegradationReason, InvestigationSummary,
-    RankExplainBreakdown,
+    BootstrapProfile, CanonicalBasis, CanonicalFreshness, CanonicalProvenance, CanonicalStrength,
+    ContextSelection, DegradationReason, InvestigationSummary, RankExplainBreakdown,
 };
 use crate::vector_rank::SemanticRerankOutcome;
 
@@ -262,7 +261,10 @@ pub(crate) fn summarize_provenance(
             acc
         });
     reasons.truncate(8);
-    reasons.insert(0, format!("dominant_basis:{:?}", basis).to_ascii_lowercase());
+    reasons.insert(
+        0,
+        format!("dominant_basis:{:?}", basis).to_ascii_lowercase(),
+    );
 
     CanonicalProvenance {
         basis,
@@ -338,7 +340,10 @@ pub(crate) fn deepen_hint(
         return Some("refresh the index or inspect the surfaced source files directly".to_string());
     }
     if reasons.contains(&DegradationReason::SemanticFailOpen) {
-        return Some("check the embedding backend or rerun with fail_closed to surface the error".to_string());
+        return Some(
+            "check the embedding backend or rerun with fail_closed to surface the error"
+                .to_string(),
+        );
     }
     if reasons.contains(&DegradationReason::UnsupportedSourcesPresent) {
         return Some(
@@ -362,4 +367,113 @@ fn investigation_summary_has_unsupported_sources(summary: &InvestigationSummary)
             .reasons
             .iter()
             .any(|reason| reason == "unsupported_sources_present")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::{
+        CanonicalBasis, CanonicalFreshness, CanonicalProvenance, CanonicalStrength, ContextFile,
+        ContextSelection,
+    };
+
+    fn context_selection(chunk_source: &str, truncated: bool) -> ContextSelection {
+        ContextSelection {
+            files: vec![ContextFile {
+                path: "src/lib.rs".to_string(),
+                excerpt: "fn sample() {}".to_string(),
+                score: 0.9,
+                chunk_idx: 0,
+                start_line: 1,
+                end_line: 1,
+                chunk_source: chunk_source.to_string(),
+            }],
+            total_chars: 14,
+            estimated_tokens: 4,
+            truncated,
+            chunk_candidates: 1,
+            chunk_selected: 1,
+        }
+    }
+
+    #[test]
+    fn summarize_provenance_emits_dominant_basis_reason() {
+        let summary = summarize_provenance(
+            &[
+                CanonicalProvenance {
+                    basis: CanonicalBasis::Indexed,
+                    derivation: "context_selection".to_string(),
+                    freshness: CanonicalFreshness::IndexSnapshot,
+                    strength: CanonicalStrength::Strong,
+                    reasons: vec!["indexed_chunk".to_string()],
+                },
+                CanonicalProvenance {
+                    basis: CanonicalBasis::Indexed,
+                    derivation: "investigation_summary".to_string(),
+                    freshness: CanonicalFreshness::LiveRead,
+                    strength: CanonicalStrength::Moderate,
+                    reasons: vec!["live_crosscheck".to_string()],
+                },
+            ],
+            "agent_query_bundle",
+        );
+
+        assert_eq!(summary.basis, CanonicalBasis::Indexed);
+        assert_eq!(summary.derivation, "agent_query_bundle");
+        assert_eq!(summary.strength, CanonicalStrength::Strong);
+        assert_eq!(summary.reasons[0], "dominant_basis:indexed");
+        assert!(summary.reasons.iter().any(|reason| reason == "indexed_chunk"));
+        assert!(summary.reasons.iter().any(|reason| reason == "live_crosscheck"));
+    }
+
+    #[test]
+    fn degradation_reasons_collect_profile_budget_preview_and_semantic_flags() {
+        let reasons = derive_degradation_reasons(
+            true,
+            SemanticRerankOutcome::Failed,
+            &context_selection("preview_fallback", true),
+            None,
+            true,
+        );
+
+        assert_eq!(
+            reasons,
+            vec![
+                DegradationReason::SemanticFailOpen,
+                DegradationReason::ChunkPreviewFallback,
+                DegradationReason::BudgetTruncated,
+                DegradationReason::ProfileLimited,
+            ]
+        );
+    }
+
+    #[test]
+    fn deepen_contract_prefers_profile_rerun_for_non_full_bootstrap() {
+        let reasons = vec![
+            DegradationReason::ProfileLimited,
+            DegradationReason::BudgetTruncated,
+        ];
+        assert!(deepen_available(Some(BootstrapProfile::Fast), &reasons));
+        assert_eq!(
+            deepen_hint(Some(BootstrapProfile::Fast), &reasons).as_deref(),
+            Some(
+                "rerun agent_bootstrap with profile=full to include both report and investigation summary"
+            )
+        );
+    }
+
+    #[test]
+    fn deepen_contract_prefers_budget_hint_for_full_profiles() {
+        let reasons = vec![
+            DegradationReason::BudgetTruncated,
+            DegradationReason::SemanticLowSignalSkip,
+        ];
+        assert!(deepen_available(Some(BootstrapProfile::Full), &reasons));
+        assert_eq!(
+            deepen_hint(Some(BootstrapProfile::Full), &reasons).as_deref(),
+            Some("increase max_chars or max_tokens to reduce context truncation")
+        );
+        assert!(!deepen_available(Some(BootstrapProfile::Full), &[]));
+        assert_eq!(deepen_hint(Some(BootstrapProfile::Full), &[]), None);
+    }
 }

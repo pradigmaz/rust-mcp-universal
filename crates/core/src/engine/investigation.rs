@@ -1,5 +1,7 @@
 #[path = "investigation/body.rs"]
 mod body;
+#[path = "investigation/actionability.rs"]
+mod actionability;
 #[path = "investigation/candidate_relevance.rs"]
 mod candidate_relevance;
 #[path = "investigation/cluster.rs"]
@@ -22,8 +24,12 @@ mod constraint_items;
 mod constraint_relevance;
 #[path = "investigation/constraints.rs"]
 mod constraints;
+#[path = "investigation/contract_trace.rs"]
+mod contract_trace;
 #[path = "investigation/divergence.rs"]
 mod divergence;
+#[path = "investigation/generated_lineage.rs"]
+mod generated_lineage;
 #[path = "investigation/path_helpers.rs"]
 pub(crate) mod path_helpers;
 #[path = "investigation/route.rs"]
@@ -35,8 +41,8 @@ use anyhow::Result;
 
 use super::Engine;
 use crate::model::{
-    ConceptClusterResult, ConceptSeedKind, ConstraintEvidenceResult, DivergenceReport,
-    RouteTraceResult, SymbolBodyResult,
+    ConceptClusterResult, ConceptSeedKind, ConstraintEvidenceResult, ContractTraceResult,
+    DivergenceReport, RouteTraceResult, SymbolBodyResult,
 };
 
 pub(crate) use shared_snapshot::{
@@ -87,6 +93,15 @@ impl Engine {
         limit: usize,
     ) -> Result<DivergenceReport> {
         divergence::divergence_report(self, seed, seed_kind, limit)
+    }
+
+    pub fn contract_trace(
+        &self,
+        seed: &str,
+        seed_kind: ConceptSeedKind,
+        limit: usize,
+    ) -> Result<ContractTraceResult> {
+        contract_trace::contract_trace(self, seed, seed_kind, limit)
     }
 }
 

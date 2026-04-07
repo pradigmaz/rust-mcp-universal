@@ -5,8 +5,8 @@ use time::OffsetDateTime;
 
 use crate::model::{
     AgentIntentMode, BudgetInfo, ConfidenceInfo, ContextSelection, IndexTelemetry,
-    InvestigationSummary, ModeResolutionSource, PrivacyMode, QueryReport,
-    RankExplainBreakdown, SearchHit, SelectedContextItem,
+    InvestigationSummary, ModeResolutionSource, PrivacyMode, QueryReport, RankExplainBreakdown,
+    SearchHit, SelectedContextItem,
 };
 use crate::vector_rank::SemanticRerankOutcome;
 use crate::{sanitize_path_text, sanitize_value_for_privacy};

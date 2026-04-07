@@ -39,7 +39,7 @@ pub(super) fn collect_expanded_candidates(
             semantic_fail_mode: SemanticFailMode::FailOpen,
             privacy_mode: PrivacyMode::Off,
             context_mode: None,
-        agent_intent_mode: None,
+            agent_intent_mode: None,
         })?;
         semantic_outcome = Some(outcome);
         let mut added_semantic = false;

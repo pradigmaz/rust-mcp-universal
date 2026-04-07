@@ -119,6 +119,10 @@ fn classify_sensitive_key(key: &str) -> Option<SensitiveKind> {
         || lowered == "normalized_text"
         || lowered == "evidence"
         || lowered == "summary"
+        || lowered == "reason"
+        || lowered == "detail"
+        || lowered == "rank_reason"
+        || lowered == "checks"
         || lowered == "followups"
         || lowered == "recommended_followups"
         || lowered == "shared_evidence"
@@ -392,5 +396,64 @@ mod tests {
             payload["investigation_hints"]["followups"][0],
             json!("<redacted-content>")
         );
+    }
+    #[test]
+    fn json_sanitization_scrubs_contract_trace_actionability_and_lineage_fields() {
+        let mut payload = json!({
+            "chain": [
+                {
+                    "anchor": {
+                        "path": "src/generated/origin_client.generated.ts",
+                        "language": "typescript"
+                    },
+                    "evidence": "generated client consumes upstream contract",
+                    "rank_reason": "generated targets are downgraded below source of truth",
+                    "generated_lineage": {
+                        "status": "generated",
+                        "detection_basis": "path_convention",
+                        "source_of_truth_path": "src/services/origin_service.rs",
+                        "source_of_truth_kind": "upstream_contract",
+                        "confidence": 0.92
+                    }
+                }
+            ],
+            "contract_breaks": [
+                {
+                    "reason": "consumer chain ended before test coverage",
+                    "last_resolved_path": "frontend/src/origin_page.tsx"
+                }
+            ],
+            "actionability": {
+                "recommended_target_path": "src/services/origin_service.rs",
+                "reason": "edit source of truth instead of generated client",
+                "next_steps": [
+                    {
+                        "kind": "edit_source_of_truth",
+                        "detail": "update origin service contract before regenerating client"
+                    }
+                ],
+                "related_tests": ["tests/test_origin_resolution.py"],
+                "adjacent_paths": ["frontend/src/origin_page.tsx"],
+                "checks": ["cargo test -p rmu-core contract_trace -- --nocapture"],
+                "rollback_sensitive_paths": ["migrations/001_create_origins.sql"],
+                "manual_review_required": true
+            }
+        });
+
+        sanitize_value_for_privacy(PrivacyMode::Mask, &mut payload);
+
+        assert_eq!(payload["chain"][0]["anchor"]["path"], json!("<masked:origin_client.generated.ts>"));
+        assert_eq!(payload["chain"][0]["evidence"], json!("<redacted-content>"));
+        assert_eq!(payload["chain"][0]["rank_reason"], json!("<redacted-content>"));
+        assert_eq!(payload["chain"][0]["generated_lineage"]["source_of_truth_path"], json!("<masked:origin_service.rs>"));
+        assert_eq!(payload["contract_breaks"][0]["reason"], json!("<redacted-content>"));
+        assert_eq!(payload["contract_breaks"][0]["last_resolved_path"], json!("<masked:origin_page.tsx>"));
+        assert_eq!(payload["actionability"]["recommended_target_path"], json!("<masked:origin_service.rs>"));
+        assert_eq!(payload["actionability"]["reason"], json!("<redacted-content>"));
+        assert_eq!(payload["actionability"]["next_steps"][0]["detail"], json!("<redacted-content>"));
+        assert_eq!(payload["actionability"]["related_tests"][0], json!("<masked:test_origin_resolution.py>"));
+        assert_eq!(payload["actionability"]["adjacent_paths"][0], json!("<masked:origin_page.tsx>"));
+        assert_eq!(payload["actionability"]["checks"][0], json!("<redacted-content>"));
+        assert_eq!(payload["actionability"]["rollback_sensitive_paths"][0], json!("<masked:001_create_origins.sql>"));
     }
 }

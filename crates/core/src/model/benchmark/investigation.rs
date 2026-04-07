@@ -11,6 +11,7 @@ pub enum InvestigationBenchmarkTool {
     RouteTrace,
     ConstraintEvidence,
     ConceptCluster,
+    ContractTrace,
     DivergenceReport,
 }
 
@@ -224,6 +225,8 @@ pub struct InvestigationThresholds {
     pub constraint_evidence_case_pass_rate: f32,
     #[serde(default = "default_concept_cluster_case_pass_rate")]
     pub concept_cluster_case_pass_rate: f32,
+    #[serde(default = "default_contract_trace_case_pass_rate")]
+    pub contract_trace_case_pass_rate: f32,
     #[serde(default = "default_divergence_case_pass_rate")]
     pub divergence_case_pass_rate: f32,
     #[serde(default = "default_max_latency_p95_ms")]
@@ -306,6 +309,10 @@ const fn default_constraint_evidence_case_pass_rate() -> f32 {
 
 const fn default_concept_cluster_case_pass_rate() -> f32 {
     0.85
+}
+
+const fn default_contract_trace_case_pass_rate() -> f32 {
+    0.80
 }
 
 const fn default_divergence_case_pass_rate() -> f32 {

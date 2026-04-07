@@ -242,6 +242,78 @@ fn agent_bootstrap_auto_index_uses_mixed_profile_and_skips_docs() {
 }
 
 #[test]
+fn agent_bootstrap_profiles_expose_surface_and_degradation_contracts() {
+    let project_dir = temp_dir("rmu-mcp-tests-bootstrap-profile-contract");
+    fs::create_dir_all(project_dir.join("src")).expect("create src");
+    fs::write(
+        project_dir.join("src/lib.rs"),
+        "pub fn bootstrap_profile_contract() -> &'static str { \"ok\" }\n",
+    )
+    .expect("write src");
+
+    let cases = [
+        ("fast", false, false, true),
+        ("investigation_summary", false, true, true),
+        ("report", true, false, true),
+        ("full", true, true, false),
+    ];
+
+    for (profile, expect_report, expect_summary, expect_profile_limited) in cases {
+        let mut state = state_for(project_dir.clone(), Some(project_dir.join(".rmu/index.db")));
+        let result = handle_tool_call(
+            Some(json!({
+                "name": "agent_bootstrap",
+                "arguments": {
+                    "query": "bootstrap_profile_contract",
+                    "profile": profile,
+                    "limit": 5,
+                    "auto_index": true
+                }
+            })),
+            &mut state,
+        )
+        .expect("agent_bootstrap profile run should succeed");
+
+        assert_eq!(result["isError"], json!(false));
+        assert_eq!(result["structuredContent"]["profile"], json!(profile));
+        let bundle = &result["structuredContent"]["query_bundle"];
+        assert_eq!(bundle["report"].is_object(), expect_report);
+        assert_eq!(bundle["investigation_summary"].is_object(), expect_summary);
+        let degradation = result["structuredContent"]["degradation_reasons"]
+            .as_array()
+            .expect("degradation_reasons array")
+            .iter()
+            .filter_map(|value| value.as_str())
+            .collect::<Vec<_>>();
+        assert_eq!(degradation.contains(&"profile_limited"), expect_profile_limited);
+        let deepen_available = result["structuredContent"]["deepen_available"]
+            .as_bool()
+            .expect("deepen_available bool");
+        if expect_profile_limited {
+            assert!(deepen_available);
+            assert!(
+                result["structuredContent"]["deepen_hint"]
+                    .as_str()
+                    .is_some_and(|hint| hint.contains("profile=full"))
+            );
+        } else {
+            assert_eq!(deepen_available, !degradation.is_empty());
+            if degradation.is_empty() {
+                assert!(result["structuredContent"]["deepen_hint"].is_null());
+            } else {
+                assert!(
+                    result["structuredContent"]["deepen_hint"]
+                        .as_str()
+                        .is_some_and(|hint| !hint.contains("profile=full"))
+                );
+            }
+        }
+    }
+
+    let _ = fs::remove_dir_all(project_dir);
+}
+
+#[test]
 fn query_tools_require_non_empty_index_by_default() {
     let project_dir = temp_dir("rmu-mcp-tests-no-auto-index-default");
     fs::create_dir_all(project_dir.join("src")).expect("create temp dir");

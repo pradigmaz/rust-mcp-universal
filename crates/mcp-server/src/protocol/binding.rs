@@ -3,9 +3,8 @@ use std::path::PathBuf;
 
 use serde_json::{Map, Value};
 
-use crate::state::{
-    ProjectBinding, ProjectBindingSource, ServerState, normalize_existing_directory,
-};
+use crate::path_input::resolve_existing_directory_input;
+use crate::state::{ProjectBinding, ProjectBindingSource, ServerState};
 
 pub(super) fn apply_initialize_binding(params: Option<&Value>, state: &mut ServerState) {
     if matches!(
@@ -40,7 +39,7 @@ pub(super) fn apply_initialize_binding(params: Option<&Value>, state: &mut Serve
     if let Some(project_path) = object
         .get("projectPath")
         .and_then(Value::as_str)
-        .and_then(resolve_existing_directory)
+        .and_then(resolve_existing_directory_input)
     {
         state.bind_project_path(project_path, ProjectBindingSource::InitializeProjectPath);
     }
@@ -77,7 +76,7 @@ fn extend_with_root_collection(candidates: &mut BTreeSet<PathBuf>, value: Option
     for item in items {
         match item {
             Value::String(raw) => {
-                if let Some(project_path) = resolve_existing_directory(raw) {
+                if let Some(project_path) = resolve_existing_directory_input(raw) {
                     candidates.insert(project_path);
                 }
             }
@@ -86,7 +85,7 @@ fn extend_with_root_collection(candidates: &mut BTreeSet<PathBuf>, value: Option
                     if let Some(project_path) = object
                         .get(key)
                         .and_then(Value::as_str)
-                        .and_then(resolve_existing_directory)
+                        .and_then(resolve_existing_directory_input)
                     {
                         candidates.insert(project_path);
                     }
@@ -101,59 +100,7 @@ fn extend_with_root_field(candidates: &mut BTreeSet<PathBuf>, value: Option<&Val
     let Some(raw) = value.and_then(Value::as_str) else {
         return;
     };
-    if let Some(project_path) = resolve_existing_directory(raw) {
+    if let Some(project_path) = resolve_existing_directory_input(raw) {
         candidates.insert(project_path);
     }
-}
-
-fn resolve_existing_directory(raw: &str) -> Option<PathBuf> {
-    let path = parse_path_like(raw)?;
-    normalize_existing_directory(&path)
-}
-
-fn parse_path_like(raw: &str) -> Option<PathBuf> {
-    let trimmed = raw.trim();
-    if trimmed.is_empty() {
-        return None;
-    }
-    if let Some(path) = parse_file_uri(trimmed) {
-        return Some(path);
-    }
-    Some(PathBuf::from(trimmed))
-}
-
-fn parse_file_uri(raw: &str) -> Option<PathBuf> {
-    let remainder = raw.strip_prefix("file://")?;
-    let decoded = percent_decode(remainder);
-    let normalized = if cfg!(windows) {
-        let without_drive_prefix =
-            if decoded.starts_with('/') && decoded.as_bytes().get(2) == Some(&b':') {
-                decoded[1..].to_string()
-            } else {
-                decoded
-            };
-        without_drive_prefix.replace('/', "\\")
-    } else {
-        decoded
-    };
-    Some(PathBuf::from(normalized))
-}
-
-fn percent_decode(raw: &str) -> String {
-    let bytes = raw.as_bytes();
-    let mut index = 0usize;
-    let mut decoded = Vec::with_capacity(raw.len());
-    while index < bytes.len() {
-        if bytes[index] == b'%' && index + 2 < bytes.len() {
-            let pair = &raw[index + 1..index + 3];
-            if let Ok(value) = u8::from_str_radix(pair, 16) {
-                decoded.push(value);
-                index += 3;
-                continue;
-            }
-        }
-        decoded.push(bytes[index]);
-        index += 1;
-    }
-    String::from_utf8_lossy(&decoded).into_owned()
 }

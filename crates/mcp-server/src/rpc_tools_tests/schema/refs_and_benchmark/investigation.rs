@@ -316,6 +316,19 @@ fn investigation_result_schemas_accept_expected_shapes_and_reject_invalid_values
         "unknowns": [],
         "missing_evidence": ["missing db constraint"],
         "recommended_followups": ["Collect additional evidence for unresolved gaps before treating this divergence as a bug."],
+        "actionability": {
+            "recommended_target_path": "src/services/origin_service.rs",
+            "recommended_target_role": "service",
+            "reason": "highest_confidence_contract_target",
+            "next_steps": [
+                {"kind": "inspect_primary_target", "detail": "Inspect and update primary service target"}
+            ],
+            "related_tests": [],
+            "adjacent_paths": ["src/validators/origin_validator.rs"],
+            "checks": ["review_adjacent_impact"],
+            "rollback_sensitive_paths": [],
+            "manual_review_required": false
+        },
         "overall_confidence": 0.85,
         "capability_status": "supported",
         "unsupported_sources": []
@@ -333,5 +346,71 @@ fn investigation_result_schemas_accept_expected_shapes_and_reject_invalid_values
         }),
         &divergence_envelope,
         "investigation.divergence.envelope.valid",
+    );
+}
+
+#[test]
+fn contract_trace_schema_accepts_expected_shape_and_envelope() {
+    let schema = load_schema("contract_trace.schema.json");
+    let envelope = load_schema("mcp_contract_trace_tool_result.schema.json");
+
+    validate_schema_keyword_coverage(&schema, "investigation.contract_trace.schema")
+        .expect("keyword coverage");
+    validate_schema_keyword_coverage(&envelope, "investigation.contract_trace.envelope")
+        .expect("keyword coverage");
+
+    let payload = json!({
+        "seed": {"seed": "origin_resolution", "seed_kind": "query"},
+        "chain": [
+            {
+                "role": "generated_client",
+                "anchor": {"path": "src/generated/origin_client.generated.ts", "language": "typescript"},
+                "source_kind": "api_client",
+                "evidence": "entry_anchor",
+                "confidence": 0.8,
+                "generated_lineage": {
+                    "status": "generated",
+                    "detection_basis": "path_convention",
+                    "source_of_truth_path": "src/services/origin_service.rs",
+                    "source_of_truth_kind": "upstream_contract",
+                    "confidence": 0.9
+                },
+                "rank_score": 0.4,
+                "rank_reason": "route_segment_role_priority"
+            }
+        ],
+        "contract_breaks": [
+            {
+                "expected_role": "test",
+                "reason": "related_tests_not_found"
+            }
+        ],
+        "actionability": {
+            "recommended_target_path": "src/services/origin_service.rs",
+            "recommended_target_role": "schema_or_model",
+            "reason": "generated_artifact_redirected_to_source_of_truth",
+            "next_steps": [
+                {"kind": "inspect_primary_target", "detail": "Inspect source of truth"}
+            ],
+            "related_tests": ["tests/test_origin_resolution.py"],
+            "adjacent_paths": ["src/generated/origin_client.generated.ts"],
+            "checks": ["run_related_tests"],
+            "rollback_sensitive_paths": ["migrations/001_create_origins.sql"],
+            "manual_review_required": true
+        },
+        "manual_review_required": true,
+        "capability_status": "partial",
+        "unsupported_sources": [],
+        "confidence": 0.82
+    });
+    assert_required_structure(&payload, &schema, "investigation.contract_trace.valid");
+    assert_required_structure(
+        &json!({
+            "content": [{"type": "text", "text": "ok"}],
+            "structuredContent": payload,
+            "isError": false
+        }),
+        &envelope,
+        "investigation.contract_trace.envelope.valid",
     );
 }

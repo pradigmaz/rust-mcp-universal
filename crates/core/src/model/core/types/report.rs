@@ -123,7 +123,7 @@ pub struct QueryReport {
     pub confidence: ConfidenceInfo,
     pub gaps: Vec<String>,
     pub index_telemetry: IndexTelemetry,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub degradation_reasons: Vec<DegradationReason>,
     #[serde(default)]
     pub deepen_available: bool,

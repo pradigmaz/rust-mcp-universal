@@ -2,6 +2,7 @@ mod agent;
 mod context;
 mod index;
 mod investigation;
+mod investigation_contract;
 mod investigation_cluster;
 mod investigation_embed;
 mod navigation;
@@ -26,6 +27,11 @@ pub use investigation::{
     DivergenceAxis, DivergenceReport, DivergenceSignal, InvestigationAnchor, RouteGap, RoutePath,
     RouteSegment, RouteSegmentKind, RouteTraceResult, SourceSpan, SymbolBodyAmbiguityStatus,
     SymbolBodyItem, SymbolBodyResolutionKind, SymbolBodyResult, SymbolBodyTimings,
+};
+pub use investigation_contract::{
+    Actionability, ActionabilityStep, ContractBreak, ContractTraceLink, ContractTraceResult,
+    ContractTraceRole, GeneratedLineage, GeneratedLineageBasis, GeneratedLineageStatus,
+    GeneratedSourceOfTruthKind,
 };
 pub use investigation_cluster::{
     ConceptClusterExpansionPolicy, ConceptClusterResult, ConceptClusterSummary,

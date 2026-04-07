@@ -51,6 +51,17 @@ pub(crate) fn run_divergence_report(
     })
 }
 
+pub(crate) fn run_contract_trace(
+    engine: &Engine,
+    json: bool,
+    args: InvestigationArgs,
+) -> Result<()> {
+    run_investigation(engine, json, args, |engine, args| {
+        serde_json::to_value(engine.contract_trace(&args.seed, args.seed_kind, args.limit)?)
+            .map_err(Into::into)
+    })
+}
+
 fn run_investigation(
     engine: &Engine,
     json: bool,

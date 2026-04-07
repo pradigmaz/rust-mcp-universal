@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use super::{ConceptSeed, ConstraintEvidence, InvestigationAnchor, RouteSegment};
+use super::{
+    ConceptSeed, ConstraintEvidence, GeneratedLineage, InvestigationAnchor, RouteSegment,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
@@ -38,6 +40,8 @@ pub struct ImplementationVariant {
     pub entry_anchor: InvestigationAnchor,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub body_anchor: Option<InvestigationAnchor>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub generated_lineage: Option<GeneratedLineage>,
     pub route: Vec<RouteSegment>,
     pub constraints: Vec<ConstraintEvidence>,
     pub related_tests: Vec<String>,

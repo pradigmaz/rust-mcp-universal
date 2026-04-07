@@ -37,6 +37,9 @@ pub(super) fn evaluate_thresholds(
             InvestigationBenchmarkTool::ConceptCluster => {
                 Some(thresholds.concept_cluster_case_pass_rate)
             }
+            InvestigationBenchmarkTool::ContractTrace => {
+                Some(thresholds.contract_trace_case_pass_rate)
+            }
             InvestigationBenchmarkTool::DivergenceReport => {
                 Some(thresholds.divergence_case_pass_rate)
             }

@@ -2,15 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "ConceptClusterResult",
   "type": "object",
-  "required": [
-    "seed",
-    "variants",
-    "cluster_summary",
-    "gaps",
-    "capability_status",
-    "unsupported_sources",
-    "confidence"
-  ],
+  "required": ["seed", "variants", "cluster_summary", "gaps", "capability_status", "unsupported_sources", "confidence"],
   "properties": {
     "seed": {
       "type": "object",
@@ -24,15 +16,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "id",
-          "entry_anchor",
-          "route",
-          "constraints",
-          "related_tests",
-          "confidence",
-          "gaps"
-        ],
+        "required": ["id", "entry_anchor", "route", "constraints", "related_tests", "confidence", "gaps"],
         "properties": {
           "id": { "type": "string" },
           "entry_anchor": {
@@ -59,19 +43,22 @@
               "column": { "type": "integer", "minimum": 0 }
             }
           },
+          "generated_lineage": {
+            "type": "object",
+            "required": ["status", "detection_basis", "confidence"],
+            "properties": {
+              "status": { "type": "string" },
+              "detection_basis": { "type": "string" },
+              "source_of_truth_path": { "type": "string" },
+              "source_of_truth_kind": { "type": "string" },
+              "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          },
           "route": {
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "kind",
-                "path",
-                "language",
-                "evidence",
-                "relation_kind",
-                "source_kind",
-                "score"
-              ],
+              "required": ["kind", "path", "language", "evidence", "relation_kind", "source_kind", "score"],
               "properties": {
                 "kind": { "type": "string" },
                 "path": { "type": "string" },
@@ -98,14 +85,7 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "kind",
-                "strength",
-                "scope",
-                "source_path",
-                "confidence",
-                "normalized_text"
-              ],
+              "required": ["kind", "strength", "scope", "source_path", "confidence", "normalized_text"],
               "properties": {
                 "kind": { "type": "string" },
                 "strength": { "type": "string" },
@@ -127,10 +107,7 @@
               }
             }
           },
-          "related_tests": {
-            "type": "array",
-            "items": { "type": "string" }
-          },
+          "related_tests": { "type": "array", "items": { "type": "string" } },
           "lexical_proximity": { "type": "number", "minimum": 0, "maximum": 1 },
           "semantic_proximity": { "type": "number", "minimum": 0, "maximum": 1 },
           "route_centrality": { "type": "number", "minimum": 0, "maximum": 1 },
@@ -161,10 +138,7 @@
             }
           },
           "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
-          "gaps": {
-            "type": "array",
-            "items": { "type": "string" }
-          }
+          "gaps": { "type": "array", "items": { "type": "string" } }
         }
       }
     },
@@ -173,67 +147,29 @@
       "required": ["variant_count", "languages", "route_kinds"],
       "properties": {
         "variant_count": { "type": "integer", "minimum": 0 },
-        "languages": {
-          "type": "array",
-          "items": { "type": "string" }
-        },
-        "route_kinds": {
-          "type": "array",
-          "items": { "type": "string" }
-        },
-        "expansion_sources": {
-          "type": "array",
-          "items": { "type": "string" }
-        },
+        "languages": { "type": "array", "items": { "type": "string" } },
+        "route_kinds": { "type": "array", "items": { "type": "string" } },
+        "expansion_sources": { "type": "array", "items": { "type": "string" } },
         "expansion_policy": {
           "type": "object",
-          "required": [
-            "initial_sources",
-            "enrichment_sources",
-            "feedback_sources",
-            "route_trace_reused",
-            "candidate_pool_limit_multiplier",
-            "dedup_unit",
-            "tie_break_order"
-          ],
+          "required": ["initial_sources", "enrichment_sources", "feedback_sources", "route_trace_reused", "candidate_pool_limit_multiplier", "dedup_unit", "tie_break_order"],
           "properties": {
-            "initial_sources": {
-              "type": "array",
-              "items": { "type": "string" }
-            },
-            "enrichment_sources": {
-              "type": "array",
-              "items": { "type": "string" }
-            },
-            "feedback_sources": {
-              "type": "array",
-              "items": { "type": "string" }
-            },
+            "initial_sources": { "type": "array", "items": { "type": "string" } },
+            "enrichment_sources": { "type": "array", "items": { "type": "string" } },
+            "feedback_sources": { "type": "array", "items": { "type": "string" } },
             "route_trace_reused": { "type": "boolean" },
-            "candidate_pool_limit_multiplier": {
-              "type": "integer",
-              "minimum": 1
-            },
+            "candidate_pool_limit_multiplier": { "type": "integer", "minimum": 1 },
             "dedup_unit": { "type": "string" },
-            "tie_break_order": {
-              "type": "array",
-              "items": { "type": "string" }
-            }
+            "tie_break_order": { "type": "array", "items": { "type": "string" } }
           }
         },
         "cutoff_policy": { "type": "string" },
         "dedup_policy": { "type": "string" }
       }
     },
-    "gaps": {
-      "type": "array",
-      "items": { "type": "string" }
-    },
+    "gaps": { "type": "array", "items": { "type": "string" } },
     "capability_status": { "type": "string" },
-    "unsupported_sources": {
-      "type": "array",
-      "items": { "type": "string" }
-    },
+    "unsupported_sources": { "type": "array", "items": { "type": "string" } },
     "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
   }
 }

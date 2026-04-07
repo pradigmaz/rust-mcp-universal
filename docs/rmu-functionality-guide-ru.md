@@ -74,6 +74,84 @@
 - где лежат главные точки входа
 - с какого места разумно начинать разбор
 
+### Agent-facing contract: modes, provenance, degradation
+
+`agent_bootstrap` и `query_report` уже не только heuristic helpers. У них есть явный agent-facing contract.
+
+Что surface обещает наружу:
+
+- `resolved_mode` - какой intent mode реально сработал
+- `mode_source` - откуда он взялся: `explicit`, `inferred`, `default`
+- `provenance` - canonical vocabulary для происхождения сигнала
+- `degradation_reasons` - machine-readable причины, почему surface что-то урезал, пропустил или отдал fallback
+- `deepen_available` и `deepen_hint` - явный путь, как углубить ответ
+
+#### Intent modes
+
+- `entrypoint_map`
+  - Обещание: показать entrypoints, API boundary и ближайший service layer.
+  - Surface держит видимыми маршруты, handlers, entrypoint-файлы, а support/docs artifacts не должны всплывать первыми.
+- `test_map`
+  - Обещание: держать рядом test surface и исполнимое покрытие вокруг темы.
+  - Surface поднимает tests рядом с feature/service/API, а не только production код.
+- `review_prep`
+  - Обещание: собрать cross-layer поверхность перед review или change-impact разбором.
+  - Surface тянет backend/frontend/database/tests и не ограничивается одним слоем.
+- `api_contract_map`
+  - Обещание: подсветить request/response boundary, routes/endpoints и соседний service contract.
+  - Surface приоритизирует API- и schema-adjacent точки, а не произвольные внутренние модули.
+- `runtime_surface`
+  - Обещание: показать runtime actors и execution surface.
+  - Surface держит видимыми runtime/module/mixin/hook/worker-like файлы.
+- `refactor_surface`
+  - Обещание: показать зоны, где change-impact и refactor risk будут максимальны.
+  - Surface тянет service/domain/orchestration hubs и соседние tests, а не только entrypoints.
+
+#### Canonical provenance vocabulary
+
+- `basis`
+  - `indexed`, `preview_fallback`, `graph_derived`, `heuristic`, `mixed`
+- `derivation`
+  - имя surface, который собрал итоговый вывод, например `query_report`, `agent_query_bundle`, `investigation_summary`
+- `freshness`
+  - `index_snapshot`, `live_read`, `unknown`
+- `strength`
+  - `strong`, `moderate`, `weak`, `fallback_only`
+- `reasons`
+  - короткие machine-readable markers, которые объясняют, почему provenance именно такой
+
+Эта vocabulary считается canonical. Новые agent-facing surfaces должны переиспользовать её, а не заводить локальные ad-hoc поля вроде собственного `source_kind + confidence + freshness` набора без маппинга.
+
+#### Bootstrap profiles and degradation contract
+
+- `fast`
+  - Default cheap surface.
+  - Даёт `brief + hits + context`, но не включает report и investigation summary.
+- `investigation_summary`
+  - Даёт bootstrap surface плюс отдельный embedded investigation summary.
+- `report`
+  - Даёт bootstrap surface плюс full `query_report`.
+- `full`
+  - Даёт и report, и отдельный investigation summary.
+
+Expected degradation vocabulary:
+
+- `semantic_fail_open`
+- `semantic_low_signal_skip`
+- `chunk_preview_fallback`
+- `budget_truncated`
+- `profile_limited`
+- `unsupported_sources_present`
+
+Expected deepen path:
+
+- если причина в `profile_limited`, canonical hint - rerun `agent_bootstrap` с `profile=full`
+- если причина в budget, canonical hint - поднять `max_chars` или `max_tokens`
+- если причина в weak/low-signal semantic path, canonical hint - сузить query или передать explicit `mode`
+- если причина в preview fallback или unsupported sources, canonical hint - обновить индекс или перейти в deeper investigation tools
+
+Важно: в текущем public contract деградация описана через `profile`, budget, semantic/fallback и unsupported-sources причины. Отдельный transport-level timeout policy не оформлен как самостоятельный внешний knob и не должен маскироваться ad-hoc полями.
+
 ## 3. Поиск
 
 Это слой для поиска логики и связанных фрагментов кода.
@@ -192,6 +270,15 @@ Benchmark нужен, чтобы:
 - нужен разбор одного механизма - investigation surface
 - нужен приоритетный список проблемных зон - quality surface
 - нужен before/after след по debt wave и regression gate - `quality-snapshot`
+
+## Contract maintenance
+
+Если меняется semantics у `mode`, `profile`, canonical provenance vocabulary или `degradation_reasons`, надо обновлять:
+
+- `docs/rmu-functionality-guide-ru.md`
+- summary-описание surface в `README.md`
+
+В этой волне `README.md` намеренно не менялся по прямому ограничению задачи, но trigger на его синхронизацию остаётся обязательным.
 
 ## Чего RMU не делает
 

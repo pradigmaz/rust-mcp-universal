@@ -1,9 +1,9 @@
 use anyhow::{Result, anyhow};
 use rmu_core::{
     AgentIntentMode, BootstrapProfile, ConceptSeedKind, ContextMode, Engine, IndexProfile,
-    IndexingOptions, MigrationMode, PrivacyMode, QueryBenchmarkOptions, QueryOptions,
-    RolloutPhase, SemanticFailMode, decide_semantic_rollout, sanitize_path_text,
-    sanitize_query_text, sanitize_value_for_privacy,
+    IndexingOptions, MigrationMode, PrivacyMode, QueryBenchmarkOptions, QueryOptions, RolloutPhase,
+    SemanticFailMode, decide_semantic_rollout, sanitize_path_text, sanitize_query_text,
+    sanitize_value_for_privacy,
 };
 use std::path::PathBuf;
 
@@ -46,8 +46,8 @@ pub(crate) use agent::run_agent;
 pub(crate) use benchmark::run_query_benchmark;
 pub(crate) use context::{run_context, run_context_pack};
 pub(crate) use investigation::{
-    run_concept_cluster, run_constraint_evidence, run_divergence_report, run_route_trace,
-    run_symbol_body,
+    run_concept_cluster, run_constraint_evidence, run_contract_trace, run_divergence_report,
+    run_route_trace, run_symbol_body,
 };
 pub(crate) use investigation_benchmark::run_investigation_benchmark;
 pub(crate) use navigation::{

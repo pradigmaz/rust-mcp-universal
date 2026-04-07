@@ -12,13 +12,12 @@ use crate::engine::Engine;
 use crate::model::{
     IndexingOptions, QualityDeltaSummary, QualityHotspotAggregation, QualityHotspotBucket,
     QualityHotspotsOptions, QualityHotspotsResult, QualityHotspotsSortBy,
-    QualityProjectArtifactPaths,
-    QualityProjectDeltaReport, QualityProjectGateStatus, QualityProjectHotspotDelta,
-    QualityProjectSnapshotCapture, QualityProjectSnapshotCompareAgainst,
-    QualityProjectSnapshotKind, QualityProjectSnapshotOptions, QualityProjectSnapshotReport,
-    QualityProjectTopHotFiles, QualityProjectTopHotspotBuckets, QualityStatus,
-    RuleViolationsOptions, RuleViolationsResult, RuleViolationsSortBy,
-    WorkspaceBrief,
+    QualityProjectArtifactPaths, QualityProjectDeltaReport, QualityProjectGateStatus,
+    QualityProjectHotspotDelta, QualityProjectSnapshotCapture,
+    QualityProjectSnapshotCompareAgainst, QualityProjectSnapshotKind,
+    QualityProjectSnapshotOptions, QualityProjectSnapshotReport, QualityProjectTopHotFiles,
+    QualityProjectTopHotspotBuckets, QualityStatus, RuleViolationsOptions, RuleViolationsResult,
+    RuleViolationsSortBy, WorkspaceBrief,
 };
 
 const FULL_SCAN_LIMIT: usize = 100_000;
@@ -35,7 +34,10 @@ pub(super) fn capture_quality_project_snapshot(
 
     if options.auto_index {
         let _ = engine.index_path_with_options(&IndexingOptions {
-            exclude_paths: snapshot_exclude_paths(&engine.project_root, options.output_root.as_deref()),
+            exclude_paths: snapshot_exclude_paths(
+                &engine.project_root,
+                options.output_root.as_deref(),
+            ),
             ..IndexingOptions::default()
         })?;
     } else if !engine.db_path.exists() {
@@ -75,43 +77,44 @@ pub(super) fn capture_quality_project_snapshot(
         refresh_performed,
     )?;
 
-    let delta = baseline_snapshot.as_ref().map(|baseline| {
-        build_delta_report(baseline, &snapshot, options.compare_against)
-    });
+    let delta = baseline_snapshot
+        .as_ref()
+        .map(|baseline| build_delta_report(baseline, &snapshot, options.compare_against));
 
     let mut artifacts = QualityProjectArtifactPaths::default();
     if options.persist_artifacts {
-        if let Some(snapshot_root) =
-            snapshot_output_root(
-                &engine.project_root,
-                options.output_root.as_deref(),
-                options.snapshot_kind,
-                options.wave_id.as_deref(),
-            )?
-        {
+        if let Some(snapshot_root) = snapshot_output_root(
+            &engine.project_root,
+            options.output_root.as_deref(),
+            options.snapshot_kind,
+            options.wave_id.as_deref(),
+        )? {
             persist_snapshot_artifacts(&snapshot_root, &snapshot)?;
             artifacts.snapshot_root = Some(snapshot_root.display().to_string());
-            artifacts.snapshot_report =
-                Some(snapshot_root.join(SNAPSHOT_REPORT_NAME).display().to_string());
+            artifacts.snapshot_report = Some(
+                snapshot_root
+                    .join(SNAPSHOT_REPORT_NAME)
+                    .display()
+                    .to_string(),
+            );
         }
     }
 
     if let Some(delta_report) = &delta {
         if options.persist_artifacts {
-            if let Some(delta_path) =
-                persist_delta_artifact(
-                    &engine.project_root,
-                    options.output_root.as_deref(),
-                    options.wave_id.as_deref(),
-                    delta_report,
-                )?
-            {
+            if let Some(delta_path) = persist_delta_artifact(
+                &engine.project_root,
+                options.output_root.as_deref(),
+                options.wave_id.as_deref(),
+                delta_report,
+            )? {
                 artifacts.delta_report = Some(delta_path.display().to_string());
             }
         }
     }
 
-    if options.promote_self_baseline || options.snapshot_kind == QualityProjectSnapshotKind::Baseline
+    if options.promote_self_baseline
+        || options.snapshot_kind == QualityProjectSnapshotKind::Baseline
     {
         let baseline_path = persist_self_baseline_artifacts(&engine.project_root, &snapshot)?;
         artifacts.baseline_summary = Some(baseline_path.display().to_string());
@@ -249,11 +252,13 @@ fn build_delta_report(
         compare_against,
         baseline_generated_at_utc: baseline.generated_at_utc.clone(),
         candidate_generated_at_utc: candidate.generated_at_utc.clone(),
-        total_violations_delta: candidate.total_violations as i64 - baseline.total_violations as i64,
+        total_violations_delta: candidate.total_violations as i64
+            - baseline.total_violations as i64,
         violating_files_delta: candidate.violating_files as i64 - baseline.violating_files as i64,
         suppressed_violations_delta: candidate.suppressed_violations as i64
             - baseline.suppressed_violations as i64,
-        total_non_empty_lines_delta: candidate.total_non_empty_lines - baseline.total_non_empty_lines,
+        total_non_empty_lines_delta: candidate.total_non_empty_lines
+            - baseline.total_non_empty_lines,
         total_size_bytes_delta: candidate.total_size_bytes - baseline.total_size_bytes,
         new_violations,
         resolved_violations,
@@ -262,7 +267,10 @@ fn build_delta_report(
             &baseline.directory_hotspots,
             &candidate.directory_hotspots,
         ),
-        module_hotspots: compare_hotspot_results(&baseline.module_hotspots, &candidate.module_hotspots),
+        module_hotspots: compare_hotspot_results(
+            &baseline.module_hotspots,
+            &candidate.module_hotspots,
+        ),
         gate_status: if regression_reasons.is_empty() {
             QualityProjectGateStatus::Ok
         } else {
@@ -318,7 +326,8 @@ fn compare_hotspot_results(
 
     let mut delta = QualityProjectHotspotDelta::default();
     for bucket in &candidate.buckets {
-        let current_delta = build_bucket_delta(bucket, baseline_buckets.remove(&bucket.bucket_id).as_ref());
+        let current_delta =
+            build_bucket_delta(bucket, baseline_buckets.remove(&bucket.bucket_id).as_ref());
         delta.new_violations += current_delta.new_violations;
         delta.resolved_violations += current_delta.resolved_violations;
         delta.risk_score_delta_total += current_delta.risk_score_delta;
@@ -465,10 +474,17 @@ fn persist_snapshot_artifacts(root: &Path, snapshot: &QualityProjectSnapshotRepo
         &snapshot.rule_violations_by_metric_duplicate_density_bps,
     )?;
     write_json(root.join("hotspots.file.json"), &snapshot.file_hotspots)?;
-    write_json(root.join("hotspots.directory.json"), &snapshot.directory_hotspots)?;
+    write_json(
+        root.join("hotspots.directory.json"),
+        &snapshot.directory_hotspots,
+    )?;
     write_json(root.join("hotspots.module.json"), &snapshot.module_hotspots)?;
-    fs::write(root.join("notes.md"), snapshot_notes(snapshot))
-        .with_context(|| format!("failed to write notes `{}`", root.join("notes.md").display()))?;
+    fs::write(root.join("notes.md"), snapshot_notes(snapshot)).with_context(|| {
+        format!(
+            "failed to write notes `{}`",
+            root.join("notes.md").display()
+        )
+    })?;
     Ok(())
 }
 
@@ -507,17 +523,27 @@ fn persist_self_baseline_artifacts(
     })?;
     let baseline_summary = baseline_root.join(BASELINE_SUMMARY_NAME);
     write_json(&baseline_summary, snapshot)?;
-    write_json(baseline_root.join("file-hotspots.json"), &snapshot.file_hotspots)?;
+    write_json(
+        baseline_root.join("file-hotspots.json"),
+        &snapshot.file_hotspots,
+    )?;
     write_json(
         baseline_root.join("directory-hotspots.json"),
         &snapshot.directory_hotspots,
     )?;
-    write_json(baseline_root.join("module-hotspots.json"), &snapshot.module_hotspots)?;
+    write_json(
+        baseline_root.join("module-hotspots.json"),
+        &snapshot.module_hotspots,
+    )?;
     Ok(baseline_summary)
 }
 
 fn load_self_baseline_snapshot(project_root: &Path) -> Result<QualityProjectSnapshotReport> {
-    load_snapshot_from_path(project_root.join("baseline/quality/self").join(BASELINE_SUMMARY_NAME))
+    load_snapshot_from_path(
+        project_root
+            .join("baseline/quality/self")
+            .join(BASELINE_SUMMARY_NAME),
+    )
 }
 
 fn load_latest_wave_before_snapshot(
@@ -653,10 +679,7 @@ fn snapshot_notes(snapshot: &QualityProjectSnapshotReport) -> String {
     )
 }
 
-fn violation_fingerprint(
-    path: &str,
-    violation: &crate::model::QualityViolationEntry,
-) -> String {
+fn violation_fingerprint(path: &str, violation: &crate::model::QualityViolationEntry) -> String {
     let location = violation
         .location
         .as_ref()

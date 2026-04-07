@@ -6,6 +6,7 @@ use crate::model::{
     DivergenceSignal, ImplementationVariant, RouteSegmentKind,
 };
 
+use super::actionability::build_actionability;
 use super::cluster::concept_cluster;
 use super::common::normalized_values;
 
@@ -85,6 +86,8 @@ pub(super) fn divergence_report_from_cluster(cluster: ConceptClusterResult) -> D
         &missing_evidence,
         &divergence_signals,
     );
+    let seed_path = (cluster.seed.seed_kind == ConceptSeedKind::Path)
+        .then(|| cluster.seed.seed.clone());
     DivergenceReport {
         surface_kind: SURFACE_KIND.to_string(),
         seed: cluster.seed,
@@ -98,7 +101,14 @@ pub(super) fn divergence_report_from_cluster(cluster: ConceptClusterResult) -> D
         shared_evidence,
         unknowns,
         missing_evidence: normalized_values(missing_evidence),
-        recommended_followups,
+        recommended_followups: recommended_followups.clone(),
+        actionability: build_actionability(
+            seed_path.as_deref(),
+            &cluster.variants,
+            &[],
+            &recommended_followups,
+            manual_review_required,
+        ),
         overall_confidence: cluster.confidence,
         capability_status: cluster.capability_status,
         unsupported_sources: cluster.unsupported_sources,

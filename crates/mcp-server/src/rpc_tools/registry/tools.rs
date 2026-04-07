@@ -229,6 +229,11 @@ pub(super) fn tools_list() -> Value {
                 investigation_schema()
             ),
             tool(
+                "contract_trace",
+                "Trace cross-layer contract roots, generated lineage, and actionable next steps for a conceptual seed",
+                investigation_schema()
+            ),
+            tool(
                 "divergence_report",
                 "Compare implementation variants and surface divergence axes for a conceptual seed",
                 investigation_schema()

@@ -608,3 +608,32 @@ fn investigation_tools_mask_or_hash_textual_content_under_privacy_mode() {
     let _ = fs::remove_dir_all(route_project);
     let _ = fs::remove_dir_all(cluster_project);
 }
+
+#[test]
+fn contract_trace_tool_returns_expected_shapes() {
+    let project_dir = temp_dir("rmu-mcp-tests-contract-trace");
+    write_cluster_and_divergence_fixture(&project_dir);
+
+    let mut state = state_for(project_dir.clone(), Some(project_dir.join(".rmu/index.db")));
+    let result = handle_tool_call(
+        Some(json!({
+            "name": "contract_trace",
+            "arguments": {
+                "seed": "origin_resolution",
+                "seed_kind": "query",
+                "limit": 5,
+                "auto_index": true
+            }
+        })),
+        &mut state,
+    )
+    .expect("contract_trace should succeed");
+
+    assert_eq!(result["isError"], json!(false));
+    assert!(result["structuredContent"]["chain"].is_array());
+    assert!(result["structuredContent"]["contract_breaks"].is_array());
+    assert!(result["structuredContent"]["actionability"]["next_steps"].is_array());
+    assert!(result["structuredContent"]["manual_review_required"].is_boolean());
+
+    let _ = fs::remove_dir_all(project_dir);
+}

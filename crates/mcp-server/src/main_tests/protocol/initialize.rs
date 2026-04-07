@@ -132,6 +132,54 @@ fn initialize_binds_single_workspace_root() {
     let _ = fs::remove_dir_all(project_dir);
 }
 
+#[cfg(windows)]
+#[test]
+fn initialize_binds_single_workspace_root_from_localhost_file_uri() {
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("clock should be monotonic enough for tests")
+        .as_nanos();
+    let project_dir = std::env::temp_dir().join(format!("rmu-mcp-init-localhost-root-{unique}"));
+    fs::create_dir_all(project_dir.join("src")).expect("create temp dir");
+
+    let mut state = default_state();
+    let uri = format!(
+        "file://localhost/{}",
+        project_dir.display().to_string().replace('\\', "/")
+    );
+    let canonical_project_dir =
+        crate::state::normalize_existing_directory(&project_dir).expect("normalized project dir");
+    let req = RpcRequest {
+        jsonrpc: Some("2.0".to_string()),
+        id: Some(json!(1)),
+        method: "initialize".to_string(),
+        params: Some(json!({
+            "protocolVersion": PROTOCOL_VERSION,
+            "capabilities": {},
+            "clientInfo": {"name": "probe", "version": "0.0.1"},
+            "workspaceFolders": [
+                {"uri": uri}
+            ]
+        })),
+    };
+
+    let response = handle_request(req, &mut state);
+    assert!(response.error.is_none());
+    assert!(matches!(
+        state.binding(),
+        crate::state::ProjectBinding::Bound {
+            source: crate::state::ProjectBindingSource::InitializeRoots,
+            ..
+        }
+    ));
+    assert_eq!(
+        state.resolved_project_path(),
+        Some(canonical_project_dir.as_path())
+    );
+
+    let _ = fs::remove_dir_all(project_dir);
+}
+
 #[test]
 fn initialize_marks_multiple_workspace_roots_ambiguous() {
     let unique = SystemTime::now()

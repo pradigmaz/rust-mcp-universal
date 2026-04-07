@@ -11,10 +11,10 @@ use crate::ServerState;
 use super::errors::{invalid_params_error, is_invalid_params_error, tool_domain_error};
 use super::handlers::{
     agent_bootstrap, build_context_under_budget, call_path, concept_cluster, constraint_evidence,
-    context_pack, db_maintenance, divergence_report, preflight, quality_hotspots,
-    quality_snapshot, query_benchmark, query_report, related_files, related_files_v2,
-    route_trace, rule_violations, search_candidates, semantic_search, symbol_body,
-    symbol_lookup, symbol_lookup_v2, symbol_references, symbol_references_v2,
+    context_pack, contract_trace, db_maintenance, divergence_report, preflight,
+    quality_hotspots, quality_snapshot, query_benchmark, query_report, related_files,
+    related_files_v2, route_trace, rule_violations, search_candidates, semantic_search,
+    symbol_body, symbol_lookup, symbol_lookup_v2, symbol_references, symbol_references_v2,
 };
 use super::result::{tool_compatibility_error_result, tool_state_error_result};
 
@@ -76,6 +76,7 @@ pub(super) fn handle_tool_call(params: Option<Value>, state: &mut ServerState) -
         "route_trace" => route_trace(&args, state).map_err(into_tool_error),
         "constraint_evidence" => constraint_evidence(&args, state).map_err(into_tool_error),
         "concept_cluster" => concept_cluster(&args, state).map_err(into_tool_error),
+        "contract_trace" => contract_trace(&args, state).map_err(into_tool_error),
         "divergence_report" => divergence_report(&args, state).map_err(into_tool_error),
         "search_candidates" => search_candidates(&args, state).map_err(into_tool_error),
         "semantic_search" => semantic_search(&args, state).map_err(into_tool_error),
@@ -117,6 +118,7 @@ fn is_known_tool(name: &str) -> bool {
             | "route_trace"
             | "constraint_evidence"
             | "concept_cluster"
+            | "contract_trace"
             | "divergence_report"
             | "search_candidates"
             | "semantic_search"

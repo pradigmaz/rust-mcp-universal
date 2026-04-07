@@ -134,6 +134,10 @@ pub(super) fn concept_cluster(args: &Value, state: &mut ServerState) -> Result<V
     investigation::concept_cluster(args, state)
 }
 
+pub(super) fn contract_trace(args: &Value, state: &mut ServerState) -> Result<Value> {
+    investigation::contract_trace(args, state)
+}
+
 pub(super) fn divergence_report(args: &Value, state: &mut ServerState) -> Result<Value> {
     investigation::divergence_report(args, state)
 }

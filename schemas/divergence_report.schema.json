@@ -2,24 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "DivergenceReport",
   "type": "object",
-  "required": [
-    "surface_kind",
-    "seed",
-    "variants",
-    "consensus_axes",
-    "divergence_axes",
-    "divergence_signals",
-    "overall_severity",
-    "manual_review_required",
-    "summary",
-    "shared_evidence",
-    "unknowns",
-    "missing_evidence",
-    "recommended_followups",
-    "overall_confidence",
-    "capability_status",
-    "unsupported_sources"
-  ],
+  "required": ["surface_kind", "seed", "variants", "consensus_axes", "divergence_axes", "divergence_signals", "overall_severity", "manual_review_required", "summary", "shared_evidence", "unknowns", "missing_evidence", "recommended_followups", "actionability", "overall_confidence", "capability_status", "unsupported_sources"],
   "properties": {
     "surface_kind": { "type": "string" },
     "seed": {
@@ -34,15 +17,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "id",
-          "entry_anchor",
-          "route",
-          "constraints",
-          "related_tests",
-          "confidence",
-          "gaps"
-        ],
+        "required": ["id", "entry_anchor", "route", "constraints", "related_tests", "confidence", "gaps"],
         "properties": {
           "id": { "type": "string" },
           "entry_anchor": {
@@ -69,19 +44,22 @@
               "column": { "type": "integer", "minimum": 0 }
             }
           },
+          "generated_lineage": {
+            "type": "object",
+            "required": ["status", "detection_basis", "confidence"],
+            "properties": {
+              "status": { "type": "string" },
+              "detection_basis": { "type": "string" },
+              "source_of_truth_path": { "type": "string" },
+              "source_of_truth_kind": { "type": "string" },
+              "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          },
           "route": {
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "kind",
-                "path",
-                "language",
-                "evidence",
-                "relation_kind",
-                "source_kind",
-                "score"
-              ],
+              "required": ["kind", "path", "language", "evidence", "relation_kind", "source_kind", "score"],
               "properties": {
                 "kind": { "type": "string" },
                 "path": { "type": "string" },
@@ -108,14 +86,7 @@
             "type": "array",
             "items": {
               "type": "object",
-              "required": [
-                "kind",
-                "strength",
-                "scope",
-                "source_path",
-                "confidence",
-                "normalized_text"
-              ],
+              "required": ["kind", "strength", "scope", "source_path", "confidence", "normalized_text"],
               "properties": {
                 "kind": { "type": "string" },
                 "strength": { "type": "string" },
@@ -137,15 +108,9 @@
               }
             }
           },
-          "related_tests": {
-            "type": "array",
-            "items": { "type": "string" }
-          },
+          "related_tests": { "type": "array", "items": { "type": "string" } },
           "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
-          "gaps": {
-            "type": "array",
-            "items": { "type": "string" }
-          }
+          "gaps": { "type": "array", "items": { "type": "string" } }
         }
       }
     },
@@ -163,10 +128,7 @@
               "required": ["variant_id", "values"],
               "properties": {
                 "variant_id": { "type": "string" },
-                "values": {
-                  "type": "array",
-                  "items": { "type": "string" }
-                }
+                "values": { "type": "array", "items": { "type": "string" } }
               }
             }
           }
@@ -187,10 +149,7 @@
               "required": ["variant_id", "values"],
               "properties": {
                 "variant_id": { "type": "string" },
-                "values": {
-                  "type": "array",
-                  "items": { "type": "string" }
-                }
+                "values": { "type": "array", "items": { "type": "string" } }
               }
             }
           }
@@ -201,51 +160,51 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "severity",
-          "axis",
-          "evidence_strength",
-          "classification_reason",
-          "summary",
-          "variant_ids"
-        ],
+        "required": ["severity", "axis", "evidence_strength", "classification_reason", "summary", "variant_ids"],
         "properties": {
           "severity": { "type": "string" },
           "axis": { "type": "string" },
           "evidence_strength": { "type": "string" },
           "classification_reason": { "type": "string" },
           "summary": { "type": "string" },
-          "variant_ids": {
-            "type": "array",
-            "items": { "type": "string" }
-          }
+          "variant_ids": { "type": "array", "items": { "type": "string" } }
         }
       }
     },
     "overall_severity": { "type": "string" },
     "manual_review_required": { "type": "boolean" },
     "summary": { "type": "string" },
-    "shared_evidence": {
-      "type": "array",
-      "items": { "type": "string" }
-    },
-    "unknowns": {
-      "type": "array",
-      "items": { "type": "string" }
-    },
-    "missing_evidence": {
-      "type": "array",
-      "items": { "type": "string" }
-    },
-    "recommended_followups": {
-      "type": "array",
-      "items": { "type": "string" }
+    "shared_evidence": { "type": "array", "items": { "type": "string" } },
+    "unknowns": { "type": "array", "items": { "type": "string" } },
+    "missing_evidence": { "type": "array", "items": { "type": "string" } },
+    "recommended_followups": { "type": "array", "items": { "type": "string" } },
+    "actionability": {
+      "type": "object",
+      "required": ["reason", "next_steps", "related_tests", "adjacent_paths", "checks", "rollback_sensitive_paths", "manual_review_required"],
+      "properties": {
+        "recommended_target_path": { "type": "string" },
+        "recommended_target_role": { "type": "string" },
+        "reason": { "type": "string" },
+        "next_steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["kind", "detail"],
+            "properties": {
+              "kind": { "type": "string" },
+              "detail": { "type": "string" }
+            }
+          }
+        },
+        "related_tests": { "type": "array", "items": { "type": "string" } },
+        "adjacent_paths": { "type": "array", "items": { "type": "string" } },
+        "checks": { "type": "array", "items": { "type": "string" } },
+        "rollback_sensitive_paths": { "type": "array", "items": { "type": "string" } },
+        "manual_review_required": { "type": "boolean" }
+      }
     },
     "overall_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
     "capability_status": { "type": "string" },
-    "unsupported_sources": {
-      "type": "array",
-      "items": { "type": "string" }
-    }
+    "unsupported_sources": { "type": "array", "items": { "type": "string" } }
   }
 }

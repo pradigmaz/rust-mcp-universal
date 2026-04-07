@@ -330,6 +330,7 @@ fn variant_with(
             column: None,
         },
         body_anchor: None,
+        generated_lineage: None,
         route: vec![RouteSegment {
             kind: RouteSegmentKind::Service,
             path: format!("src/{id}.rs"),

@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::investigation_cluster::ImplementationVariant;
+use super::investigation_contract::Actionability;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -282,6 +283,7 @@ pub struct DivergenceReport {
     pub unknowns: Vec<String>,
     pub missing_evidence: Vec<String>,
     pub recommended_followups: Vec<String>,
+    pub actionability: Actionability,
     pub overall_confidence: f32,
     pub capability_status: String,
     pub unsupported_sources: Vec<String>,

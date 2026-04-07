@@ -32,16 +32,40 @@ pub(crate) fn write_route_and_constraint_fixture(project_root: &Path) {
 
 pub(crate) fn write_cluster_and_divergence_fixture(project_root: &Path) {
     std::fs::create_dir_all(project_root.join("src/services")).expect("create services");
+    std::fs::create_dir_all(project_root.join("src/generated")).expect("create generated");
+    std::fs::create_dir_all(project_root.join("frontend/src")).expect("create frontend");
+    std::fs::create_dir_all(project_root.join("migrations")).expect("create migrations");
+    std::fs::create_dir_all(project_root.join("tests")).expect("create tests");
     std::fs::write(
         project_root.join("src/services/origin_service.rs"),
-        "pub fn origin_resolution() { helper_query(); }\nfn helper_query() {}\n",
+        "pub fn origin_resolution(key: &str) { origin_resolution_validator(key); helper_query(); }\nfn helper_query() {}\n",
     )
     .expect("write service");
     std::fs::write(
         project_root.join("src/services/origin_validator.rs"),
-        "pub fn origin_resolution_validator() {}\n",
+        "pub fn origin_resolution_validator(key: &str) { assert!(!key.is_empty()); }\n",
     )
     .expect("write validator");
+    std::fs::write(
+        project_root.join("src/generated/origin_client.generated.ts"),
+        "// generated file - do not edit\nexport function originResolutionClient(key: string) { return `/api/origin/${key}`; }\n",
+    )
+    .expect("write generated client");
+    std::fs::write(
+        project_root.join("frontend/src/origin_page.tsx"),
+        "import { originResolutionClient } from '../../src/generated/origin_client.generated';\nexport function OriginPage() { return originResolutionClient('ok'); }\n",
+    )
+    .expect("write frontend consumer");
+    std::fs::write(
+        project_root.join("migrations/001_create_origins.sql"),
+        "CREATE TABLE origins (id INTEGER PRIMARY KEY, origin_key TEXT NOT NULL);\n",
+    )
+    .expect("write migration");
+    std::fs::write(
+        project_root.join("tests/test_origin_resolution.py"),
+        "def test_origin_resolution():\n    assert True\n",
+    )
+    .expect("write test");
 }
 
 #[allow(dead_code)]

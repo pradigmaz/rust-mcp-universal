@@ -126,6 +126,27 @@ fn concept_cluster_and_divergence_report_emit_analysis_objects() {
     assert!(cluster_payload["variants"][0]["score_model"].is_string());
     assert!(cluster_payload["variants"][0]["score_breakdown"].is_object());
 
+    let contract_trace_assert = cargo_bin_cmd!("rmu-cli")
+        .args([
+            "--project-path",
+            project_path,
+            "--json",
+            "contract-trace",
+            "--seed",
+            "origin_resolution",
+            "--seed-kind",
+            "query",
+            "--auto-index",
+        ])
+        .assert()
+        .success();
+    let contract_trace_payload: serde_json::Value =
+        serde_json::from_slice(&contract_trace_assert.get_output().stdout).expect("contract trace payload");
+    assert!(contract_trace_payload["chain"].is_array());
+    assert!(contract_trace_payload["contract_breaks"].is_array());
+    assert!(contract_trace_payload["actionability"]["next_steps"].is_array());
+    assert!(contract_trace_payload["manual_review_required"].is_boolean());
+
     let divergence_assert = cargo_bin_cmd!("rmu-cli")
         .args([
             "--project-path",
@@ -170,12 +191,14 @@ fn investigation_cli_payloads_match_local_result_schemas() {
     let route_schema = super::load_schema("route_trace.schema.json");
     let constraint_schema = super::load_schema("constraint_evidence.schema.json");
     let cluster_schema = super::load_schema("concept_cluster.schema.json");
+    let contract_trace_schema = super::load_schema("contract_trace.schema.json");
     let divergence_schema = super::load_schema("divergence_report.schema.json");
 
     super::validate_schema_keyword_coverage(&symbol_schema, "cli.symbol_body.schema");
     super::validate_schema_keyword_coverage(&route_schema, "cli.route_trace.schema");
     super::validate_schema_keyword_coverage(&constraint_schema, "cli.constraint.schema");
     super::validate_schema_keyword_coverage(&cluster_schema, "cli.cluster.schema");
+    super::validate_schema_keyword_coverage(&contract_trace_schema, "cli.contract_trace.schema");
     super::validate_schema_keyword_coverage(&divergence_schema, "cli.divergence.schema");
 
     let symbol_project = tempdir().expect("temp dir");
@@ -266,6 +289,28 @@ fn investigation_cli_payloads_match_local_result_schemas() {
         &cluster_payload,
         &cluster_schema,
         "cli.concept_cluster.payload",
+    );
+
+    let contract_trace_assert = cargo_bin_cmd!("rmu-cli")
+        .args([
+            "--project-path",
+            cluster_project_path,
+            "--json",
+            "contract-trace",
+            "--seed",
+            "origin_resolution",
+            "--seed-kind",
+            "query",
+            "--auto-index",
+        ])
+        .assert()
+        .success();
+    let contract_trace_payload: serde_json::Value =
+        serde_json::from_slice(&contract_trace_assert.get_output().stdout).expect("contract payload");
+    super::assert_required_structure(
+        &contract_trace_payload,
+        &contract_trace_schema,
+        "cli.contract_trace.payload",
     );
 
     let divergence_assert = cargo_bin_cmd!("rmu-cli")

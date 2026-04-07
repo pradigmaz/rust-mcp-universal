@@ -171,30 +171,28 @@ impl Engine {
                 timings.context_ms = elapsed_ms(phase_started);
                 let (chunk_coverage, chunk_source) = super::derive_chunk_telemetry(&context);
 
-                let shared_investigation =
-                    if include_investigation_summary || include_report {
-                        let phase_started = Instant::now();
-                        let snapshot =
-                            super::super::investigation::shared_query_investigation_snapshot(
-                                self,
-                                value,
-                                requested_limit,
-                            )?;
-                        timings.investigation_ms = elapsed_ms(phase_started);
-                        Some(snapshot)
-                    } else {
-                        None
-                    };
-
-                let embedded_investigation_summary = if include_investigation_summary
-                    || include_report
-                {
-                    shared_investigation
-                        .as_ref()
-                        .map(super::investigation_embed::format_investigation_summary)
+                let shared_investigation = if include_investigation_summary || include_report {
+                    let phase_started = Instant::now();
+                    let snapshot =
+                        super::super::investigation::shared_query_investigation_snapshot(
+                            self,
+                            value,
+                            requested_limit,
+                        )?;
+                    timings.investigation_ms = elapsed_ms(phase_started);
+                    Some(snapshot)
                 } else {
                     None
                 };
+
+                let embedded_investigation_summary =
+                    if include_investigation_summary || include_report {
+                        shared_investigation
+                            .as_ref()
+                            .map(super::investigation_embed::format_investigation_summary)
+                    } else {
+                        None
+                    };
 
                 let investigation_summary = if include_investigation_summary {
                     embedded_investigation_summary.clone()
@@ -316,14 +314,10 @@ impl Engine {
 
         let degradation_reasons = bootstrap_degradation_reasons;
 
-        let deepen_available = report_helpers::deepen_available(
-            Some(effective_profile),
-            &degradation_reasons,
-        );
-        let deepen_hint = report_helpers::deepen_hint(
-            Some(effective_profile),
-            &degradation_reasons,
-        );
+        let deepen_available =
+            report_helpers::deepen_available(Some(effective_profile), &degradation_reasons);
+        let deepen_hint =
+            report_helpers::deepen_hint(Some(effective_profile), &degradation_reasons);
 
         timings.total_ms = elapsed_ms(started);
         Ok(AgentBootstrap {
@@ -375,7 +369,10 @@ fn effective_bootstrap_profile(include: AgentBootstrapIncludeOptions) -> Bootstr
     if let Some(profile) = include.profile {
         return profile;
     }
-    match (include.include_report, include.include_investigation_summary) {
+    match (
+        include.include_report,
+        include.include_investigation_summary,
+    ) {
         (true, true) => BootstrapProfile::Full,
         (true, false) => BootstrapProfile::Report,
         (false, true) => BootstrapProfile::InvestigationSummary,

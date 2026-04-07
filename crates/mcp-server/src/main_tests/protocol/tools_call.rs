@@ -411,6 +411,92 @@ fn tools_call_set_project_path_accepts_unicode_path_values() {
     let _ = fs::remove_dir_all(project_dir);
 }
 
+#[cfg(windows)]
+#[test]
+fn tools_call_set_project_path_accepts_localhost_file_uri_values() {
+    let unique = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("clock should be monotonic enough for tests")
+        .as_nanos();
+    let project_dir = std::env::temp_dir().join(format!("rmu-mcp-tests-localhost-uri-{unique}"));
+    fs::create_dir_all(project_dir.join("src")).expect("create temp dir");
+    fs::write(
+        project_dir.join("src/main.rs"),
+        "fn localhost_uri_probe() {}\n",
+    )
+    .expect("write fixture");
+
+    let mut state = ServerState::new(
+        Some(project_dir.clone()),
+        Some(project_dir.join(".rmu/index.db")),
+    );
+    let _ = handle_request(
+        RpcRequest {
+            jsonrpc: Some("2.0".to_string()),
+            id: Some(json!(1)),
+            method: "initialize".to_string(),
+            params: Some(initialize_params()),
+        },
+        &mut state,
+    );
+    let _ = handle_request(
+        RpcRequest {
+            jsonrpc: Some("2.0".to_string()),
+            id: None,
+            method: "notifications/initialized".to_string(),
+            params: None,
+        },
+        &mut state,
+    );
+
+    let uri = format!(
+        "file://localhost/{}",
+        project_dir.display().to_string().replace('\\', "/")
+    );
+    let set_path = json!({
+        "jsonrpc": "2.0",
+        "id": 605,
+        "method": "tools/call",
+        "params": {
+            "name": "set_project_path",
+            "arguments": {
+                "project_path": uri
+            }
+        }
+    })
+    .to_string();
+    let response = expect_single_response(&set_path, &mut state);
+    assert!(response.error.is_none());
+    let result = response.result.expect("result expected");
+    let normalized_project_dir =
+        crate::state::normalize_existing_directory(&project_dir).expect("normalized project dir");
+    assert_eq!(
+        result["structuredContent"]["project_path"],
+        json!(normalized_project_dir.display().to_string())
+    );
+
+    let search = json!({
+        "jsonrpc": "2.0",
+        "id": 606,
+        "method": "tools/call",
+        "params": {
+            "name": "search_candidates",
+            "arguments": {
+                "query": "localhost_uri_probe",
+                "limit": 5,
+                "auto_index": true
+            }
+        }
+    })
+    .to_string();
+    let response = expect_single_response(&search, &mut state);
+    assert!(response.error.is_none());
+    let result = response.result.expect("search result expected");
+    assert_eq!(result["isError"], json!(false));
+
+    let _ = fs::remove_dir_all(project_dir);
+}
+
 #[test]
 fn tools_call_set_project_path_rejects_pinned_db_sessions() {
     let unique = SystemTime::now()

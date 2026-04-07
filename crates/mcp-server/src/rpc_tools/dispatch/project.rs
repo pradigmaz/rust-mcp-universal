@@ -1,14 +1,15 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use anyhow::Result;
 use rmu_core::{Engine, IgnoreInstallTarget, install_ignore_rules};
 use serde_json::{Value, json};
 
 use crate::ServerState;
+use crate::path_input::resolve_existing_directory_input;
 use crate::rpc_tools::errors::{invalid_params_error, tool_domain_error};
 use crate::rpc_tools::parsing::{parse_required_non_empty_string, reject_unknown_fields};
 use crate::rpc_tools::result::{tool_result, tool_state_error_result};
-use crate::state::{ProjectBindingSource, normalize_existing_directory};
+use crate::state::ProjectBindingSource;
 
 use super::parsing::{parse_optional_ignore_install_target, parse_optional_migration_mode};
 
@@ -81,8 +82,7 @@ pub(super) fn workspace_brief(args: &Value, state: &mut ServerState) -> Result<V
 }
 
 fn normalize_project_path(project_path: &str) -> Result<PathBuf> {
-    let raw_path = Path::new(project_path);
-    normalize_existing_directory(raw_path).ok_or_else(|| {
+    resolve_existing_directory_input(project_path).ok_or_else(|| {
         invalid_params_error(format!(
             "set_project_path `project_path` must be an existing directory: {project_path}"
         ))

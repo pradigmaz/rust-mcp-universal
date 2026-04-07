@@ -9,6 +9,8 @@ fn local_schema_checker_applies_ref_and_sibling_constraints() {
         "query_id": "q-1",
         "timestamp_utc": "2026-03-02T00:00:00Z",
         "project_root": "/tmp/project",
+        "resolved_mode": "entrypoint_map",
+        "mode_source": "default",
         "budget": {
             "max_tokens": 100,
             "used_estimate": 42,
@@ -40,9 +42,23 @@ fn local_schema_checker_applies_ref_and_sibling_constraints() {
                     "graph_seed_path": "src/main.rs",
                     "graph_edge_kinds": ["outgoing:ref_exact"],
                     "graph_hops": 1
+                },
+                "provenance": {
+                    "basis": "indexed",
+                    "derivation": "context_selection",
+                    "freshness": "index_snapshot",
+                    "strength": "strong",
+                    "reasons": ["indexed_chunk"]
                 }
             }
         ],
+        "provenance": {
+            "basis": "indexed",
+            "derivation": "query_report",
+            "freshness": "index_snapshot",
+            "strength": "strong",
+            "reasons": ["indexed_chunk"]
+        },
         "confidence": {
             "overall": 0.8,
             "reasons": ["enough signal"],
@@ -62,7 +78,9 @@ fn local_schema_checker_applies_ref_and_sibling_constraints() {
             "last_embedding_cache_misses": 0,
             "chunk_coverage": 1.0,
             "chunk_source": "chunk_embedding_index"
-        }
+        },
+        "degradation_reasons": [],
+        "deepen_available": false
     });
     assert_required_structure(&report_value, &report_schema, "ref.base-valid");
 

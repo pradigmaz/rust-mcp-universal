@@ -3,6 +3,7 @@ use std::io;
 use anyhow::Result;
 use clap::Parser;
 
+mod path_input;
 mod protocol;
 mod rpc_tools;
 mod state;

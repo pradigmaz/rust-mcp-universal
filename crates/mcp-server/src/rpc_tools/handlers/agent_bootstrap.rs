@@ -14,9 +14,9 @@ use crate::rpc_tools::parsing::{
 use crate::rpc_tools::result::tool_result;
 
 use super::{
-    ensure_query_index_ready, parse_optional_agent_intent_mode,
-    parse_optional_bootstrap_profile, parse_optional_migration_mode,
-    parse_optional_privacy_mode, parse_optional_rollout_phase, parse_optional_semantic_fail_mode,
+    ensure_query_index_ready, parse_optional_agent_intent_mode, parse_optional_bootstrap_profile,
+    parse_optional_migration_mode, parse_optional_privacy_mode, parse_optional_rollout_phase,
+    parse_optional_semantic_fail_mode,
 };
 
 pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<Value> {

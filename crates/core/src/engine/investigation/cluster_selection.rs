@@ -114,6 +114,7 @@ mod tests {
                 column: None,
             },
             body_anchor: None,
+            generated_lineage: None,
             route: Vec::new(),
             constraints: Vec::new(),
             related_tests: Vec::new(),

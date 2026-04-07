@@ -39,7 +39,7 @@ fn rust_monorepo_profile_indexes_workspace_scope_without_docs() -> Result<(), Bo
                 semantic_fail_mode: SemanticFailMode::FailOpen,
                 privacy_mode: PrivacyMode::Off,
                 context_mode: None,
-        agent_intent_mode: None,
+                agent_intent_mode: None,
             })?
             .is_empty()
     );
@@ -91,7 +91,7 @@ fn mixed_profile_excludes_generated_directories() -> Result<(), Box<dyn Error>> 
                     semantic_fail_mode: SemanticFailMode::FailOpen,
                     privacy_mode: PrivacyMode::Off,
                     context_mode: None,
-        agent_intent_mode: None,
+                    agent_intent_mode: None,
                 })?
                 .is_empty()
         );
@@ -149,7 +149,7 @@ fn docs_heavy_profile_indexes_docs_without_code_roots() -> Result<(), Box<dyn Er
                 semantic_fail_mode: SemanticFailMode::FailOpen,
                 privacy_mode: PrivacyMode::Off,
                 context_mode: None,
-        agent_intent_mode: None,
+                agent_intent_mode: None,
             })?
             .is_empty()
     );
