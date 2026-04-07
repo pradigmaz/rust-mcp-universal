@@ -54,7 +54,10 @@ pub(super) fn build_actionability(
     if let Some((path, role, redirected_from_generated)) = &recommended_target {
         next_steps.push(ActionabilityStep {
             kind: "inspect_primary_target".to_string(),
-            detail: format!("Inspect and update `{path}` as primary {} target", role_label(*role)),
+            detail: format!(
+                "Inspect and update `{path}` as primary {} target",
+                role_label(*role)
+            ),
         });
         if *redirected_from_generated {
             next_steps.push(ActionabilityStep {
@@ -97,10 +100,15 @@ pub(super) fn build_actionability(
             detail: "Manual review required because chain is partial or proxy-only".to_string(),
         });
     }
-    next_steps.extend(recommended_followups.iter().take(2).map(|detail| ActionabilityStep {
-        kind: "followup".to_string(),
-        detail: detail.clone(),
-    }));
+    next_steps.extend(
+        recommended_followups
+            .iter()
+            .take(2)
+            .map(|detail| ActionabilityStep {
+                kind: "followup".to_string(),
+                detail: detail.clone(),
+            }),
+    );
 
     let (recommended_target_path, recommended_target_role, reason) = match recommended_target {
         Some((path, role, true)) => (
@@ -187,7 +195,10 @@ pub(super) fn path_affinity(seed_path: Option<&str>, candidate_path: &str) -> f3
     if seed_parts.is_empty() || candidate_parts.is_empty() {
         return 0.0;
     }
-    let max_len = seed_parts.len().min(candidate_parts.len()).saturating_sub(1);
+    let max_len = seed_parts
+        .len()
+        .min(candidate_parts.len())
+        .saturating_sub(1);
     let shared = seed_parts
         .iter()
         .take(max_len)
@@ -281,7 +292,12 @@ pub(super) fn role_for_entry_variant(variant: &ImplementationVariant) -> Contrac
             .first()
             .map(role_for_route_segment)
             .unwrap_or_else(|| {
-                if variant.entry_anchor.path.to_ascii_lowercase().contains("test") {
+                if variant
+                    .entry_anchor
+                    .path
+                    .to_ascii_lowercase()
+                    .contains("test")
+                {
                     ContractTraceRole::Test
                 } else {
                     ContractTraceRole::Unknown
@@ -307,10 +323,7 @@ pub(super) fn same_context(seed_path: Option<&str>, candidate_path: &str) -> boo
 }
 
 fn context_root(path: &str) -> Vec<String> {
-    normalize_path(path)
-        .into_iter()
-        .take(4)
-        .collect()
+    normalize_path(path).into_iter().take(4).collect()
 }
 
 fn normalize_path(path: &str) -> Vec<String> {

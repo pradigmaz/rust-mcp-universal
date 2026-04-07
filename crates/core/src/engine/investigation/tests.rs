@@ -303,8 +303,18 @@ fn contract_trace_surfaces_generated_lineage_and_actionability() -> anyhow::Resu
 
     assert!(!result.chain.is_empty());
     assert!(!result.actionability.next_steps.is_empty());
-    assert!(result.contract_breaks.iter().all(|item| !item.reason.is_empty()));
-    assert!(result.chain.iter().any(|link| link.generated_lineage.is_some()));
+    assert!(
+        result
+            .contract_breaks
+            .iter()
+            .all(|item| !item.reason.is_empty())
+    );
+    assert!(
+        result
+            .chain
+            .iter()
+            .any(|link| link.generated_lineage.is_some())
+    );
 
     let _ = fs::remove_dir_all(project_dir);
     Ok(())

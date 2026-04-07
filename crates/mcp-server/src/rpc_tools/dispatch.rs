@@ -11,10 +11,10 @@ use crate::ServerState;
 use super::errors::{invalid_params_error, is_invalid_params_error, tool_domain_error};
 use super::handlers::{
     agent_bootstrap, build_context_under_budget, call_path, concept_cluster, constraint_evidence,
-    context_pack, contract_trace, db_maintenance, divergence_report, preflight,
-    quality_hotspots, quality_snapshot, query_benchmark, query_report, related_files,
-    related_files_v2, route_trace, rule_violations, search_candidates, semantic_search,
-    symbol_body, symbol_lookup, symbol_lookup_v2, symbol_references, symbol_references_v2,
+    context_pack, contract_trace, db_maintenance, divergence_report, preflight, quality_hotspots,
+    quality_snapshot, query_benchmark, query_report, related_files, related_files_v2, route_trace,
+    rule_violations, search_candidates, semantic_search, symbol_body, symbol_lookup,
+    symbol_lookup_v2, symbol_references, symbol_references_v2,
 };
 use super::result::{tool_compatibility_error_result, tool_state_error_result};
 

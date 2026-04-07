@@ -1,4 +1,4 @@
-﻿use crate::engine::Engine;
+use crate::engine::Engine;
 use crate::model::{
     GeneratedLineage, GeneratedLineageBasis, GeneratedLineageStatus, GeneratedSourceOfTruthKind,
     InvestigationAnchor, RouteSegment, RouteSegmentKind,
@@ -14,9 +14,7 @@ pub(super) fn infer_generated_lineage(
     let lowered_path = entry_anchor.path.replace('\\', "/").to_ascii_lowercase();
     let explicit_path_marker = has_generated_path_marker(&lowered_path);
     let content = read_source(&engine.project_root, &entry_anchor.path).ok();
-    let explicit_content_marker = content
-        .as_deref()
-        .is_some_and(has_generated_content_marker);
+    let explicit_content_marker = content.as_deref().is_some_and(has_generated_content_marker);
     let looks_like_client = lowered_path.contains("client")
         || lowered_path.contains("/lib/api/")
         || lowered_path.contains("/generated/")
@@ -121,5 +119,9 @@ fn source_of_truth_candidate(
         }
         _ => GeneratedSourceOfTruthKind::Unknown,
     };
-    Some((kind_score + segment.score * 0.05, segment.path.clone(), source_kind))
+    Some((
+        kind_score + segment.score * 0.05,
+        segment.path.clone(),
+        source_kind,
+    ))
 }

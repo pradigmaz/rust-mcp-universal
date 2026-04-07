@@ -111,7 +111,11 @@ pub(super) fn cases() -> Vec<RuntimeConstraintCase> {
             json!({"query": "q", "semantic_fail_mode": ""}),
             "non-empty `semantic_fail_mode`",
         ),
-        ("query_report", json!({"query": "q", "mode": true}), "string `mode`"),
+        (
+            "query_report",
+            json!({"query": "q", "mode": true}),
+            "string `mode`",
+        ),
         (
             "query_report",
             json!({"query": "q", "mode": "unknown_mode"}),

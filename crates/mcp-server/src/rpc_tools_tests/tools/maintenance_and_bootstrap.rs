@@ -285,7 +285,10 @@ fn agent_bootstrap_profiles_expose_surface_and_degradation_contracts() {
             .iter()
             .filter_map(|value| value.as_str())
             .collect::<Vec<_>>();
-        assert_eq!(degradation.contains(&"profile_limited"), expect_profile_limited);
+        assert_eq!(
+            degradation.contains(&"profile_limited"),
+            expect_profile_limited
+        );
         let deepen_available = result["structuredContent"]["deepen_available"]
             .as_bool()
             .expect("deepen_available bool");

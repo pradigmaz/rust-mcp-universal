@@ -442,18 +442,54 @@ mod tests {
 
         sanitize_value_for_privacy(PrivacyMode::Mask, &mut payload);
 
-        assert_eq!(payload["chain"][0]["anchor"]["path"], json!("<masked:origin_client.generated.ts>"));
+        assert_eq!(
+            payload["chain"][0]["anchor"]["path"],
+            json!("<masked:origin_client.generated.ts>")
+        );
         assert_eq!(payload["chain"][0]["evidence"], json!("<redacted-content>"));
-        assert_eq!(payload["chain"][0]["rank_reason"], json!("<redacted-content>"));
-        assert_eq!(payload["chain"][0]["generated_lineage"]["source_of_truth_path"], json!("<masked:origin_service.rs>"));
-        assert_eq!(payload["contract_breaks"][0]["reason"], json!("<redacted-content>"));
-        assert_eq!(payload["contract_breaks"][0]["last_resolved_path"], json!("<masked:origin_page.tsx>"));
-        assert_eq!(payload["actionability"]["recommended_target_path"], json!("<masked:origin_service.rs>"));
-        assert_eq!(payload["actionability"]["reason"], json!("<redacted-content>"));
-        assert_eq!(payload["actionability"]["next_steps"][0]["detail"], json!("<redacted-content>"));
-        assert_eq!(payload["actionability"]["related_tests"][0], json!("<masked:test_origin_resolution.py>"));
-        assert_eq!(payload["actionability"]["adjacent_paths"][0], json!("<masked:origin_page.tsx>"));
-        assert_eq!(payload["actionability"]["checks"][0], json!("<redacted-content>"));
-        assert_eq!(payload["actionability"]["rollback_sensitive_paths"][0], json!("<masked:001_create_origins.sql>"));
+        assert_eq!(
+            payload["chain"][0]["rank_reason"],
+            json!("<redacted-content>")
+        );
+        assert_eq!(
+            payload["chain"][0]["generated_lineage"]["source_of_truth_path"],
+            json!("<masked:origin_service.rs>")
+        );
+        assert_eq!(
+            payload["contract_breaks"][0]["reason"],
+            json!("<redacted-content>")
+        );
+        assert_eq!(
+            payload["contract_breaks"][0]["last_resolved_path"],
+            json!("<masked:origin_page.tsx>")
+        );
+        assert_eq!(
+            payload["actionability"]["recommended_target_path"],
+            json!("<masked:origin_service.rs>")
+        );
+        assert_eq!(
+            payload["actionability"]["reason"],
+            json!("<redacted-content>")
+        );
+        assert_eq!(
+            payload["actionability"]["next_steps"][0]["detail"],
+            json!("<redacted-content>")
+        );
+        assert_eq!(
+            payload["actionability"]["related_tests"][0],
+            json!("<masked:test_origin_resolution.py>")
+        );
+        assert_eq!(
+            payload["actionability"]["adjacent_paths"][0],
+            json!("<masked:origin_page.tsx>")
+        );
+        assert_eq!(
+            payload["actionability"]["checks"][0],
+            json!("<redacted-content>")
+        );
+        assert_eq!(
+            payload["actionability"]["rollback_sensitive_paths"][0],
+            json!("<masked:001_create_origins.sql>")
+        );
     }
 }

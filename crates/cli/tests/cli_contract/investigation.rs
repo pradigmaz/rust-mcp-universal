@@ -141,7 +141,8 @@ fn concept_cluster_and_divergence_report_emit_analysis_objects() {
         .assert()
         .success();
     let contract_trace_payload: serde_json::Value =
-        serde_json::from_slice(&contract_trace_assert.get_output().stdout).expect("contract trace payload");
+        serde_json::from_slice(&contract_trace_assert.get_output().stdout)
+            .expect("contract trace payload");
     assert!(contract_trace_payload["chain"].is_array());
     assert!(contract_trace_payload["contract_breaks"].is_array());
     assert!(contract_trace_payload["actionability"]["next_steps"].is_array());
@@ -306,7 +307,8 @@ fn investigation_cli_payloads_match_local_result_schemas() {
         .assert()
         .success();
     let contract_trace_payload: serde_json::Value =
-        serde_json::from_slice(&contract_trace_assert.get_output().stdout).expect("contract payload");
+        serde_json::from_slice(&contract_trace_assert.get_output().stdout)
+            .expect("contract payload");
     super::assert_required_structure(
         &contract_trace_payload,
         &contract_trace_schema,

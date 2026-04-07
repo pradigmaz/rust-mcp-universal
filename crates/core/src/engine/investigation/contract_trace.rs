@@ -6,7 +6,10 @@ use crate::model::{
     ContractTraceRole, InvestigationAnchor,
 };
 
-use super::actionability::{build_actionability, path_affinity, role_for_entry_variant, role_for_route_segment, role_rank, same_context};
+use super::actionability::{
+    build_actionability, path_affinity, role_for_entry_variant, role_for_route_segment, role_rank,
+    same_context,
+};
 use super::cluster::concept_cluster;
 use super::common::{capability_status, normalized_values};
 
@@ -21,8 +24,8 @@ pub(super) fn contract_trace(
 }
 
 pub(super) fn contract_trace_from_cluster(cluster: ConceptClusterResult) -> ContractTraceResult {
-    let seed_path = (cluster.seed.seed_kind == ConceptSeedKind::Path)
-        .then_some(cluster.seed.seed.as_str());
+    let seed_path =
+        (cluster.seed.seed_kind == ConceptSeedKind::Path).then_some(cluster.seed.seed.as_str());
     let chain = canonical_chain(seed_path, &cluster);
     let contract_breaks = detect_contract_breaks(&chain);
     let manual_review_required = !contract_breaks.is_empty()
@@ -63,7 +66,10 @@ pub(super) fn contract_trace_from_cluster(cluster: ConceptClusterResult) -> Cont
     }
 }
 
-fn canonical_chain(seed_path: Option<&str>, cluster: &ConceptClusterResult) -> Vec<ContractTraceLink> {
+fn canonical_chain(
+    seed_path: Option<&str>,
+    cluster: &ConceptClusterResult,
+) -> Vec<ContractTraceLink> {
     let mut links = Vec::new();
     for variant in &cluster.variants {
         let entry_role = role_for_entry_variant(variant);
@@ -94,7 +100,10 @@ fn canonical_chain(seed_path: Option<&str>, cluster: &ConceptClusterResult) -> V
                 symbol: segment.anchor_symbol.clone(),
                 kind: Some(format!("{:?}", segment.kind)),
                 line: segment.source_span.as_ref().map(|span| span.start_line),
-                column: segment.source_span.as_ref().and_then(|span| span.start_column),
+                column: segment
+                    .source_span
+                    .as_ref()
+                    .and_then(|span| span.start_column),
             };
             links.push(ContractTraceLink {
                 role,
@@ -123,7 +132,11 @@ fn canonical_chain(seed_path: Option<&str>, cluster: &ConceptClusterResult) -> V
             .copied()
             .filter(|link| same_context(seed_path, &link.anchor.path))
             .collect::<Vec<_>>();
-        let pool = if contextual.is_empty() { candidates } else { contextual };
+        let pool = if contextual.is_empty() {
+            candidates
+        } else {
+            contextual
+        };
         if let Some(best) = pool
             .into_iter()
             .max_by(|left, right| left.rank_score.total_cmp(&right.rank_score))
@@ -217,6 +230,8 @@ fn ordered_roles() -> &'static [ContractTraceRole] {
 }
 
 fn is_low_value_link(seed_path: Option<&str>, link: &ContractTraceLink) -> bool {
-    matches!(link.role, ContractTraceRole::Test | ContractTraceRole::Unknown)
-        && path_affinity(seed_path, &link.anchor.path) < 0.30
+    matches!(
+        link.role,
+        ContractTraceRole::Test | ContractTraceRole::Unknown
+    ) && path_affinity(seed_path, &link.anchor.path) < 0.30
 }

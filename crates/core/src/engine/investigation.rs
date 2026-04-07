@@ -1,7 +1,7 @@
-#[path = "investigation/body.rs"]
-mod body;
 #[path = "investigation/actionability.rs"]
 mod actionability;
+#[path = "investigation/body.rs"]
+mod body;
 #[path = "investigation/candidate_relevance.rs"]
 mod candidate_relevance;
 #[path = "investigation/cluster.rs"]

@@ -168,8 +168,14 @@ fn query_report_mode_source_and_provenance_contracts_are_first_class() {
         &mut state,
     )
     .expect("inferred mode query_report should succeed");
-    assert_eq!(inferred["structuredContent"]["resolved_mode"], json!("test_map"));
-    assert_eq!(inferred["structuredContent"]["mode_source"], json!("inferred"));
+    assert_eq!(
+        inferred["structuredContent"]["resolved_mode"],
+        json!("test_map")
+    );
+    assert_eq!(
+        inferred["structuredContent"]["mode_source"],
+        json!("inferred")
+    );
 
     let defaulted = handle_tool_call(
         Some(json!({
@@ -187,7 +193,10 @@ fn query_report_mode_source_and_provenance_contracts_are_first_class() {
         defaulted["structuredContent"]["resolved_mode"],
         json!("entrypoint_map")
     );
-    assert_eq!(defaulted["structuredContent"]["mode_source"], json!("default"));
+    assert_eq!(
+        defaulted["structuredContent"]["mode_source"],
+        json!("default")
+    );
 
     let _ = fs::remove_dir_all(project_dir);
 }

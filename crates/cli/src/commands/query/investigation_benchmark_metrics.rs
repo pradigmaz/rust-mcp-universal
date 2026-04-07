@@ -354,15 +354,37 @@ fn evidence_counts(
             count_field(break_item["expected_role"].as_str(), &mut counts);
             count_field(break_item["last_resolved_path"].as_str(), &mut counts);
         }
-        count_field(payload["actionability"]["recommended_target_path"].as_str(), &mut counts);
-        count_field(payload["actionability"]["recommended_target_role"].as_str(), &mut counts);
+        count_field(
+            payload["actionability"]["recommended_target_path"].as_str(),
+            &mut counts,
+        );
+        count_field(
+            payload["actionability"]["recommended_target_role"].as_str(),
+            &mut counts,
+        );
         count_field(payload["actionability"]["reason"].as_str(), &mut counts);
-        count_non_empty_array(payload["actionability"]["related_tests"].as_array(), &mut counts);
-        count_non_empty_array(payload["actionability"]["adjacent_paths"].as_array(), &mut counts);
+        count_non_empty_array(
+            payload["actionability"]["related_tests"].as_array(),
+            &mut counts,
+        );
+        count_non_empty_array(
+            payload["actionability"]["adjacent_paths"].as_array(),
+            &mut counts,
+        );
         count_non_empty_array(payload["actionability"]["checks"].as_array(), &mut counts);
-        count_non_empty_array(payload["actionability"]["rollback_sensitive_paths"].as_array(), &mut counts);
-        count_bool(payload["actionability"]["manual_review_required"].as_bool(), &mut counts);
-        for step in payload["actionability"]["next_steps"].as_array().into_iter().flatten() {
+        count_non_empty_array(
+            payload["actionability"]["rollback_sensitive_paths"].as_array(),
+            &mut counts,
+        );
+        count_bool(
+            payload["actionability"]["manual_review_required"].as_bool(),
+            &mut counts,
+        );
+        for step in payload["actionability"]["next_steps"]
+            .as_array()
+            .into_iter()
+            .flatten()
+        {
             count_field(step["kind"].as_str(), &mut counts);
             count_field(step["detail"].as_str(), &mut counts);
         }

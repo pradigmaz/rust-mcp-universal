@@ -77,8 +77,7 @@ pub(super) fn contract_trace(args: &Value, state: &mut ServerState) -> Result<Va
         state,
         "contract_trace",
         |engine, seed, seed_kind, limit| {
-            serde_json::to_value(engine.contract_trace(seed, seed_kind, limit)?)
-                .map_err(Into::into)
+            serde_json::to_value(engine.contract_trace(seed, seed_kind, limit)?).map_err(Into::into)
         },
     )
 }

@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::{
-    ConceptSeed, ConstraintEvidence, GeneratedLineage, InvestigationAnchor, RouteSegment,
-};
+use super::{ConceptSeed, ConstraintEvidence, GeneratedLineage, InvestigationAnchor, RouteSegment};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]

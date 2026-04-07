@@ -422,8 +422,18 @@ mod tests {
         assert_eq!(summary.derivation, "agent_query_bundle");
         assert_eq!(summary.strength, CanonicalStrength::Strong);
         assert_eq!(summary.reasons[0], "dominant_basis:indexed");
-        assert!(summary.reasons.iter().any(|reason| reason == "indexed_chunk"));
-        assert!(summary.reasons.iter().any(|reason| reason == "live_crosscheck"));
+        assert!(
+            summary
+                .reasons
+                .iter()
+                .any(|reason| reason == "indexed_chunk")
+        );
+        assert!(
+            summary
+                .reasons
+                .iter()
+                .any(|reason| reason == "live_crosscheck")
+        );
     }
 
     #[test]

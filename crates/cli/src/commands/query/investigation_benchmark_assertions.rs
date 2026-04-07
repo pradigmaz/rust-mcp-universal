@@ -63,15 +63,21 @@ pub(super) fn evaluate_assertion(payload: &Value, assertion: &InvestigationAsser
         "manual_review_required" => payload["manual_review_required"]
             .as_bool()
             .is_some_and(|value| value == parse_bool_assertion(assertion)),
-        "chain_role_present" | "contains_chain_role" => payload["chain"]
-            .as_array()
-            .is_some_and(|chain| chain.iter().any(|link| link["role"].as_str() == assertion.value.as_deref())),
-        "recommended_target_role" => payload["actionability"]["recommended_target_role"]
-            .as_str()
-            == assertion.value.as_deref(),
-        "recommended_target_path" => payload["actionability"]["recommended_target_path"]
-            .as_str()
-            == assertion.value.as_deref(),
+        "chain_role_present" | "contains_chain_role" => {
+            payload["chain"].as_array().is_some_and(|chain| {
+                chain
+                    .iter()
+                    .any(|link| link["role"].as_str() == assertion.value.as_deref())
+            })
+        }
+        "recommended_target_role" => {
+            payload["actionability"]["recommended_target_role"].as_str()
+                == assertion.value.as_deref()
+        }
+        "recommended_target_path" => {
+            payload["actionability"]["recommended_target_path"].as_str()
+                == assertion.value.as_deref()
+        }
         _ => false,
     }
 }

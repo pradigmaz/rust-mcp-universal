@@ -157,8 +157,7 @@ pub(super) fn run_tool(
                 .map_err(Into::into)
         }
         InvestigationBenchmarkTool::ContractTrace => {
-            serde_json::to_value(engine.contract_trace(seed, seed_kind, limit)?)
-                .map_err(Into::into)
+            serde_json::to_value(engine.contract_trace(seed, seed_kind, limit)?).map_err(Into::into)
         }
         InvestigationBenchmarkTool::DivergenceReport => {
             serde_json::to_value(engine.divergence_report(seed, seed_kind, limit)?)

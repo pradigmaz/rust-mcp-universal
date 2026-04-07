@@ -86,8 +86,8 @@ pub(super) fn divergence_report_from_cluster(cluster: ConceptClusterResult) -> D
         &missing_evidence,
         &divergence_signals,
     );
-    let seed_path = (cluster.seed.seed_kind == ConceptSeedKind::Path)
-        .then(|| cluster.seed.seed.clone());
+    let seed_path =
+        (cluster.seed.seed_kind == ConceptSeedKind::Path).then(|| cluster.seed.seed.clone());
     DivergenceReport {
         surface_kind: SURFACE_KIND.to_string(),
         seed: cluster.seed,

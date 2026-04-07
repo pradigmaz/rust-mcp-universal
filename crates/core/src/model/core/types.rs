@@ -2,8 +2,8 @@ mod agent;
 mod context;
 mod index;
 mod investigation;
-mod investigation_contract;
 mod investigation_cluster;
+mod investigation_contract;
 mod investigation_embed;
 mod navigation;
 mod preflight;
@@ -28,14 +28,14 @@ pub use investigation::{
     RouteSegment, RouteSegmentKind, RouteTraceResult, SourceSpan, SymbolBodyAmbiguityStatus,
     SymbolBodyItem, SymbolBodyResolutionKind, SymbolBodyResult, SymbolBodyTimings,
 };
+pub use investigation_cluster::{
+    ConceptClusterExpansionPolicy, ConceptClusterResult, ConceptClusterSummary,
+    ImplementationVariant, SemanticState, VariantScoreBreakdown,
+};
 pub use investigation_contract::{
     Actionability, ActionabilityStep, ContractBreak, ContractTraceLink, ContractTraceResult,
     ContractTraceRole, GeneratedLineage, GeneratedLineageBasis, GeneratedLineageStatus,
     GeneratedSourceOfTruthKind,
-};
-pub use investigation_cluster::{
-    ConceptClusterExpansionPolicy, ConceptClusterResult, ConceptClusterSummary,
-    ImplementationVariant, SemanticState, VariantScoreBreakdown,
 };
 pub use investigation_embed::{
     InvestigationConceptClusterSummary, InvestigationConstraintSummary,
