@@ -305,6 +305,13 @@ cargo run --locked -p rmu-cli -- --project-path . --json status
 - `RMU` не заменяет чтение кода, а помогает быстрее дойти до нужных мест
 - подробные внутренние планы и stage-артефакты намеренно не выносятся в README
 
+## Wave 4 surfaces
+
+- `quality/dead_code` и `quality/security_smells` теперь идут как long-tail warning lanes внутри quality outputs.
+- `quality/security_smells` не участвует в ordinary numeric quality score.
+- `security/sensitive_data` доступен как отдельная security surface.
+- repo-local signal memory хранится в `.rmu/signal-memory.json` и доступна через CLI/MCP inspect/mark flows.
+
 ## Лицензия
 
 MIT

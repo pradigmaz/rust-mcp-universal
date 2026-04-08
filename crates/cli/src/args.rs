@@ -290,6 +290,36 @@ pub(crate) enum Command {
         auto_index: bool,
     },
     QualitySnapshot(QualitySnapshotCommandArgs),
+    SensitiveData {
+        #[arg(long)]
+        path_prefix: Option<String>,
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+        #[arg(long, default_value_t = false)]
+        include_low_confidence: bool,
+    },
+    SignalMemory {
+        #[arg(long, default_value_t = 20)]
+        limit: usize,
+        #[arg(long)]
+        finding_family: Option<String>,
+        #[arg(long)]
+        decision: Option<String>,
+    },
+    MarkSignalMemory {
+        #[arg(long)]
+        signal_key: String,
+        #[arg(long)]
+        finding_family: String,
+        #[arg(long)]
+        decision: String,
+        #[arg(long)]
+        reason: String,
+        #[arg(long, default_value = "manual")]
+        source: String,
+        #[arg(long)]
+        scope: Option<String>,
+    },
     Brief,
     Agent {
         #[arg(long)]

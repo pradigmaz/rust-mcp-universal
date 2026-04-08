@@ -408,3 +408,10 @@ Quality surface нужен для обычной практической зад
 - `hotspot_score` помогает ранжировать зоны работы
 
 Если несколько метрик указывают в одно и то же место, начинать обычно стоит именно с него.
+
+## Граница между quality и security после Wave 4
+
+- `quality/dead_code` и `quality/security_smells` остаются warning-first сигналами внутри quality-facing surfaces.
+- `quality/security_smells` виден рядом с ordinary quality, но не входит в ordinary numeric `risk_score`.
+- `security/sensitive_data` вынесен в отдельную security surface и не растворяется в `rule_violations`, `quality_hotspots` или `quality_snapshot`.
+- repo-local signal memory теперь отдельная системная фича: она не равна suppression policy и не подменяет её.

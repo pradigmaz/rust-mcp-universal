@@ -35,6 +35,10 @@ mod rule_violations;
 mod search_candidates;
 #[path = "handlers/semantic_search.rs"]
 mod semantic_search;
+#[path = "handlers/sensitive_data.rs"]
+mod sensitive_data;
+#[path = "handlers/signal_memory.rs"]
+mod signal_memory;
 #[path = "handlers/symbol_lookup.rs"]
 mod symbol_lookup;
 #[path = "handlers/symbol_references.rs"]
@@ -112,6 +116,18 @@ pub(super) fn quality_hotspots(args: &Value, state: &mut ServerState) -> Result<
 
 pub(super) fn quality_snapshot(args: &Value, state: &mut ServerState) -> Result<Value> {
     quality_snapshot::quality_snapshot(args, state)
+}
+
+pub(super) fn sensitive_data(args: &Value, state: &mut ServerState) -> Result<Value> {
+    sensitive_data::sensitive_data(args, state)
+}
+
+pub(super) fn signal_memory(args: &Value, state: &mut ServerState) -> Result<Value> {
+    signal_memory::signal_memory(args, state)
+}
+
+pub(super) fn mark_signal_memory(args: &Value, state: &mut ServerState) -> Result<Value> {
+    signal_memory::mark_signal_memory(args, state)
 }
 
 pub(super) fn call_path(args: &Value, state: &mut ServerState) -> Result<Value> {

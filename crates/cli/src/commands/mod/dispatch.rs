@@ -7,7 +7,10 @@ use super::modes::{
     parse_ignore_install_target, parse_seed_kind, parse_semantic_fail_mode,
 };
 use super::preflight_helpers::PreparedRun;
-use super::{indexing, maintenance, quality_hotspots, quality_matrix, quality_snapshot, query};
+use super::{
+    indexing, maintenance, quality_hotspots, quality_matrix, quality_snapshot, query,
+    sensitive_data, signal_memory,
+};
 
 pub(super) fn run(prepared: PreparedRun) -> Result<()> {
     let PreparedRun {
@@ -434,6 +437,54 @@ pub(super) fn run(prepared: PreparedRun) -> Result<()> {
                 persist_artifacts: args.persist_artifacts,
                 promote_self_baseline: args.promote_self_baseline,
                 fail_on_regression: args.fail_on_regression,
+            },
+        ),
+        Command::SensitiveData {
+            path_prefix,
+            limit,
+            include_low_confidence,
+        } => sensitive_data::run(
+            required_engine(engine)?,
+            json,
+            privacy_mode,
+            sensitive_data::SensitiveDataArgs {
+                path_prefix,
+                limit,
+                include_low_confidence,
+            },
+        ),
+        Command::SignalMemory {
+            limit,
+            finding_family,
+            decision,
+        } => signal_memory::inspect(
+            required_engine(engine)?,
+            json,
+            privacy_mode,
+            signal_memory::SignalMemoryArgs {
+                limit,
+                finding_family,
+                decision,
+            },
+        ),
+        Command::MarkSignalMemory {
+            signal_key,
+            finding_family,
+            decision,
+            reason,
+            source,
+            scope,
+        } => signal_memory::mark(
+            required_engine(engine)?,
+            json,
+            privacy_mode,
+            signal_memory::MarkSignalMemoryArgs {
+                signal_key,
+                finding_family,
+                decision,
+                reason,
+                source,
+                scope,
             },
         ),
         Command::Brief => maintenance::run_brief(required_engine(engine)?, json, privacy_mode),

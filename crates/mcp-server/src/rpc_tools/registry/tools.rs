@@ -4,10 +4,11 @@ use super::helpers::{json_schema_object, tool};
 use super::schemas::{
     agent_intent_mode_schema, bootstrap_profile_schema, budget_query_schema, call_path_schema,
     context_pack_schema, db_maintenance_schema, delete_index_schema, index_schema,
-    install_ignore_rules_schema, investigation_schema, migration_mode_schema, navigation_schema,
-    preflight_schema, privacy_mode_schema, quality_hotspots_schema, quality_snapshot_schema,
-    query_benchmark_schema, query_schema, report_query_schema, rollout_phase_schema,
-    rule_violations_schema, scope_preview_schema,
+    install_ignore_rules_schema, investigation_schema, mark_signal_memory_schema,
+    migration_mode_schema, navigation_schema, preflight_schema, privacy_mode_schema,
+    quality_hotspots_schema, quality_snapshot_schema, query_benchmark_schema, query_schema,
+    report_query_schema, rollout_phase_schema, rule_violations_schema, scope_preview_schema,
+    sensitive_data_schema, signal_memory_schema,
 };
 
 pub(super) fn tools_list() -> Value {
@@ -262,6 +263,21 @@ pub(super) fn tools_list() -> Value {
                 "quality_snapshot",
                 "Capture a fresh project quality snapshot, persist debt-wave artifacts, and optionally compare against baseline or wave_before",
                 quality_snapshot_schema()
+            ),
+            tool(
+                "sensitive_data",
+                "Run dedicated security-sensitive data scan over repo files without mixing results into ordinary quality scoring",
+                sensitive_data_schema()
+            ),
+            tool(
+                "signal_memory",
+                "Inspect repo-local remembered useful/noisy signal decisions",
+                signal_memory_schema()
+            ),
+            tool(
+                "mark_signal_memory",
+                "Persist a repo-local useful/noisy decision for a specific signal key",
+                mark_signal_memory_schema()
             ),
             tool(
                 "build_context_under_budget",

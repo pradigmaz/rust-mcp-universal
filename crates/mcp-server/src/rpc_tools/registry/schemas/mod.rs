@@ -3,6 +3,7 @@ mod indexing;
 mod navigation;
 mod quality;
 mod query;
+mod security;
 
 pub(super) use common::{migration_mode_schema, privacy_mode_schema, rollout_phase_schema};
 pub(super) use indexing::{
@@ -17,3 +18,4 @@ pub(super) use query::{
     agent_intent_mode_schema, bootstrap_profile_schema, budget_query_schema, context_pack_schema,
     investigation_schema, query_benchmark_schema, query_schema, report_query_schema,
 };
+pub(super) use security::{mark_signal_memory_schema, sensitive_data_schema, signal_memory_schema};

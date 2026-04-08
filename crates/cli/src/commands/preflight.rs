@@ -277,6 +277,64 @@ pub(super) fn preflight_validate(command: &Command) -> Result<()> {
                 bail!("`wave_id` must be non-empty when compare_against=wave_before");
             }
         }
+        Command::SensitiveData {
+            path_prefix, limit, ..
+        } => {
+            let _ = require_min("limit", *limit, 1)?;
+            let _ = require_max("limit", *limit, limit_max)?;
+            if path_prefix
+                .as_ref()
+                .is_some_and(|value| value.trim().is_empty())
+            {
+                bail!("`path_prefix` must be non-empty when provided");
+            }
+        }
+        Command::SignalMemory {
+            limit,
+            finding_family,
+            decision,
+        } => {
+            let _ = require_min("limit", *limit, 1)?;
+            let _ = require_max("limit", *limit, limit_max)?;
+            if let Some(raw_family) = finding_family
+                && rmu_core::FindingFamily::parse(raw_family).is_none()
+            {
+                bail!(
+                    "`finding_family` must be one of: ordinary, dead_code, security_smells, sensitive_data"
+                );
+            }
+            if let Some(raw_decision) = decision
+                && rmu_core::SignalMemoryDecision::parse(raw_decision).is_none()
+            {
+                bail!("`decision` must be one of: useful, noisy");
+            }
+        }
+        Command::MarkSignalMemory {
+            signal_key,
+            finding_family,
+            decision,
+            reason,
+            source,
+            ..
+        } => {
+            if signal_key.trim().is_empty() {
+                bail!("`signal_key` must be non-empty");
+            }
+            if reason.trim().is_empty() {
+                bail!("`reason` must be non-empty");
+            }
+            if source.trim().is_empty() {
+                bail!("`source` must be non-empty");
+            }
+            if rmu_core::FindingFamily::parse(finding_family).is_none() {
+                bail!(
+                    "`finding_family` must be one of: ordinary, dead_code, security_smells, sensitive_data"
+                );
+            }
+            if rmu_core::SignalMemoryDecision::parse(decision).is_none() {
+                bail!("`decision` must be one of: useful, noisy");
+            }
+        }
         Command::Agent {
             query,
             mode,

@@ -7,6 +7,8 @@ mod quality_hotspots;
 mod quality_matrix;
 mod quality_snapshot;
 mod query;
+mod sensitive_data;
+mod signal_memory;
 
 #[path = "mod/dispatch.rs"]
 mod dispatch;
