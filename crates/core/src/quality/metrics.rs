@@ -45,6 +45,9 @@ pub(crate) fn build_indexed_quality_facts(
     hotspots.merge_from(super::complexity::analyze_complexity(
         rel_path, language, full_text,
     ));
+    let dead_code = super::dead_code::analyze_dead_code(rel_path, language, full_text);
+    let security_smells =
+        super::security_smells::analyze_security_smells(rel_path, language, full_text);
     QualityCandidateFacts {
         rel_path: rel_path.to_string(),
         size_bytes: i64::try_from(size_bytes).unwrap_or(i64::MAX),
@@ -62,6 +65,8 @@ pub(crate) fn build_indexed_quality_facts(
         git_risk: super::GitRiskFacts::default(),
         test_risk: super::TestRiskFacts::default(),
         duplication: super::DuplicationFacts::default(),
+        dead_code,
+        security_smells,
     }
 }
 
@@ -88,6 +93,8 @@ pub(crate) fn build_oversize_quality_facts(
         git_risk: super::GitRiskFacts::default(),
         test_risk: super::TestRiskFacts::default(),
         duplication: super::DuplicationFacts::default(),
+        dead_code: super::DeadCodeFacts::default(),
+        security_smells: super::SecuritySmellFacts::default(),
     }
 }
 

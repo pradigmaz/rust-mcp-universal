@@ -1,10 +1,12 @@
 use crate::model::{
-    QualityLocation, QualityMode, QualitySource, QualityViolationEntry,
+    FindingConfidence, QualityLocation, QualityMode, QualitySource, QualityViolationEntry,
     SuppressedQualityViolationEntry,
 };
 
 #[path = "quality/complexity.rs"]
 mod complexity;
+#[path = "quality/dead_code.rs"]
+mod dead_code;
 #[path = "quality/duplication.rs"]
 mod duplication;
 #[path = "quality/evaluate.rs"]
@@ -27,11 +29,13 @@ mod rule_metadata;
 mod rules;
 #[path = "quality/scoring.rs"]
 mod scoring;
+#[path = "quality/security_smells.rs"]
+mod security_smells;
 #[path = "quality/test_risk.rs"]
 mod test_risk;
 
-pub(crate) const QUALITY_RULESET_ID: &str = "quality-core-v12";
-pub(crate) const CURRENT_QUALITY_RULESET_VERSION: i64 = 12;
+pub(crate) const QUALITY_RULESET_ID: &str = "quality-core-v13";
+pub(crate) const CURRENT_QUALITY_RULESET_VERSION: i64 = 13;
 
 #[derive(Debug, Clone)]
 pub(crate) struct QualityMetricEntry {
@@ -144,6 +148,31 @@ pub(crate) struct DuplicationFacts {
     pub(crate) primary_location: Option<crate::model::QualityLocation>,
 }
 
+#[derive(Debug, Clone, Default)]
+pub(crate) struct DeadCodeFacts {
+    pub(crate) exported_symbol_count: i64,
+    pub(crate) candidate: bool,
+    pub(crate) location: Option<crate::model::QualityLocation>,
+    pub(crate) confidence: Option<FindingConfidence>,
+    pub(crate) noise_reason: Option<String>,
+}
+
+#[derive(Debug, Clone, Default)]
+pub(crate) struct SecuritySmellMatch {
+    pub(crate) match_count: i64,
+    pub(crate) location: Option<crate::model::QualityLocation>,
+    pub(crate) confidence: Option<FindingConfidence>,
+    pub(crate) noise_reason: Option<String>,
+}
+
+#[derive(Debug, Clone, Default)]
+pub(crate) struct SecuritySmellFacts {
+    pub(crate) shell_exec: SecuritySmellMatch,
+    pub(crate) path_traversal: SecuritySmellMatch,
+    pub(crate) raw_sql: SecuritySmellMatch,
+    pub(crate) unsafe_deserialize: SecuritySmellMatch,
+}
+
 #[derive(Debug, Clone)]
 pub(crate) struct QualitySnapshot {
     pub(crate) size_bytes: i64,
@@ -181,6 +210,8 @@ pub(crate) struct QualityCandidateFacts {
     pub(crate) git_risk: GitRiskFacts,
     pub(crate) test_risk: TestRiskFacts,
     pub(crate) duplication: DuplicationFacts,
+    pub(crate) dead_code: DeadCodeFacts,
+    pub(crate) security_smells: SecuritySmellFacts,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -235,6 +266,29 @@ pub(crate) fn violations_hash(violations: &[QualityViolationEntry]) -> String {
         bytes.push(0);
         if let Some(source) = violation.source {
             bytes.extend_from_slice(source.as_str().as_bytes());
+        }
+        bytes.push(0);
+        if let Some(finding_family) = violation.finding_family {
+            bytes.extend_from_slice(finding_family.as_str().as_bytes());
+        }
+        bytes.push(0);
+        if let Some(confidence) = violation.confidence {
+            bytes.extend_from_slice(confidence.as_str().as_bytes());
+        }
+        bytes.push(0);
+        bytes.extend_from_slice(if violation.manual_review_required {
+            b"1"
+        } else {
+            b"0"
+        });
+        bytes.push(0);
+        if let Some(noise_reason) = &violation.noise_reason {
+            bytes.extend_from_slice(noise_reason.as_bytes());
+        }
+        bytes.push(0);
+        for followup in &violation.recommended_followups {
+            bytes.extend_from_slice(followup.as_bytes());
+            bytes.push(0xff);
         }
         bytes.push(b'\n');
     }

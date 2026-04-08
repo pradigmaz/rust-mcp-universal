@@ -1,5 +1,5 @@
 use crate::model::{
-    QualityRiskScoreBreakdown, QualityRiskScoreComponents, QualityRiskScoreWeights,
+    FindingFamily, QualityRiskScoreBreakdown, QualityRiskScoreComponents, QualityRiskScoreWeights,
     QualitySeverity, RuleViolationFileHit,
 };
 
@@ -46,11 +46,15 @@ pub(crate) fn compute_file_risk_score(
 }
 
 pub(crate) fn compute_hit_risk_score(hit: &RuleViolationFileHit) -> QualityRiskScoreBreakdown {
+    let scored_violations = hit
+        .violations
+        .iter()
+        .filter(|violation| violation.finding_family != Some(FindingFamily::SecuritySmells))
+        .collect::<Vec<_>>();
     compute_file_risk_score(
         QualityRiskScoreComponents {
-            violation_count: hit.violations.len() as f64,
-            severity: hit
-                .violations
+            violation_count: scored_violations.len() as f64,
+            severity: scored_violations
                 .iter()
                 .map(|violation| severity_weight(violation.severity))
                 .sum(),

@@ -110,12 +110,17 @@ pub(crate) fn upsert_quality_snapshot(
                 severity,
                 category,
                 source,
+                finding_family,
+                confidence,
+                manual_review_required,
+                noise_reason,
+                recommended_followups_json,
                 start_line,
                 start_column,
                 end_line,
                 end_column
              )
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17)",
             params![
                 input.path,
                 &violation.rule_id,
@@ -125,6 +130,15 @@ pub(crate) fn upsert_quality_snapshot(
                 violation.severity.as_str(),
                 violation.category.as_str(),
                 violation.source.map(|source| source.as_str()),
+                violation.finding_family.map(|family| family.as_str()),
+                violation.confidence.map(|confidence| confidence.as_str()),
+                if violation.manual_review_required {
+                    1
+                } else {
+                    0
+                },
+                &violation.noise_reason,
+                serde_json::to_string(&violation.recommended_followups)?,
                 violation
                     .location
                     .as_ref()

@@ -119,6 +119,11 @@ pub(in crate::engine) fn load_actual_quality_state(
             severity,
             category,
             source,
+            finding_family,
+            confidence,
+            manual_review_required,
+            noise_reason,
+            recommended_followups_json,
             start_line,
             start_column,
             end_line,
@@ -138,10 +143,15 @@ pub(in crate::engine) fn load_actual_quality_state(
                 row.get::<_, String>(5)?,
                 row.get::<_, String>(6)?,
                 row.get::<_, Option<String>>(7)?,
-                row.get::<_, Option<i64>>(8)?,
-                row.get::<_, Option<i64>>(9)?,
-                row.get::<_, Option<i64>>(10)?,
-                row.get::<_, Option<i64>>(11)?,
+                row.get::<_, Option<String>>(8)?,
+                row.get::<_, Option<String>>(9)?,
+                row.get::<_, i64>(10)?,
+                row.get::<_, Option<String>>(11)?,
+                row.get::<_, String>(12)?,
+                row.get::<_, Option<i64>>(13)?,
+                row.get::<_, Option<i64>>(14)?,
+                row.get::<_, Option<i64>>(15)?,
+                row.get::<_, Option<i64>>(16)?,
             ))
         })?
         .collect::<rusqlite::Result<Vec<_>>>()?;
@@ -156,6 +166,11 @@ pub(in crate::engine) fn load_actual_quality_state(
         severity,
         category,
         source,
+        finding_family,
+        confidence,
+        manual_review_required,
+        noise_reason,
+        recommended_followups_json,
         start_line,
         start_column,
         end_line,
@@ -178,6 +193,18 @@ pub(in crate::engine) fn load_actual_quality_state(
                 source: source
                     .as_deref()
                     .and_then(crate::model::QualitySource::parse),
+                finding_family: finding_family
+                    .as_deref()
+                    .and_then(crate::model::FindingFamily::parse),
+                confidence: confidence
+                    .as_deref()
+                    .and_then(crate::model::FindingConfidence::parse),
+                manual_review_required: manual_review_required != 0,
+                noise_reason,
+                recommended_followups: serde_json::from_str(&recommended_followups_json)
+                    .unwrap_or_default(),
+                signal_key: None,
+                memory_status: None,
             });
     }
 

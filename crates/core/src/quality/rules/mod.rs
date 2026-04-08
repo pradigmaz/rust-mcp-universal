@@ -11,10 +11,12 @@ use crate::model::{
 
 mod basic;
 mod complexity;
+mod dead_code;
 mod duplication;
 mod file_hotspots;
 mod git_risk;
 mod layering;
+mod security_smells;
 mod structural;
 mod test_risk;
 
@@ -143,6 +145,13 @@ pub(super) fn threshold_violation_with_source(
         category: ctx.effective_policy.metadata_for_rule(rule_id).category,
         location,
         source,
+        finding_family: None,
+        confidence: None,
+        manual_review_required: false,
+        noise_reason: None,
+        recommended_followups: Vec::new(),
+        signal_key: None,
+        memory_status: None,
     })
 }
 
@@ -164,6 +173,45 @@ pub(super) fn explicit_violation(
         category: ctx.effective_policy.metadata_for_rule(rule_id).category,
         location,
         source,
+        finding_family: None,
+        confidence: None,
+        manual_review_required: false,
+        noise_reason: None,
+        recommended_followups: Vec::new(),
+        signal_key: None,
+        memory_status: None,
+    }
+}
+
+pub(super) fn signal_violation(
+    ctx: &RuleContext<'_>,
+    rule_id: &str,
+    actual_value: i64,
+    threshold_value: i64,
+    message: String,
+    location: Option<QualityLocation>,
+    source: Option<QualitySource>,
+    finding_family: crate::model::FindingFamily,
+    confidence: Option<crate::model::FindingConfidence>,
+    noise_reason: Option<String>,
+    recommended_followups: Vec<String>,
+) -> QualityViolationEntry {
+    QualityViolationEntry {
+        rule_id: rule_id.to_string(),
+        actual_value,
+        threshold_value,
+        message,
+        severity: ctx.effective_policy.metadata_for_rule(rule_id).severity,
+        category: ctx.effective_policy.metadata_for_rule(rule_id).category,
+        location,
+        source,
+        finding_family: Some(finding_family),
+        confidence,
+        manual_review_required: true,
+        noise_reason,
+        recommended_followups,
+        signal_key: None,
+        memory_status: None,
     }
 }
 
@@ -191,6 +239,8 @@ fn default_rules() -> Vec<Box<dyn QualityRule>> {
     rules.extend(file_hotspots::rules());
     rules.extend(complexity::rules());
     rules.extend(duplication::rules());
+    rules.extend(dead_code::rules());
+    rules.extend(security_smells::rules());
     rules.extend(structural::rules());
     rules.extend(layering::rules());
     rules.extend(git_risk::rules());

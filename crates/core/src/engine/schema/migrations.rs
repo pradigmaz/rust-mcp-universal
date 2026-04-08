@@ -21,7 +21,7 @@ pub(super) struct SchemaMigration {
     pub(super) apply: fn(&Transaction<'_>) -> Result<()>,
 }
 
-pub(super) const CURRENT_SCHEMA_MIGRATION_VERSION: u32 = 14;
+pub(super) const CURRENT_SCHEMA_MIGRATION_VERSION: u32 = 15;
 
 pub(super) const MIGRATIONS: [SchemaMigration; CURRENT_SCHEMA_MIGRATION_VERSION as usize] = [
     SchemaMigration {
@@ -93,6 +93,11 @@ pub(super) const MIGRATIONS: [SchemaMigration; CURRENT_SCHEMA_MIGRATION_VERSION 
         id: 14,
         name: "quality_policy_stage3_contracts",
         apply: migration_quality_policy_stage3_contracts,
+    },
+    SchemaMigration {
+        id: 15,
+        name: "quality_signal_contract_fields",
+        apply: migration_quality_signal_contract_fields,
     },
 ];
 
@@ -256,6 +261,10 @@ fn migration_file_rule_violation_locations(tx: &Transaction<'_>) -> Result<()> {
 }
 
 fn migration_quality_metric_details_and_violation_source(tx: &Transaction<'_>) -> Result<()> {
+    ensure_file_quality_tables(tx)
+}
+
+fn migration_quality_signal_contract_fields(tx: &Transaction<'_>) -> Result<()> {
     ensure_file_quality_tables(tx)
 }
 

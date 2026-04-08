@@ -92,6 +92,23 @@ fn migration_runner_adds_quality_tables() -> anyhow::Result<()> {
     assert!(violation_columns.iter().any(|name| name == "source"));
     assert!(violation_columns.iter().any(|name| name == "severity"));
     assert!(violation_columns.iter().any(|name| name == "category"));
+    assert!(
+        violation_columns
+            .iter()
+            .any(|name| name == "finding_family")
+    );
+    assert!(violation_columns.iter().any(|name| name == "confidence"));
+    assert!(
+        violation_columns
+            .iter()
+            .any(|name| name == "manual_review_required")
+    );
+    assert!(violation_columns.iter().any(|name| name == "noise_reason"));
+    assert!(
+        violation_columns
+            .iter()
+            .any(|name| name == "recommended_followups_json")
+    );
 
     let _ = fs::remove_dir_all(root);
     Ok(())

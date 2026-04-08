@@ -47,6 +47,10 @@ pub(crate) fn default_rule_metadata(rule_id: &str) -> Option<RuleMetadata> {
             severity: QualitySeverity::High,
             category: QualityCategory::Maintainability,
         },
+        "dead_code_unused_export_candidate" => RuleMetadata {
+            severity: QualitySeverity::High,
+            category: QualityCategory::Maintainability,
+        },
         "max_todo_count_per_file" | "max_line_length" => RuleMetadata {
             severity: QualitySeverity::Low,
             category: QualityCategory::Style,
@@ -58,6 +62,10 @@ pub(crate) fn default_rule_metadata(rule_id: &str) -> Option<RuleMetadata> {
         "high_git_churn"
         | "ownership_concentration"
         | "high_change_coupling"
+        | "security_smell_shell_exec"
+        | "security_smell_path_traversal"
+        | "security_smell_raw_sql"
+        | "security_smell_unsafe_deserialize"
         | "public_surface_without_tests"
         | "hotspot_without_test_evidence"
         | "integration_entry_without_tests" => RuleMetadata {
@@ -102,6 +110,7 @@ fn known_rule_ids() -> &'static [&'static str] {
         "max_cognitive_complexity",
         "max_duplicate_block_count",
         "max_duplicate_density_bps",
+        "dead_code_unused_export_candidate",
         "max_fan_in_per_file",
         "max_fan_out_per_file",
         "module_cycle_member",
@@ -112,6 +121,10 @@ fn known_rule_ids() -> &'static [&'static str] {
         "high_git_churn",
         "ownership_concentration",
         "high_change_coupling",
+        "security_smell_shell_exec",
+        "security_smell_path_traversal",
+        "security_smell_raw_sql",
+        "security_smell_unsafe_deserialize",
         "public_surface_without_tests",
         "hotspot_without_test_evidence",
         "integration_entry_without_tests",

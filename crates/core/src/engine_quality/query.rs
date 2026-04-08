@@ -53,9 +53,11 @@ pub(super) fn load_rule_violations(
     let conn = engine.open_db_read_only()?;
 
     let result =
-        try_load_rule_violations(&conn, options).unwrap_or_else(|_| RuleViolationsResult {
-            summary: empty_rule_violations_summary(QualityStatus::Degraded),
-            hits: Vec::new(),
+        try_load_rule_violations(&engine.project_root, &conn, options).unwrap_or_else(|_| {
+            RuleViolationsResult {
+                summary: empty_rule_violations_summary(QualityStatus::Degraded),
+                hits: Vec::new(),
+            }
         });
     Ok(RuleViolationsResult {
         summary: RuleViolationsSummary {
@@ -122,6 +124,7 @@ fn try_load_quality_summary(conn: &rusqlite::Connection) -> Result<WorkspaceQual
 }
 
 fn try_load_rule_violations(
+    project_root: &std::path::Path,
     conn: &rusqlite::Connection,
     options: &RuleViolationsOptions,
 ) -> Result<RuleViolationsResult> {
@@ -137,6 +140,7 @@ fn try_load_rule_violations(
         &suppressed_by_path,
     )?;
     let mut hits = attach_metrics_and_suppressed(filtered, metrics_by_path, suppressed_by_path);
+    attach_signal_memory(project_root, &mut hits);
     attach_risk_scores(&mut hits);
     let sort_metric_id = options
         .sort_metric_id
@@ -226,6 +230,11 @@ fn attach_and_filter_violations(
             v.severity,
             v.category,
             v.source,
+            v.finding_family,
+            v.confidence,
+            v.manual_review_required,
+            v.noise_reason,
+            v.recommended_followups_json,
             v.start_line,
             v.start_column,
             v.end_line,
@@ -259,11 +268,26 @@ fn attach_and_filter_violations(
                     source: row
                         .get::<_, Option<String>>(7)?
                         .and_then(|value| QualitySource::parse(&value)),
+                    finding_family: row
+                        .get::<_, Option<String>>(8)?
+                        .and_then(|value| crate::model::FindingFamily::parse(&value)),
+                    confidence: row
+                        .get::<_, Option<String>>(9)?
+                        .and_then(|value| crate::model::FindingConfidence::parse(&value)),
+                    manual_review_required: row.get::<_, i64>(10).unwrap_or_default() != 0,
+                    noise_reason: row.get(11)?,
+                    recommended_followups: serde_json::from_str(
+                        &row.get::<_, String>(12)
+                            .unwrap_or_else(|_| "[]".to_string()),
+                    )
+                    .unwrap_or_default(),
+                    signal_key: None,
+                    memory_status: None,
                     location: violation_location(
-                        row.get::<_, Option<i64>>(8)?,
-                        row.get::<_, Option<i64>>(9)?,
-                        row.get::<_, Option<i64>>(10)?,
-                        row.get::<_, Option<i64>>(11)?,
+                        row.get::<_, Option<i64>>(13)?,
+                        row.get::<_, Option<i64>>(14)?,
+                        row.get::<_, Option<i64>>(15)?,
+                        row.get::<_, Option<i64>>(16)?,
                     ),
                 },
             ))
@@ -311,6 +335,25 @@ fn attach_metrics_and_suppressed(
 fn attach_risk_scores(hits: &mut [RuleViolationFileHit]) {
     for hit in hits {
         hit.risk_score = Some(compute_hit_risk_score(hit));
+    }
+}
+
+fn attach_signal_memory(project_root: &std::path::Path, hits: &mut [RuleViolationFileHit]) {
+    let memory = crate::signal_memory::load_signal_memory(project_root).unwrap_or_default();
+    for hit in hits {
+        for violation in &mut hit.violations {
+            let signal_key = crate::signal_memory::build_quality_signal_key(&hit.path, violation);
+            violation.memory_status =
+                crate::signal_memory::signal_memory_status(&memory, &signal_key);
+            violation.signal_key = Some(signal_key);
+        }
+        for suppressed in &mut hit.suppressed_violations {
+            let signal_key =
+                crate::signal_memory::build_quality_signal_key(&hit.path, &suppressed.violation);
+            suppressed.violation.memory_status =
+                crate::signal_memory::signal_memory_status(&memory, &signal_key);
+            suppressed.violation.signal_key = Some(signal_key);
+        }
     }
 }
 
@@ -371,8 +414,26 @@ fn compare_hits(
         }
     };
     primary
+        .then_with(|| warning_prominence(right).cmp(&warning_prominence(left)))
         .then_with(|| right.size_bytes.cmp(&left.size_bytes))
         .then_with(|| left.path.cmp(&right.path))
+}
+
+fn warning_prominence(hit: &RuleViolationFileHit) -> usize {
+    hit.violations
+        .iter()
+        .map(|violation| match violation.memory_status {
+            Some(crate::model::SignalMemoryStatus::RememberedUseful) => 3,
+            Some(crate::model::SignalMemoryStatus::RememberedNoisy) => {
+                if violation.confidence == Some(crate::model::FindingConfidence::High) {
+                    2
+                } else {
+                    0
+                }
+            }
+            None | Some(crate::model::SignalMemoryStatus::Unknown) => 2,
+        })
+        .sum()
 }
 
 fn metric_value_for(hit: &RuleViolationFileHit, metric_id: Option<&str>) -> i64 {

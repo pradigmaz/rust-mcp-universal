@@ -497,7 +497,7 @@ mod tests {
             .expect("preflight status should succeed");
 
         assert_eq!(status.project_path, root.display().to_string());
-        assert_eq!(status.db_schema_version, Some(14));
+        assert_eq!(status.db_schema_version, Some(super::CURRENT_SCHEMA_VERSION));
         assert!(status.errors.is_empty());
         assert!(matches!(
             status.status,

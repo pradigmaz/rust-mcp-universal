@@ -18,6 +18,7 @@ mod hotspots;
 mod oversize_and_backfill;
 mod structural;
 mod summary_rules;
+mod wave4_security;
 
 fn temp_dir(prefix: &str) -> PathBuf {
     let nanos = SystemTime::now()

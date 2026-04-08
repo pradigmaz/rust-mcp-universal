@@ -11,6 +11,7 @@ mod quality;
 mod quality_snapshot;
 mod query;
 mod report;
+mod security;
 mod workspace;
 
 pub use agent::{
@@ -48,13 +49,14 @@ pub use navigation::{
 };
 pub use preflight::{PreflightState, PreflightStatus};
 pub use quality::{
-    QualityCategory, QualityDeltaSummary, QualityHotspotAggregation, QualityHotspotBucket,
-    QualityHotspotRuleCount, QualityHotspotStructuralSignals, QualityHotspotsOptions,
-    QualityHotspotsResult, QualityHotspotsSortBy, QualityHotspotsSummary, QualityLocation,
-    QualityMetricValue, QualityMode, QualityRiskScoreBreakdown, QualityRiskScoreComponents,
-    QualityRiskScoreWeights, QualitySeverity, QualitySource, QualityStatus, QualitySuppression,
-    QualityViolationEntry, RuleViolationFileHit, RuleViolationsOptions, RuleViolationsResult,
-    RuleViolationsSortBy, RuleViolationsSummary, SuppressedQualityViolationEntry,
+    FindingConfidence, FindingFamily, QualityCategory, QualityDeltaSummary,
+    QualityHotspotAggregation, QualityHotspotBucket, QualityHotspotRuleCount,
+    QualityHotspotStructuralSignals, QualityHotspotsOptions, QualityHotspotsResult,
+    QualityHotspotsSortBy, QualityHotspotsSummary, QualityLocation, QualityMetricValue,
+    QualityMode, QualityRiskScoreBreakdown, QualityRiskScoreComponents, QualityRiskScoreWeights,
+    QualitySeverity, QualitySource, QualityStatus, QualitySuppression, QualityViolationEntry,
+    RuleViolationFileHit, RuleViolationsOptions, RuleViolationsResult, RuleViolationsSortBy,
+    RuleViolationsSummary, SignalMemoryStatus, SuppressedQualityViolationEntry,
     WorkspaceQualityCategoryCount, WorkspaceQualitySeverityCount, WorkspaceQualitySummary,
     WorkspaceQualityTopMetric, WorkspaceQualityTopRule,
 };
@@ -70,6 +72,13 @@ pub use report::{
     BudgetInfo, CanonicalProvenance, ConfidenceInfo, ConfidenceSignals, IndexTelemetry,
     InvestigationPhaseTimings, QueryReport, QuerySurfaceTimings, RankExplainBreakdown,
     RetrievalStage, SelectedContextItem,
+};
+pub use security::{
+    SensitiveDataExposureScope, SensitiveDataFinding, SensitiveDataOptions,
+    SensitiveDataPlaceholderStatus, SensitiveDataResult, SensitiveDataRotationUrgency,
+    SensitiveDataSnippetType, SensitiveDataSummary, SensitiveDataValidationStatus,
+    SignalMemoryDecision, SignalMemoryEntry, SignalMemoryMarkRequest, SignalMemoryOptions,
+    SignalMemoryResult,
 };
 pub use workspace::{
     WorkspaceBrief, WorkspaceLanguageStat, WorkspaceRepairHint, WorkspaceTopSymbol,

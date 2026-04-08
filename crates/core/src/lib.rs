@@ -18,6 +18,8 @@ mod rebuild_lock;
 mod report;
 mod rollout;
 mod search_db;
+mod security;
+mod signal_memory;
 mod text_utils;
 mod utils;
 mod vector_rank;
@@ -39,12 +41,12 @@ pub use model::{
     ConstraintEvidenceResult, ContextFile, ContextMode, ContextPackResult, ContextSelection,
     DbCheckpointResult, DbMaintenanceOptions, DbMaintenanceResult, DbMaintenanceStats,
     DbPruneResult, DegradationReason, DeleteIndexResult, DivergenceAxis, DivergenceReport,
-    DivergenceSignal, IgnoreInstallReport, IgnoreInstallTarget, ImplementationVariant,
-    IndexProfile, IndexStatus, IndexTelemetry, IndexingOptions, InvestigationAnchor,
-    InvestigationAnchorLabel, InvestigationAssertion, InvestigationBenchmarkCase,
-    InvestigationBenchmarkDataset, InvestigationBenchmarkDiffReport, InvestigationBenchmarkReport,
-    InvestigationBenchmarkTool, InvestigationCaseLabels, InvestigationCaseReport,
-    InvestigationConceptClusterSummary, InvestigationConstraintLabel,
+    DivergenceSignal, FindingConfidence, FindingFamily, IgnoreInstallReport, IgnoreInstallTarget,
+    ImplementationVariant, IndexProfile, IndexStatus, IndexTelemetry, IndexingOptions,
+    InvestigationAnchor, InvestigationAnchorLabel, InvestigationAssertion,
+    InvestigationBenchmarkCase, InvestigationBenchmarkDataset, InvestigationBenchmarkDiffReport,
+    InvestigationBenchmarkReport, InvestigationBenchmarkTool, InvestigationCaseLabels,
+    InvestigationCaseReport, InvestigationConceptClusterSummary, InvestigationConstraintLabel,
     InvestigationConstraintSummary, InvestigationDivergenceSignalLabel,
     InvestigationDivergenceSummary, InvestigationHints, InvestigationMetricChange,
     InvestigationRouteSegmentLabel, InvestigationRouteSummary, InvestigationSummary,
@@ -62,10 +64,15 @@ pub use model::{
     QueryReport, RankExplainBreakdown, RelatedFileHit, RetrievalStage, RolloutPhase, RouteGap,
     RoutePath, RouteSegment, RouteSegmentKind, RouteTraceResult, RuleViolationFileHit,
     RuleViolationsOptions, RuleViolationsResult, RuleViolationsSortBy, RuleViolationsSummary,
-    ScopePreviewResult, SearchHit, SelectedContextItem, SemanticFailMode, SourceSpan,
-    SymbolBodyAmbiguityStatus, SymbolBodyItem, SymbolBodyResolutionKind, SymbolBodyResult,
-    SymbolBodyTimings, SymbolMatch, SymbolReferenceHit, WorkspaceBrief, WorkspaceLanguageStat,
-    WorkspaceQualitySummary, WorkspaceQualityTopRule, WorkspaceTopSymbol,
+    ScopePreviewResult, SearchHit, SelectedContextItem, SemanticFailMode,
+    SensitiveDataExposureScope, SensitiveDataFinding, SensitiveDataOptions,
+    SensitiveDataPlaceholderStatus, SensitiveDataResult, SensitiveDataRotationUrgency,
+    SensitiveDataSnippetType, SensitiveDataSummary, SensitiveDataValidationStatus,
+    SignalMemoryDecision, SignalMemoryEntry, SignalMemoryMarkRequest, SignalMemoryOptions,
+    SignalMemoryResult, SignalMemoryStatus, SourceSpan, SymbolBodyAmbiguityStatus, SymbolBodyItem,
+    SymbolBodyResolutionKind, SymbolBodyResult, SymbolBodyTimings, SymbolMatch, SymbolReferenceHit,
+    WorkspaceBrief, WorkspaceLanguageStat, WorkspaceQualitySummary, WorkspaceQualityTopRule,
+    WorkspaceTopSymbol,
 };
 pub use privacy::{
     sanitize_error_message, sanitize_path_text, sanitize_query_text, sanitize_value_for_privacy,

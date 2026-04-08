@@ -24,7 +24,7 @@ fn indexing_persists_quality_snapshot_and_workspace_summary() -> anyhow::Result<
     assert!(stored.is_some());
 
     let brief = engine.workspace_brief()?;
-    assert_eq!(brief.quality_summary.ruleset_id, "quality-core-v12");
+    assert_eq!(brief.quality_summary.ruleset_id, "quality-core-v13");
     assert_eq!(brief.quality_summary.status.as_str(), "ready");
     assert_eq!(brief.quality_summary.evaluated_files, 1);
     assert_eq!(brief.quality_summary.violating_files, 1);

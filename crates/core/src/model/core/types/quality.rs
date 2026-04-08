@@ -141,6 +141,72 @@ impl QualityCategory {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum FindingConfidence {
+    Low,
+    Medium,
+    High,
+}
+
+impl FindingConfidence {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Low => "low",
+            Self::Medium => "medium",
+            Self::High => "high",
+        }
+    }
+
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "low" => Some(Self::Low),
+            "medium" => Some(Self::Medium),
+            "high" => Some(Self::High),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum FindingFamily {
+    Ordinary,
+    DeadCode,
+    SecuritySmells,
+    SensitiveData,
+}
+
+impl FindingFamily {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Ordinary => "ordinary",
+            Self::DeadCode => "dead_code",
+            Self::SecuritySmells => "security_smells",
+            Self::SensitiveData => "sensitive_data",
+        }
+    }
+
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "ordinary" => Some(Self::Ordinary),
+            "dead_code" => Some(Self::DeadCode),
+            "security_smells" => Some(Self::SecuritySmells),
+            "sensitive_data" => Some(Self::SensitiveData),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum SignalMemoryStatus {
+    #[default]
+    Unknown,
+    RememberedUseful,
+    RememberedNoisy,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct QualitySuppression {
     pub suppression_id: String,
@@ -216,6 +282,20 @@ pub struct QualityViolationEntry {
     pub location: Option<QualityLocation>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source: Option<QualitySource>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub finding_family: Option<FindingFamily>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub confidence: Option<FindingConfidence>,
+    #[serde(default)]
+    pub manual_review_required: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub noise_reason: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub recommended_followups: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub signal_key: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub memory_status: Option<SignalMemoryStatus>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -34,7 +34,7 @@ pub(super) fn apply_schema_migrations(
 use migrations::SchemaMigration;
 
 #[cfg(test)]
-const MIGRATIONS: [SchemaMigration; 14] = migrations::MIGRATIONS;
+const MIGRATIONS: [SchemaMigration; 15] = migrations::MIGRATIONS;
 
 #[cfg(test)]
 fn apply_schema_migrations_plan(
