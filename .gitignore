@@ -1,5 +1,6 @@
 /target/
 /.rmu/
+/.agents/handoff.md
 /.tmp_*/
 /.tmp_integration/
 /.tmp_scope_check/

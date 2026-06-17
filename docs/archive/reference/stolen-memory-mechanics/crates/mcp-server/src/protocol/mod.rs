@@ -1,0 +1,263 @@
+mod binding;
+mod parse;
+mod response;
+mod validation;
+
+use anyhow::Result;
+use obsidian_memory_core::{as_state_failure, sanitize_error_message, sanitize_value_for_privacy};
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
+
+use crate::ServerState;
+use crate::rpc_tools::{
+    handle_tool_call, is_invalid_params_error, is_tool_domain_error, tool_error_result, tools_list,
+};
+use crate::state::SessionLifecycle;
+
+pub(crate) use parse::process_raw_message;
+pub(crate) use response::parse_error_response;
+
+pub(crate) const PROTOCOL_VERSION: &str = "2025-06-18";
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct RpcRequest {
+    pub(crate) id: Option<Value>,
+    pub(crate) method: String,
+    pub(crate) params: Option<Value>,
+}
+
+#[derive(Debug, Serialize)]
+pub(crate) struct RpcResponse {
+    jsonrpc: &'static str,
+    pub(crate) id: Option<Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) result: Option<Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) error: Option<RpcError>,
+}
+
+pub(crate) type RpcResponseEnvelope = RpcResponse;
+
+#[derive(Debug, Serialize)]
+pub(crate) struct RpcError {
+    pub(crate) code: i64,
+    message: String,
+}
+
+pub(crate) fn handle_request(req: RpcRequest, state: &mut ServerState) -> RpcResponse {
+    let id = req.id.clone();
+    let result: Result<Value> = match req.method.as_str() {
+        "initialize" => {
+            if req.id.is_none() {
+                return response::invalid_request_response(
+                    "initialize must be a request with an `id`".to_string(),
+                    id,
+                );
+            }
+            if state.lifecycle() != SessionLifecycle::Uninitialized {
+                return response::invalid_request_response(
+                    "initialize is only allowed before the MCP session starts".to_string(),
+                    id,
+                );
+            }
+            if let Err(message) = validation::validate_initialize_params(req.params.as_ref()) {
+                return response::invalid_params_response(message, id);
+            }
+            binding::apply_initialize_binding(req.params.as_ref(), state);
+            state.set_lifecycle(SessionLifecycle::AwaitingInitialized);
+            Ok(json!({
+                "protocolVersion": resolve_protocol_version(req.params.as_ref()),
+                "serverInfo": {"name": "obsidian-memory-mcp-server", "version": "0.1.0"},
+                "capabilities": {"tools": {"listChanged": false}}
+            }))
+        }
+        "notifications/initialized" => {
+            if req.id.is_some() {
+                return response::invalid_request_response(
+                    "notifications/initialized must be sent as a notification".to_string(),
+                    id,
+                );
+            }
+            if state.lifecycle() != SessionLifecycle::AwaitingInitialized {
+                return response::invalid_request_response(
+                    "notifications/initialized is only allowed after initialize".to_string(),
+                    id,
+                );
+            }
+            state.set_lifecycle(SessionLifecycle::Running);
+            Ok(json!({}))
+        }
+        "ping" => {
+            if state.lifecycle() != SessionLifecycle::Running {
+                return response::invalid_request_response(
+                    "ping is only available after MCP initialization completes".to_string(),
+                    id,
+                );
+            }
+            Ok(json!({}))
+        }
+        "tools/list" => {
+            if state.lifecycle() != SessionLifecycle::Running {
+                return response::invalid_request_response(
+                    "tools/list is only available after MCP initialization completes".to_string(),
+                    id,
+                );
+            }
+            Ok(tools_list())
+        }
+        "tools/call" => {
+            if state.lifecycle() != SessionLifecycle::Running {
+                return response::invalid_request_response(
+                    "tools/call is only available after MCP initialization completes".to_string(),
+                    id,
+                );
+            }
+            if let Err(message) = validation::validate_tools_call_params(req.params.as_ref()) {
+                return response::invalid_params_response(message, id);
+            }
+            let privacy_mode =
+                validation::extract_privacy_mode_from_tools_call_params(req.params.as_ref());
+            Ok(match handle_tool_call(req.params, state) {
+                Ok(value) => value,
+                Err(err) => {
+                    let message = err.to_string();
+                    if is_invalid_params_error(&err) {
+                        return response::success_response(
+                            id,
+                            crate::rpc_tools::tool_state_error_result(
+                                "E_INVALID_INPUT",
+                                sanitize_error_message(privacy_mode, &message),
+                                json!({}),
+                            ),
+                        );
+                    }
+                    if let Some(state_failure) = as_state_failure(&err) {
+                        let mut details = state_failure.details.clone();
+                        sanitize_value_for_privacy(privacy_mode, &mut details);
+                        return response::success_response(
+                            id,
+                            crate::rpc_tools::tool_state_error_result(
+                                &state_failure.code,
+                                sanitize_error_message(privacy_mode, &state_failure.message),
+                                details,
+                            ),
+                        );
+                    }
+                    if !is_tool_domain_error(&err) {
+                        return response::internal_error_response(message, id);
+                    }
+                    tool_error_result(sanitize_error_message(privacy_mode, &message))
+                }
+            })
+        }
+        "shutdown" => {
+            if req.id.is_none() {
+                return response::invalid_request_response(
+                    "shutdown must be a request with an `id`".to_string(),
+                    id,
+                );
+            }
+            if state.lifecycle() != SessionLifecycle::Running {
+                return response::invalid_request_response(
+                    "shutdown is only available after MCP initialization completes".to_string(),
+                    id,
+                );
+            }
+            state.set_lifecycle(SessionLifecycle::ShutdownRequested);
+            Ok(json!({}))
+        }
+        "exit" => {
+            if req.id.is_some() {
+                return response::invalid_request_response(
+                    "exit must be sent as a notification".to_string(),
+                    id,
+                );
+            }
+            if state.lifecycle() != SessionLifecycle::ShutdownRequested {
+                return response::invalid_request_response(
+                    "exit is only allowed after shutdown".to_string(),
+                    id,
+                );
+            }
+            state.request_exit();
+            Ok(json!({}))
+        }
+        _ => return response::method_not_found_response(id, req.method),
+    };
+
+    match result {
+        Ok(value) => response::success_response(id, value),
+        Err(err) => response::internal_error_response(err.to_string(), id),
+    }
+}
+
+fn resolve_protocol_version(params: Option<&Value>) -> String {
+    params
+        .and_then(Value::as_object)
+        .and_then(|object| object.get("protocolVersion"))
+        .and_then(Value::as_str)
+        .filter(|version| !version.trim().is_empty())
+        .unwrap_or(PROTOCOL_VERSION)
+        .to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    use crate::ServerState;
+    use crate::state::ProjectBindingSource;
+
+    use super::{RpcRequest, handle_request};
+
+    #[test]
+    fn malformed_tool_envelope_still_returns_json_rpc_invalid_params() {
+        let mut state = ServerState::new();
+        state.set_lifecycle(crate::state::SessionLifecycle::Running);
+
+        let response = handle_request(
+            RpcRequest {
+                id: Some(json!(1)),
+                method: "tools/call".to_string(),
+                params: Some(json!({"name": "memory_status", "arguments": 1})),
+            },
+            &mut state,
+        );
+
+        assert_eq!(response.error.expect("error").code, -32602);
+    }
+
+    #[test]
+    fn tool_level_invalid_input_returns_tool_error_result() {
+        let root = std::env::temp_dir().join("obsidian-memory-protocol-invalid-input");
+        let _ = std::fs::create_dir_all(&root);
+        let mut state = ServerState::new();
+        state.set_lifecycle(crate::state::SessionLifecycle::Running);
+        state.bind_project_path(
+            root.clone(),
+            obsidian_memory_core::StorageMode::Project,
+            ProjectBindingSource::SetProject,
+        );
+
+        let response = handle_request(
+            RpcRequest {
+                id: Some(json!(2)),
+                method: "tools/call".to_string(),
+                params: Some(json!({
+                    "name": "memory_status",
+                    "arguments": {"unexpected": true}
+                })),
+            },
+            &mut state,
+        );
+
+        let result = response.result.expect("tool result");
+        assert_eq!(result["isError"], true);
+        assert_eq!(
+            result["structuredContent"]["code"],
+            json!("E_INVALID_INPUT")
+        );
+
+        let _ = std::fs::remove_dir_all(root);
+    }
+}
