@@ -114,16 +114,16 @@ fn private_key_finding(
     memory: &[crate::model::SignalMemoryEntry],
 ) -> Option<SensitiveDataFinding> {
     line.contains("BEGIN PRIVATE KEY").then(|| {
-        build_finding(
+        build_finding(BuildFindingInput {
             rel_path,
             line_no,
-            "private_key",
-            line,
-            FindingConfidence::High,
-            SensitiveDataSnippetType::PrivateKeyHeader,
-            SensitiveDataRotationUrgency::Critical,
+            secret_kind: "private_key",
+            excerpt_source: line,
+            confidence: FindingConfidence::High,
+            snippet_type: SensitiveDataSnippetType::PrivateKeyHeader,
+            rotation_urgency: SensitiveDataRotationUrgency::Critical,
             memory,
-        )
+        })
     })
 }
 
@@ -167,16 +167,16 @@ fn pattern_token_findings(
         if classify_placeholder(word, line) != SensitiveDataPlaceholderStatus::Realistic {
             continue;
         }
-        hits.push(build_finding(
+        hits.push(build_finding(BuildFindingInput {
             rel_path,
             line_no,
             secret_kind,
-            word,
+            excerpt_source: word,
             confidence,
-            SensitiveDataSnippetType::InlineToken,
-            urgency,
+            snippet_type: SensitiveDataSnippetType::InlineToken,
+            rotation_urgency: urgency,
             memory,
-        ));
+        }));
     }
     hits
 }
@@ -206,54 +206,56 @@ fn assignment_finding(
     if classify_placeholder(value, line) != SensitiveDataPlaceholderStatus::Realistic {
         return None;
     }
-    Some(build_finding(
+    Some(build_finding(BuildFindingInput {
         rel_path,
         line_no,
-        "credential_assignment",
-        value,
-        FindingConfidence::Medium,
-        SensitiveDataSnippetType::Assignment,
-        SensitiveDataRotationUrgency::Medium,
+        secret_kind: "credential_assignment",
+        excerpt_source: value,
+        confidence: FindingConfidence::Medium,
+        snippet_type: SensitiveDataSnippetType::Assignment,
+        rotation_urgency: SensitiveDataRotationUrgency::Medium,
         memory,
-    ))
+    }))
 }
 
-fn build_finding(
-    rel_path: &str,
+struct BuildFindingInput<'a> {
+    rel_path: &'a str,
     line_no: usize,
-    secret_kind: &str,
-    excerpt_source: &str,
+    secret_kind: &'a str,
+    excerpt_source: &'a str,
     confidence: FindingConfidence,
     snippet_type: SensitiveDataSnippetType,
     rotation_urgency: SensitiveDataRotationUrgency,
-    memory: &[crate::model::SignalMemoryEntry],
-) -> SensitiveDataFinding {
+    memory: &'a [crate::model::SignalMemoryEntry],
+}
+
+fn build_finding(input: BuildFindingInput<'_>) -> SensitiveDataFinding {
     let location = Some(crate::model::QualityLocation {
-        start_line: line_no,
+        start_line: input.line_no,
         start_column: 1,
-        end_line: line_no,
-        end_column: excerpt_source.len().max(1),
+        end_line: input.line_no,
+        end_column: input.excerpt_source.len().max(1),
     });
-    let redacted = redact_excerpt(excerpt_source);
+    let redacted = redact_excerpt(input.excerpt_source);
     let signal_key = crate::signal_memory::build_sensitive_signal_key(
-        rel_path,
-        secret_kind,
+        input.rel_path,
+        input.secret_kind,
         &redacted,
         location.as_ref(),
     );
-    let memory_status = crate::signal_memory::signal_memory_status(memory, &signal_key);
+    let memory_status = crate::signal_memory::signal_memory_status(input.memory, &signal_key);
     SensitiveDataFinding {
         signal_key,
         finding_family: FindingFamily::SensitiveData,
-        secret_kind: secret_kind.to_string(),
-        path: rel_path.to_string(),
+        secret_kind: input.secret_kind.to_string(),
+        path: input.rel_path.to_string(),
         location,
-        snippet_type,
-        confidence,
+        snippet_type: input.snippet_type,
+        confidence: input.confidence,
         validation_status: SensitiveDataValidationStatus::PatternMatch,
         placeholder_status: SensitiveDataPlaceholderStatus::Realistic,
         exposure_scope: SensitiveDataExposureScope::CommittedText,
-        rotation_urgency,
+        rotation_urgency: input.rotation_urgency,
         manual_review_required: true,
         match_excerpt: Some(redacted),
         memory_status,

@@ -26,6 +26,9 @@ pub(super) const MAX_CYCLOMATIC_COMPLEXITY: i64 = 12;
 pub(super) const MAX_COGNITIVE_COMPLEXITY: i64 = 18;
 pub(super) const MAX_DUPLICATE_BLOCK_COUNT: i64 = 3;
 pub(super) const MAX_DUPLICATE_DENSITY_BPS: i64 = 1_500;
+pub(super) const MAX_PUBLIC_API_EXPORTS_PER_FILE: i64 = 24;
+pub(super) const MAX_PUBLIC_REEXPORTS_PER_FILE: i64 = 12;
+pub(super) const MAX_PUBLIC_API_HUB_SCORE: i64 = 240;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum FileKind {
@@ -46,6 +49,7 @@ pub(crate) fn build_indexed_quality_facts(
         rel_path, language, full_text,
     ));
     let dead_code = super::dead_code::analyze_dead_code(rel_path, language, full_text);
+    let api_surface = super::api_surface::analyze_api_surface(rel_path, language, full_text);
     let security_smells =
         super::security_smells::analyze_security_smells(rel_path, language, full_text);
     QualityCandidateFacts {
@@ -60,6 +64,7 @@ pub(crate) fn build_indexed_quality_facts(
         quality_mode: QualityMode::Indexed,
         file_kind: classify_file_kind(rel_path),
         hotspots,
+        api_surface,
         structural: super::StructuralFacts::default(),
         layering: super::LayeringFacts::default(),
         git_risk: super::GitRiskFacts::default(),
@@ -88,6 +93,7 @@ pub(crate) fn build_oversize_quality_facts(
         quality_mode: QualityMode::QualityOnlyOversize,
         file_kind: classify_file_kind(rel_path),
         hotspots: super::HotspotFacts::default(),
+        api_surface: super::ApiSurfaceFacts::default(),
         structural: super::StructuralFacts::default(),
         layering: super::LayeringFacts::default(),
         git_risk: super::GitRiskFacts::default(),

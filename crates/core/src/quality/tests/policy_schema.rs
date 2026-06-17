@@ -38,13 +38,16 @@ fn load_quality_policy_applies_overrides() {
     fs::create_dir_all(&root).expect("create temp dir");
     fs::write(
         root.join("rmu-quality-policy.json"),
-        r#"{"version":4,"thresholds":{"max_non_empty_lines_default":400,"max_function_lines":12}}"#,
+        r#"{"version":4,"thresholds":{"max_non_empty_lines_default":400,"max_function_lines":12,"max_public_api_exports_per_file":7,"max_public_reexports_per_file":3,"max_public_api_hub_score":77}}"#,
     )
     .expect("write policy");
 
     let policy = load_quality_policy(&root).expect("policy should load");
     assert_eq!(policy.thresholds.max_non_empty_lines_default, 400);
     assert_eq!(policy.thresholds.max_function_lines, 12);
+    assert_eq!(policy.thresholds.max_public_api_exports_per_file, 7);
+    assert_eq!(policy.thresholds.max_public_reexports_per_file, 3);
+    assert_eq!(policy.thresholds.max_public_api_hub_score, 77);
     assert_eq!(
         policy.thresholds.max_import_count,
         default_quality_policy().thresholds.max_import_count

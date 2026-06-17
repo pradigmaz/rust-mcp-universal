@@ -93,6 +93,9 @@ pub(crate) struct QualityThresholds {
     pub(crate) max_cognitive_complexity: i64,
     pub(crate) max_duplicate_block_count: i64,
     pub(crate) max_duplicate_density_bps: i64,
+    pub(crate) max_public_api_exports_per_file: i64,
+    pub(crate) max_public_reexports_per_file: i64,
+    pub(crate) max_public_api_hub_score: i64,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -238,6 +241,9 @@ pub(crate) fn default_quality_policy() -> QualityPolicy {
             max_cognitive_complexity: super::metrics::MAX_COGNITIVE_COMPLEXITY,
             max_duplicate_block_count: super::metrics::MAX_DUPLICATE_BLOCK_COUNT,
             max_duplicate_density_bps: super::metrics::MAX_DUPLICATE_DENSITY_BPS,
+            max_public_api_exports_per_file: super::metrics::MAX_PUBLIC_API_EXPORTS_PER_FILE,
+            max_public_reexports_per_file: super::metrics::MAX_PUBLIC_REEXPORTS_PER_FILE,
+            max_public_api_hub_score: super::metrics::MAX_PUBLIC_API_HUB_SCORE,
         },
         quality_scope: QualityScopePolicy::default(),
         layering: None,
@@ -463,6 +469,15 @@ fn apply_threshold_overrides(
     }
     if let Some(value) = overrides.max_duplicate_density_bps {
         thresholds.max_duplicate_density_bps = value;
+    }
+    if let Some(value) = overrides.max_public_api_exports_per_file {
+        thresholds.max_public_api_exports_per_file = value;
+    }
+    if let Some(value) = overrides.max_public_reexports_per_file {
+        thresholds.max_public_reexports_per_file = value;
+    }
+    if let Some(value) = overrides.max_public_api_hub_score {
+        thresholds.max_public_api_hub_score = value;
     }
 }
 

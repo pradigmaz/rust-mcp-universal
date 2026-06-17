@@ -47,6 +47,18 @@ pub(crate) fn default_rule_metadata(rule_id: &str) -> Option<RuleMetadata> {
             severity: QualitySeverity::High,
             category: QualityCategory::Maintainability,
         },
+        "wide_public_api_surface" => RuleMetadata {
+            severity: QualitySeverity::Medium,
+            category: QualityCategory::Maintainability,
+        },
+        "public_reexport_hub" => RuleMetadata {
+            severity: QualitySeverity::High,
+            category: QualityCategory::Architecture,
+        },
+        "public_api_hub" | "unstable_public_hub" => RuleMetadata {
+            severity: QualitySeverity::High,
+            category: QualityCategory::Risk,
+        },
         "dead_code_unused_export_candidate" => RuleMetadata {
             severity: QualitySeverity::High,
             category: QualityCategory::Maintainability,
@@ -110,6 +122,10 @@ fn known_rule_ids() -> &'static [&'static str] {
         "max_cognitive_complexity",
         "max_duplicate_block_count",
         "max_duplicate_density_bps",
+        "wide_public_api_surface",
+        "public_reexport_hub",
+        "public_api_hub",
+        "unstable_public_hub",
         "dead_code_unused_export_candidate",
         "max_fan_in_per_file",
         "max_fan_out_per_file",

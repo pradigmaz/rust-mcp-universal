@@ -3,6 +3,8 @@ use crate::model::{
     SuppressedQualityViolationEntry,
 };
 
+#[path = "quality/api_surface.rs"]
+mod api_surface;
 #[path = "quality/complexity.rs"]
 mod complexity;
 #[path = "quality/dead_code.rs"]
@@ -34,8 +36,8 @@ mod security_smells;
 #[path = "quality/test_risk.rs"]
 mod test_risk;
 
-pub(crate) const QUALITY_RULESET_ID: &str = "quality-core-v13";
-pub(crate) const CURRENT_QUALITY_RULESET_VERSION: i64 = 13;
+pub(crate) const QUALITY_RULESET_ID: &str = "quality-core-v14";
+pub(crate) const CURRENT_QUALITY_RULESET_VERSION: i64 = 14;
 
 #[derive(Debug, Clone)]
 pub(crate) struct QualityMetricEntry {
@@ -100,6 +102,16 @@ impl HotspotFacts {
             other.max_early_return_count,
         );
     }
+}
+
+#[derive(Debug, Clone, Default)]
+pub(crate) struct ApiSurfaceFacts {
+    pub(crate) public_export_count: i64,
+    pub(crate) restricted_export_count: i64,
+    pub(crate) public_reexport_count: i64,
+    pub(crate) public_type_count: i64,
+    pub(crate) public_function_count: i64,
+    pub(crate) primary_location: Option<crate::model::QualityLocation>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -205,6 +217,7 @@ pub(crate) struct QualityCandidateFacts {
     pub(crate) quality_mode: QualityMode,
     pub(crate) file_kind: metrics::FileKind,
     pub(crate) hotspots: HotspotFacts,
+    pub(crate) api_surface: ApiSurfaceFacts,
     pub(crate) structural: StructuralFacts,
     pub(crate) layering: LayeringFacts,
     pub(crate) git_risk: GitRiskFacts,

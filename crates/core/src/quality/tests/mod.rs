@@ -1,3 +1,4 @@
+mod api_surface;
 mod basic_rules;
 mod complexity;
 mod hotspots;

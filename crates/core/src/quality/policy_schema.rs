@@ -65,6 +65,9 @@ pub(crate) struct QualityThresholdOverrides {
     pub(crate) max_cognitive_complexity: Option<i64>,
     pub(crate) max_duplicate_block_count: Option<i64>,
     pub(crate) max_duplicate_density_bps: Option<i64>,
+    pub(crate) max_public_api_exports_per_file: Option<i64>,
+    pub(crate) max_public_reexports_per_file: Option<i64>,
+    pub(crate) max_public_api_hub_score: Option<i64>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]

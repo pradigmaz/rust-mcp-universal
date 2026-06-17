@@ -1,5 +1,5 @@
 use std::collections::{HashMap, HashSet};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use anyhow::Result;
 use walkdir::WalkDir;
@@ -7,7 +7,7 @@ use walkdir::WalkDir;
 use crate::index_scope::IndexScope;
 use crate::model::IndexingOptions;
 use crate::quality::{QualityCandidateFacts, TestRiskFacts, TestRiskPolicy};
-use crate::utils::{infer_language, normalize_path};
+use crate::utils::normalize_path;
 
 pub(crate) fn load_test_risk_facts(
     project_root: &Path,
@@ -143,24 +143,7 @@ fn is_integration_test_path(path: &str) -> bool {
 }
 
 fn has_public_surface(facts: &QualityCandidateFacts) -> bool {
-    if facts
-        .hotspots
-        .max_export_count_per_file
-        .as_ref()
-        .map(|metric| metric.metric_value > 0)
-        .unwrap_or(false)
-    {
-        return true;
-    }
-    matches!(
-        infer_language(&PathBuf::from(&facts.rel_path)).as_str(),
-        "rust" | "javascript" | "typescript" | "tsx" | "jsx"
-    ) && facts
-        .hotspots
-        .max_function_lines
-        .as_ref()
-        .map(|metric| metric.metric_value > 0)
-        .unwrap_or(false)
+    facts.api_surface.public_export_count > 0
 }
 
 fn hotspot_signal_score(facts: &QualityCandidateFacts) -> f64 {

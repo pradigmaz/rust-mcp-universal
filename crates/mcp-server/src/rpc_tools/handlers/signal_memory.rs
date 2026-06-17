@@ -114,11 +114,11 @@ pub(super) fn mark_signal_memory(args: &Value, state: &mut ServerState) -> Resul
 fn parse_finding_family(raw: &str) -> Result<FindingFamily> {
     FindingFamily::parse(raw)
         .ok_or_else(|| anyhow!("unsupported finding_family `{raw}`"))
-        .map_err(|err| invalid_params_error(&err.to_string()))
+        .map_err(|err| invalid_params_error(err.to_string()))
 }
 
 fn parse_decision(raw: &str) -> Result<SignalMemoryDecision> {
     SignalMemoryDecision::parse(raw)
         .ok_or_else(|| anyhow!("unsupported decision `{raw}`"))
-        .map_err(|err| invalid_params_error(&err.to_string()))
+        .map_err(|err| invalid_params_error(err.to_string()))
 }

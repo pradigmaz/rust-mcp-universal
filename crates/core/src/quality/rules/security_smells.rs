@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use super::{QualityRule, RuleContext, metric, signal_violation};
+use super::{QualityRule, RuleContext, SignalViolationInput, metric, signal_violation};
 use crate::model::{FindingFamily, QualitySource, QualityViolationEntry};
 use crate::quality::SecuritySmellMatch;
 
@@ -123,15 +123,19 @@ fn build_smell_violation(
         signal_violation(
             ctx,
             rule_id,
-            facts.match_count,
-            0,
-            message.to_string(),
-            facts.location.clone(),
-            Some(QualitySource::Heuristic),
-            FindingFamily::SecuritySmells,
-            facts.confidence,
-            facts.noise_reason.clone(),
-            vec!["review input trust boundary and sanitization path".to_string()],
+            SignalViolationInput {
+                actual_value: facts.match_count,
+                threshold_value: 0,
+                message: message.to_string(),
+                location: facts.location.clone(),
+                source: Some(QualitySource::Heuristic),
+                finding_family: FindingFamily::SecuritySmells,
+                confidence: facts.confidence,
+                noise_reason: facts.noise_reason.clone(),
+                recommended_followups: vec![
+                    "review input trust boundary and sanitization path".to_string(),
+                ],
+            },
         )
     })
 }

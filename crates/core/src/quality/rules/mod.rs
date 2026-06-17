@@ -9,6 +9,7 @@ use crate::model::{
     QualityLocation, QualitySource, QualityViolationEntry, SuppressedQualityViolationEntry,
 };
 
+mod api_surface;
 mod basic;
 mod complexity;
 mod dead_code;
@@ -41,6 +42,18 @@ pub(super) trait QualityRule {
     fn name(&self) -> &'static str;
     fn metric(&self, ctx: &RuleContext<'_>) -> Option<QualityMetricEntry>;
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>>;
+}
+
+pub(super) struct SignalViolationInput {
+    pub(super) actual_value: i64,
+    pub(super) threshold_value: i64,
+    pub(super) message: String,
+    pub(super) location: Option<QualityLocation>,
+    pub(super) source: Option<QualitySource>,
+    pub(super) finding_family: crate::model::FindingFamily,
+    pub(super) confidence: Option<crate::model::FindingConfidence>,
+    pub(super) noise_reason: Option<String>,
+    pub(super) recommended_followups: Vec<String>,
 }
 
 pub(crate) fn evaluate_rules(
@@ -186,30 +199,22 @@ pub(super) fn explicit_violation(
 pub(super) fn signal_violation(
     ctx: &RuleContext<'_>,
     rule_id: &str,
-    actual_value: i64,
-    threshold_value: i64,
-    message: String,
-    location: Option<QualityLocation>,
-    source: Option<QualitySource>,
-    finding_family: crate::model::FindingFamily,
-    confidence: Option<crate::model::FindingConfidence>,
-    noise_reason: Option<String>,
-    recommended_followups: Vec<String>,
+    input: SignalViolationInput,
 ) -> QualityViolationEntry {
     QualityViolationEntry {
         rule_id: rule_id.to_string(),
-        actual_value,
-        threshold_value,
-        message,
+        actual_value: input.actual_value,
+        threshold_value: input.threshold_value,
+        message: input.message,
         severity: ctx.effective_policy.metadata_for_rule(rule_id).severity,
         category: ctx.effective_policy.metadata_for_rule(rule_id).category,
-        location,
-        source,
-        finding_family: Some(finding_family),
-        confidence,
+        location: input.location,
+        source: input.source,
+        finding_family: Some(input.finding_family),
+        confidence: input.confidence,
         manual_review_required: true,
-        noise_reason,
-        recommended_followups,
+        noise_reason: input.noise_reason,
+        recommended_followups: input.recommended_followups,
         signal_key: None,
         memory_status: None,
     }
@@ -236,6 +241,7 @@ fn push_violation(
 
 fn default_rules() -> Vec<Box<dyn QualityRule>> {
     let mut rules = basic::rules();
+    rules.extend(api_surface::rules());
     rules.extend(file_hotspots::rules());
     rules.extend(complexity::rules());
     rules.extend(duplication::rules());

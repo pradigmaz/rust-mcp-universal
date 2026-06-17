@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use super::{QualityRule, RuleContext, metric, signal_violation};
+use super::{QualityRule, RuleContext, SignalViolationInput, metric, signal_violation};
 use crate::model::{FindingFamily, QualitySource, QualityViolationEntry};
 
 struct DeadCodeRule;
@@ -39,21 +39,23 @@ impl QualityRule for DeadCodeRule {
         Ok(Some(signal_violation(
             ctx,
             self.name(),
-            1,
-            0,
-            format!(
-                "file looks like a dead-code candidate: {} exported symbols, fan-in {fan_in}, fan-out {fan_out}, symbol_count {symbol_count}",
-                ctx.facts.dead_code.exported_symbol_count
-            ),
-            ctx.facts.dead_code.location.clone(),
-            Some(QualitySource::Heuristic),
-            FindingFamily::DeadCode,
-            ctx.facts.dead_code.confidence,
-            ctx.facts.dead_code.noise_reason.clone(),
-            vec![
-                "confirm runtime registration and reflection use before removal".to_string(),
-                "prefer warning-first cleanup instead of direct deletion".to_string(),
-            ],
+            SignalViolationInput {
+                actual_value: 1,
+                threshold_value: 0,
+                message: format!(
+                    "file looks like a dead-code candidate: {} exported symbols, fan-in {fan_in}, fan-out {fan_out}, symbol_count {symbol_count}",
+                    ctx.facts.dead_code.exported_symbol_count
+                ),
+                location: ctx.facts.dead_code.location.clone(),
+                source: Some(QualitySource::Heuristic),
+                finding_family: FindingFamily::DeadCode,
+                confidence: ctx.facts.dead_code.confidence,
+                noise_reason: ctx.facts.dead_code.noise_reason.clone(),
+                recommended_followups: vec![
+                    "confirm runtime registration and reflection use before removal".to_string(),
+                    "prefer warning-first cleanup instead of direct deletion".to_string(),
+                ],
+            },
         )))
     }
 }
