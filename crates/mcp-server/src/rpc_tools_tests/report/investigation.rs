@@ -174,7 +174,10 @@ fn preflight_tool_returns_structured_status_payload() {
         result["structuredContent"]["binding_status"],
         json!("bound")
     );
-    assert_eq!(result["structuredContent"]["binding_source"], json!("cli"));
+    assert_eq!(
+        result["structuredContent"]["binding_source"],
+        json!("startup_args")
+    );
     assert!(result["structuredContent"]["resolved_project_path"].is_string());
     assert!(result["structuredContent"]["resolved_db_path"].is_string());
     assert_eq!(result["structuredContent"]["db_pinned"], json!(true));

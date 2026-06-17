@@ -14,7 +14,7 @@ pub(crate) enum SessionLifecycle {
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(crate) enum ProjectBindingSource {
-    Cli,
+    StartupArgs,
     InitializeRoots,
     InitializeProjectPath,
     SetProjectPath,
@@ -74,7 +74,7 @@ impl ServerState {
         let binding = resolved_cli_project_path
             .map(|resolved_path| ProjectBinding::Bound {
                 project_path: resolved_path,
-                source: ProjectBindingSource::Cli,
+                source: ProjectBindingSource::StartupArgs,
             })
             .unwrap_or(ProjectBinding::Unbound);
         let db_pinned = db_path.is_some();
@@ -196,7 +196,7 @@ impl ServerState {
 
 fn binding_source_name(source: ProjectBindingSource) -> &'static str {
     match source {
-        ProjectBindingSource::Cli => "cli",
+        ProjectBindingSource::StartupArgs => "startup_args",
         ProjectBindingSource::InitializeRoots => "initialize_roots",
         ProjectBindingSource::InitializeProjectPath => "initialize_project_path",
         ProjectBindingSource::SetProjectPath => "set_project_path",

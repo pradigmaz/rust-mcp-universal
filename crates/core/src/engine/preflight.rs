@@ -57,9 +57,7 @@ impl Engine {
             .display()
             .to_string();
         let running_binary_version = RUNNING_BINARY_VERSION.to_string();
-        let stale_process_probe_binary_path =
-            resolve_stale_process_probe_binary_path(Path::new(&binary_path))
-                .map(|path| path.display().to_string());
+        let stale_process_probe_binary_path = None;
         let launcher_recommended =
             cfg!(windows).then(|| "scripts/rmu-mcp-server-fresh.cmd".to_string());
         let safe_recovery_hint = compatibility_hint();
@@ -121,16 +119,6 @@ impl Engine {
             errors,
         })
     }
-}
-
-fn resolve_stale_process_probe_binary_path(binary_path: &Path) -> Option<std::path::PathBuf> {
-    let file_stem = binary_path.file_stem()?.to_str()?;
-    if !file_stem.eq_ignore_ascii_case("rmu-cli") {
-        return None;
-    }
-
-    let probe_path = binary_path.with_file_name("rmu-mcp-server.exe");
-    probe_path.exists().then_some(probe_path)
 }
 
 fn open_preflight_db(path: &Path) -> Result<Connection> {
@@ -346,8 +334,7 @@ mod tests {
     use super::{
         Engine, PreflightState, RUNNING_BINARY_STALE_GRACE_MS, TEST_BINARY_MODIFIED_AT_MS_ENV,
         TEST_PROCESS_STARTED_AT_MS_ENV, is_running_binary_stale, parse_test_timestamp,
-        read_running_binary_timestamps, resolve_stale_process_probe_binary_path,
-        set_thread_running_binary_timestamps_override_for_tests,
+        read_running_binary_timestamps, set_thread_running_binary_timestamps_override_for_tests,
     };
     use std::fs;
     use std::path::Path;
@@ -394,48 +381,6 @@ mod tests {
                 }
             }
         }
-    }
-
-    #[test]
-    fn cli_binary_uses_server_binary_as_stale_process_probe_target_when_present() {
-        let root = temp_dir("rmu-preflight-probe-target");
-        fs::create_dir_all(&root).expect("create temp dir");
-        let cli_path = root.join("rmu-cli.exe");
-        let server_path = root.join("rmu-mcp-server.exe");
-        fs::write(&cli_path, b"cli").expect("write cli placeholder");
-        fs::write(&server_path, b"server").expect("write server placeholder");
-
-        let resolved = resolve_stale_process_probe_binary_path(Path::new(&cli_path))
-            .expect("server probe target should be resolved");
-        assert_eq!(resolved, server_path);
-
-        let _ = fs::remove_dir_all(root);
-    }
-
-    #[test]
-    fn cli_binary_keeps_default_probe_when_server_binary_is_missing() {
-        let root = temp_dir("rmu-preflight-probe-fallback");
-        fs::create_dir_all(&root).expect("create temp dir");
-        let cli_path = root.join("rmu-cli.exe");
-        fs::write(&cli_path, b"cli").expect("write cli placeholder");
-
-        let resolved = resolve_stale_process_probe_binary_path(Path::new(&cli_path));
-        assert!(resolved.is_none());
-
-        let _ = fs::remove_dir_all(root);
-    }
-
-    #[test]
-    fn non_cli_binary_does_not_override_stale_process_probe_target() {
-        let root = temp_dir("rmu-preflight-probe-non-cli");
-        fs::create_dir_all(&root).expect("create temp dir");
-        let server_path = root.join("rmu-mcp-server.exe");
-        fs::write(&server_path, b"server").expect("write server placeholder");
-
-        let resolved = resolve_stale_process_probe_binary_path(Path::new(&server_path));
-        assert!(resolved.is_none());
-
-        let _ = fs::remove_dir_all(root);
     }
 
     #[test]
@@ -497,7 +442,10 @@ mod tests {
             .expect("preflight status should succeed");
 
         assert_eq!(status.project_path, root.display().to_string());
-        assert_eq!(status.db_schema_version, Some(super::CURRENT_SCHEMA_VERSION));
+        assert_eq!(
+            status.db_schema_version,
+            Some(super::CURRENT_SCHEMA_VERSION)
+        );
         assert!(status.errors.is_empty());
         assert!(matches!(
             status.status,

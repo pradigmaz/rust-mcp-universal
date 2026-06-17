@@ -9,7 +9,7 @@ pub(super) fn temp_dir(prefix: &str) -> PathBuf {
     std::env::temp_dir().join(format!("{prefix}-{nanos}"))
 }
 
-mod cli;
+mod launch_args;
 mod protocol;
 mod tools_call;
 mod transport;

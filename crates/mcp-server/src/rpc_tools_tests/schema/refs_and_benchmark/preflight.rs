@@ -26,7 +26,7 @@ fn preflight_status_schema_covers_supported_keywords_and_shapes() {
         "warnings": ["name-only probe fallback"],
         "errors": ["db newer than binary supported"],
         "binding_status": "bound",
-        "binding_source": "cli",
+        "binding_source": "startup_args",
         "resolved_project_path": "/tmp/project",
         "resolved_db_path": "/tmp/project/.rmu/index.db",
         "db_pinned": true,

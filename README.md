@@ -2,9 +2,8 @@
 
 `rust-mcp-universal` - локальный движок индексации, поиска и навигации по кодовой базе на Rust.
 
-Проект даёт одно и то же ядро для двух поверхностей:
+Проект даёт одно ядро через MCP-поверхность:
 
-- `rmu-cli` для работы из терминала
 - `rmu-mcp-server` для MCP-клиентов и агентских сценариев
 
 `RMU` сделан в первую очередь для агентов.
@@ -13,7 +12,7 @@
 
 Это нужно там, где агенту мало просто найти строку. Обычно надо понять, какие файлы относятся к задаче, как они связаны между собой, где точка входа, как проходит маршрут вызова и в каких местах код уже тяжёлый.
 
-`MCP` здесь основной способ встраивания в агентский сценарий. `CLI` - тот же движок, только с прямым вызовом из терминала. Это не отдельный режим и не другая логика работы.
+`MCP` здесь основной способ встраивания в агентский сценарий.
 
 ## Что умеет
 
@@ -25,14 +24,14 @@
 - объяснять, почему retrieval выбрал именно эти файлы
 - поднимать quality-отчёты и hotspots по файлам и директориям
 - показывать structural risk через `rule_violations`, `quality_hotspots` и `quality_snapshot`
-- отдавать тот же функционал через MCP
+- отдавать функционал через MCP
 
 ## Когда это полезно
 
 - нужно быстро разобраться в незнакомом репозитории
 - нужно дать агенту короткий и релевантный стартовый контекст
 - нужен поиск по смыслу, а не только по точному совпадению строки
-- нужно одинаковое поведение из терминала и из MCP-клиента
+- нужен агентский доступ к локальному индексу и quality-сигналам
 
 ## Quality Surface
 
@@ -53,48 +52,26 @@ Wave 3 расширяет quality surface от symptom-only сигналов к 
 ## Сборка
 
 ```bash
-cargo build --release -p rmu-cli -p rmu-mcp-server
+cargo build --release -p rmu-mcp-server
 ```
 
-После сборки бинарники лежат в `target/release/`.
+После сборки бинарь лежит в `target/release/`.
 
 - Linux и macOS:
-  - `rmu-cli`
   - `rmu-mcp-server`
 - Windows:
-  - `rmu-cli.exe`
   - `rmu-mcp-server.exe`
 
 Проверка:
 
 ```bash
-target/release/rmu-cli --help
 target/release/rmu-mcp-server --help
 ```
 
 Если бинарники лежат в `PATH`, можно вызывать их по имени:
 
 ```bash
-rmu-cli --help
 rmu-mcp-server --help
-```
-
-## Быстрый старт с CLI
-
-Минимальный сценарий обычно выглядит так:
-
-```bash
-rmu-cli --project-path . --json preflight
-rmu-cli --project-path . --json scope-preview --profile mixed
-rmu-cli --project-path . --json semantic-index --profile mixed
-rmu-cli --project-path . --json brief
-rmu-cli --project-path . --json search --query "attendance" --limit 10
-```
-
-Если нужен агентский стартовый пакет:
-
-```bash
-rmu-cli --project-path . --json agent --query "где логика авторизации" --semantic --limit 10
 ```
 
 ## Быстрый старт с MCP
@@ -197,54 +174,48 @@ Installer берёт свежий binary из этого checkout и копир�
 - Codex больше не держится за устаревший глобальный binary
 - Codex не зависит от bridge-перепрыгивания в другой процесс перед MCP handshake
 
-## Полезные команды
+## Полезные MCP tools
 
 Общий статус:
 
-```bash
-rmu-cli --project-path . --json status
-rmu-cli --project-path . --json brief
-rmu-cli --project-path . --json preflight
-```
+- `preflight`
+- `index_status`
+- `workspace_brief`
+- `agent_bootstrap`
 
 Индексация:
 
-```bash
-rmu-cli --project-path . --json scope-preview --profile mixed
-rmu-cli --project-path . --json semantic-index --profile mixed
-```
+- `scope_preview`
+- `index`
+- `semantic_index`
 
 Поиск и навигация:
 
-```bash
-rmu-cli --project-path . --json search --query "attendance"
-rmu-cli --project-path . --json semantic-search --query "authorization flow"
-rmu-cli --project-path . --json symbol-lookup --name "AuthService"
-rmu-cli --project-path . --json related-files --path "src/auth/service.ts"
-```
+- `search_candidates`
+- `semantic_search`
+- `symbol_lookup_v2`
+- `symbol_references_v2`
+- `related_files_v2`
+- `call_path`
 
 Investigation surface:
 
-```bash
-rmu-cli --project-path . --json symbol-body --seed "src/lib.rs:1" --seed-kind path_line --auto-index
-rmu-cli --project-path . --json route-trace --seed "resolve_origin" --seed-kind query --auto-index
-rmu-cli --project-path . --json constraint-evidence --seed "resolve_origin" --seed-kind query --auto-index
-rmu-cli --project-path . --json divergence-report --seed "resolve_origin" --seed-kind query --auto-index
-```
+- `symbol_body`
+- `route_trace`
+- `constraint_evidence`
+- `concept_cluster`
+- `contract_trace`
+- `divergence_report`
 
 Quality:
 
-```bash
-rmu-cli --project-path . --json rule-violations
-rmu-cli --project-path . --json quality-hotspots
-rmu-cli --project-path . --json quality-hotspots --aggregation directory
-rmu-cli --project-path . --json quality-snapshot --snapshot-kind before --wave-id wave-0
-rmu-cli --project-path . --json quality-snapshot --snapshot-kind after --wave-id wave-0 --compare-against wave_before --fail-on-regression
-```
+- `rule_violations`
+- `quality_hotspots`
+- `quality_snapshot`
 
 ## Авто `.gitignore`
 
-При первом пользовательском входе через CLI и через `set_project_path` сервер может создать корневой `.gitignore`, если его ещё нет, и поддерживать в нём небольшой RMU-managed блок для служебных каталогов.
+При первом пользовательском входе через `set_project_path` сервер может создать корневой `.gitignore`, если его ещё нет, и поддерживать в нём небольшой RMU-managed блок для служебных каталогов.
 
 Туда обычно попадают:
 
@@ -261,7 +232,6 @@ rmu-cli --project-path . --json quality-snapshot --snapshot-kind after --wave-id
 ## Структура проекта
 
 - `crates/core` - ядро индексации, retrieval и ранжирования
-- `crates/cli` - терминальный интерфейс
 - `crates/mcp-server` - MCP-сервер поверх того же ядра
 - `schemas` - JSON-схемы результатов
 - `scripts` - служебные скрипты
@@ -272,25 +242,19 @@ rmu-cli --project-path . --json quality-snapshot --snapshot-kind after --wave-id
 Сборка:
 
 ```bash
-cargo build --release -p rmu-cli -p rmu-mcp-server
+cargo build --release -p rmu-mcp-server
 ```
 
 Тесты:
 
 ```bash
-cargo test -p rmu-core -p rmu-cli -p rmu-mcp-server
+cargo test -p rmu-core -p rmu-mcp-server
 ```
 
 Линтер:
 
 ```bash
-cargo clippy -p rmu-core -p rmu-cli -p rmu-mcp-server --all-targets -- -D warnings
-```
-
-Быстрая локальная проверка:
-
-```bash
-cargo run --locked -p rmu-cli -- --project-path . --json status
+cargo clippy -p rmu-core -p rmu-mcp-server --all-targets -- -D warnings
 ```
 
 ## Куда идти дальше
@@ -310,7 +274,7 @@ cargo run --locked -p rmu-cli -- --project-path . --json status
 - `quality/dead_code` и `quality/security_smells` теперь идут как long-tail warning lanes внутри quality outputs.
 - `quality/security_smells` не участвует в ordinary numeric quality score.
 - `security/sensitive_data` доступен как отдельная security surface.
-- repo-local signal memory хранится в `.rmu/signal-memory.json` и доступна через CLI/MCP inspect/mark flows.
+- repo-local signal memory хранится в `.rmu/signal-memory.json` и доступна через MCP inspect/mark flows.
 
 ## Лицензия
 

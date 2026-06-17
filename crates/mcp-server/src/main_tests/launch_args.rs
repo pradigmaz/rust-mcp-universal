@@ -5,14 +5,14 @@ use clap::Parser;
 use crate::App;
 
 #[test]
-fn cli_accepts_project_path_flag_without_explicit_value() {
+fn launch_args_accept_project_path_flag_without_explicit_value() {
     let app = App::try_parse_from(["rmu-mcp-server", "--project-path"])
         .expect("project path flag without value should default to current dir");
     assert_eq!(app.project_path, Some(PathBuf::from(".")));
 }
 
 #[test]
-fn cli_accepts_transport_stdio_flag_for_client_compatibility() {
+fn launch_args_accept_transport_stdio_flag_for_client_compatibility() {
     let app = App::try_parse_from(["rmu-mcp-server", "--transport", "stdio"])
         .expect("transport flag should be accepted");
     assert_eq!(app.transport.as_deref(), Some("stdio"));

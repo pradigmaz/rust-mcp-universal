@@ -36,7 +36,7 @@ impl Engine {
 
     #[expect(
         clippy::too_many_arguments,
-        reason = "public compatibility for CLI and MCP callers"
+        reason = "public compatibility for MCP callers"
     )]
     pub fn agent_bootstrap_with_mode(
         &self,
@@ -83,7 +83,7 @@ impl Engine {
 
     #[expect(
         clippy::too_many_arguments,
-        reason = "public compatibility for CLI and MCP callers"
+        reason = "public compatibility for MCP callers"
     )]
     pub fn agent_bootstrap_with_auto_index_and_options(
         &self,
@@ -333,7 +333,7 @@ impl Engine {
 
     #[expect(
         clippy::too_many_arguments,
-        reason = "public compatibility for CLI and MCP callers"
+        reason = "public compatibility for MCP callers"
     )]
     pub fn agent_bootstrap_with_auto_index_and_mode(
         &self,

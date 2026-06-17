@@ -10,7 +10,7 @@ pub(super) fn apply_initialize_binding(params: Option<&Value>, state: &mut Serve
     if matches!(
         state.binding(),
         ProjectBinding::Bound {
-            source: ProjectBindingSource::Cli,
+            source: ProjectBindingSource::StartupArgs,
             ..
         }
     ) {
