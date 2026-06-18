@@ -45,6 +45,22 @@ pub(super) fn tools_list() -> Value {
                 json_schema_object(&[("migration_mode", migration_mode_schema())], &[])
             ),
             tool(
+                "usage_stats",
+                "Inspect persisted MCP tool usage counters and recent call history",
+                json_schema_object(
+                    &[(
+                        "limit",
+                        json!({
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "description": "Maximum number of recent calls to return."
+                        }),
+                    )],
+                    &[]
+                )
+            ),
+            tool(
                 "agent_bootstrap",
                 "Primary explore path for agents: one-shot bootstrap payload before narrower follow-up tools",
                 json_schema_object(
@@ -105,6 +121,7 @@ pub(super) fn tools_list() -> Value {
                             json!({
                                 "type": "integer",
                                 "minimum": 256,
+                                "maximum": 120000,
                                 "description": "Maximum number of characters allowed in the assembled payload."
                             }),
                         ),
@@ -113,6 +130,7 @@ pub(super) fn tools_list() -> Value {
                             json!({
                                 "type": "integer",
                                 "minimum": 64,
+                                "maximum": 30000,
                                 "description": "Maximum number of tokens allowed in the assembled payload."
                             }),
                         ),

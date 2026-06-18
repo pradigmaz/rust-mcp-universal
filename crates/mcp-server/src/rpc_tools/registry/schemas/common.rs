@@ -22,6 +22,18 @@ pub(super) fn integer_schema(description: &str, minimum: Option<u64>) -> Value {
     schema
 }
 
+pub(super) fn integer_range_schema(
+    description: &str,
+    minimum: Option<u64>,
+    maximum: Option<u64>,
+) -> Value {
+    let mut schema = integer_schema(description, minimum);
+    if let Some(maximum) = maximum {
+        schema["maximum"] = json!(maximum);
+    }
+    schema
+}
+
 pub(super) fn boolean_schema(description: &str) -> Value {
     json!({
         "type": "boolean",

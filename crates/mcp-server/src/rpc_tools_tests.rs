@@ -22,3 +22,5 @@ mod report_tests;
 mod schema_tests;
 #[path = "rpc_tools_tests/tools/mod.rs"]
 mod tools_tests;
+#[path = "rpc_tools_tests/usage_stats.rs"]
+mod usage_stats_tests;

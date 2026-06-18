@@ -1,6 +1,7 @@
 mod indexing;
 mod parsing;
 mod project;
+mod usage;
 
 use anyhow::Result;
 use rmu_core::{Engine, MigrationMode};
@@ -56,11 +57,12 @@ pub(super) fn handle_tool_call(params: Option<Value>, state: &mut ServerState) -
         }
     }
 
-    match name {
+    let result = match name {
         "set_project_path" => project::set_project_path(&args, state),
         "install_ignore_rules" => project::install_ignore_rules_tool(&args, state),
         "index_status" => project::index_status(&args, state),
         "workspace_brief" => project::workspace_brief(&args, state),
+        "usage_stats" => usage::usage_stats(&args, state),
         "agent_bootstrap" => agent_bootstrap(&args, state).map_err(into_tool_error),
         "index" | "semantic_index" => indexing::index(&args, name, state),
         "scope_preview" => indexing::scope_preview(&args, state),
@@ -95,7 +97,9 @@ pub(super) fn handle_tool_call(params: Option<Value>, state: &mut ServerState) -
         "query_benchmark" => query_benchmark(&args, state).map_err(into_tool_error),
         "db_maintenance" => db_maintenance(&args, state).map_err(into_tool_error),
         _ => unreachable!("known tools are handled before dispatch"),
-    }
+    };
+    usage::record_tool_usage(state, name, &result);
+    result
 }
 
 fn is_known_tool(name: &str) -> bool {
@@ -105,6 +109,7 @@ fn is_known_tool(name: &str) -> bool {
             | "install_ignore_rules"
             | "index_status"
             | "workspace_brief"
+            | "usage_stats"
             | "agent_bootstrap"
             | "index"
             | "semantic_index"
@@ -141,7 +146,7 @@ fn is_known_tool(name: &str) -> bool {
 }
 
 fn tool_requires_bound_project(name: &str) -> bool {
-    !matches!(name, "set_project_path" | "preflight")
+    !matches!(name, "set_project_path" | "preflight" | "usage_stats")
 }
 
 fn runtime_compatibility_guard(state: &ServerState) -> Result<Option<Value>> {

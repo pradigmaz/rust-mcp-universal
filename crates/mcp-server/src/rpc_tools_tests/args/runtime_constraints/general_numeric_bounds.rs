@@ -30,6 +30,16 @@ pub(super) fn cases() -> Vec<RuntimeConstraintCase> {
             "`max_tokens` >= 64",
         ),
         (
+            "build_context_under_budget",
+            json!({"query": "q", "max_chars": 120_001}),
+            "`max_chars` <= 120000",
+        ),
+        (
+            "build_context_under_budget",
+            json!({"query": "q", "max_tokens": 30_001}),
+            "`max_tokens` <= 30000",
+        ),
+        (
             "query_report",
             json!({"query": "q", "limit": 0}),
             "`limit` >= 1",
@@ -59,5 +69,16 @@ pub(super) fn cases() -> Vec<RuntimeConstraintCase> {
             json!({"query": "q", "max_tokens": 63}),
             "`max_tokens` >= 64",
         ),
+        (
+            "query_report",
+            json!({"query": "q", "max_chars": 120_001}),
+            "`max_chars` <= 120000",
+        ),
+        (
+            "query_report",
+            json!({"query": "q", "max_tokens": 30_001}),
+            "`max_tokens` <= 30000",
+        ),
+        ("usage_stats", json!({"limit": 101}), "`limit` <= 100"),
     ]
 }

@@ -53,6 +53,23 @@ pub(super) fn parse_optional_usize_with_min(
     Ok(parsed)
 }
 
+pub(super) fn parse_optional_usize_in_range(
+    args: &Value,
+    tool: &str,
+    field: &str,
+    minimum: usize,
+    maximum: usize,
+    default: usize,
+) -> Result<usize> {
+    let parsed = parse_optional_usize_with_min(args, tool, field, minimum, default)?;
+    if parsed > maximum {
+        return Err(invalid_params_error(format!(
+            "{tool} requires `{field}` <= {maximum}, got {parsed}"
+        )));
+    }
+    Ok(parsed)
+}
+
 pub(super) fn parse_optional_bool(args: &Value, tool: &str, field: &str) -> Result<Option<bool>> {
     let Some(value) = args.get(field) else {
         return Ok(None);

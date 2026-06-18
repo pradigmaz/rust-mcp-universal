@@ -8,8 +8,8 @@ use rmu_core::{
 
 use crate::ServerState;
 use crate::rpc_tools::parsing::{
-    parse_optional_bool, parse_optional_usize_with_min, parse_required_non_empty_string,
-    reject_unknown_fields,
+    parse_optional_bool, parse_optional_usize_in_range, parse_optional_usize_with_min,
+    parse_required_non_empty_string, reject_unknown_fields,
 };
 use crate::rpc_tools::result::tool_result;
 
@@ -55,8 +55,10 @@ pub(super) fn context_pack(args: &Value, state: &mut ServerState) -> Result<Valu
         .unwrap_or(RolloutPhase::Full100);
     let migration_mode = parse_optional_migration_mode(args, "context_pack", "migration_mode")?
         .unwrap_or(MigrationMode::Auto);
-    let max_chars = parse_optional_usize_with_min(args, "context_pack", "max_chars", 256, 12_000)?;
-    let max_tokens = parse_optional_usize_with_min(args, "context_pack", "max_tokens", 64, 3_000)?;
+    let max_chars =
+        parse_optional_usize_in_range(args, "context_pack", "max_chars", 256, 120_000, 12_000)?;
+    let max_tokens =
+        parse_optional_usize_in_range(args, "context_pack", "max_tokens", 64, 30_000, 3_000)?;
 
     let semantic_effective =
         decide_semantic_rollout(semantic, vector_layer_enabled, rollout_phase, &query).enabled;

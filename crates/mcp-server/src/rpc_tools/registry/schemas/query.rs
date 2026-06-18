@@ -1,8 +1,8 @@
 use serde_json::Value;
 
 use super::common::{
-    boolean_schema, enum_schema, integer_schema, migration_mode_schema, privacy_mode_schema,
-    rollout_phase_schema, string_schema,
+    boolean_schema, enum_schema, integer_range_schema, integer_schema, migration_mode_schema,
+    privacy_mode_schema, rollout_phase_schema, string_schema,
 };
 use crate::rpc_tools::registry::helpers::json_schema_object;
 
@@ -100,16 +100,18 @@ pub(crate) fn budget_query_schema() -> Value {
             ("migration_mode", migration_mode_schema()),
             (
                 "max_chars",
-                integer_schema(
+                integer_range_schema(
                     "Maximum number of characters allowed in the assembled context.",
                     Some(256),
+                    Some(120_000),
                 ),
             ),
             (
                 "max_tokens",
-                integer_schema(
+                integer_range_schema(
                     "Maximum number of tokens allowed in the assembled context.",
                     Some(64),
+                    Some(30_000),
                 ),
             ),
         ],
@@ -158,16 +160,18 @@ pub(crate) fn report_query_schema() -> Value {
             ("migration_mode", migration_mode_schema()),
             (
                 "max_chars",
-                integer_schema(
+                integer_range_schema(
                     "Maximum number of characters allowed in the assembled context.",
                     Some(256),
+                    Some(120_000),
                 ),
             ),
             (
                 "max_tokens",
-                integer_schema(
+                integer_range_schema(
                     "Maximum number of tokens allowed in the assembled context.",
                     Some(64),
+                    Some(30_000),
                 ),
             ),
         ],
@@ -217,16 +221,18 @@ pub(crate) fn context_pack_schema() -> Value {
             ("migration_mode", migration_mode_schema()),
             (
                 "max_chars",
-                integer_schema(
+                integer_range_schema(
                     "Maximum number of characters allowed in the assembled context.",
                     Some(256),
+                    Some(120_000),
                 ),
             ),
             (
                 "max_tokens",
-                integer_schema(
+                integer_range_schema(
                     "Maximum number of tokens allowed in the assembled context.",
                     Some(64),
+                    Some(30_000),
                 ),
             ),
         ],
@@ -302,16 +308,18 @@ pub(crate) fn query_benchmark_schema() -> Value {
             ("migration_mode", migration_mode_schema()),
             (
                 "max_chars",
-                integer_schema(
+                integer_range_schema(
                     "Maximum number of characters allowed in assembled context payloads.",
                     Some(256),
+                    Some(120_000),
                 ),
             ),
             (
                 "max_tokens",
-                integer_schema(
+                integer_range_schema(
                     "Maximum number of tokens allowed in assembled context payloads.",
                     Some(64),
+                    Some(30_000),
                 ),
             ),
             (

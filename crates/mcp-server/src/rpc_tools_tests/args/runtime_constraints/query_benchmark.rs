@@ -26,6 +26,16 @@ pub(super) fn cases() -> Vec<RuntimeConstraintCase> {
         ),
         (
             "query_benchmark",
+            json!({"dataset_path": "dataset.json", "max_chars": 120_001}),
+            "`max_chars` <= 120000",
+        ),
+        (
+            "query_benchmark",
+            json!({"dataset_path": "dataset.json", "max_tokens": 30_001}),
+            "`max_tokens` <= 30000",
+        ),
+        (
+            "query_benchmark",
             json!({"dataset_path": ""}),
             "non-empty `dataset_path`",
         ),

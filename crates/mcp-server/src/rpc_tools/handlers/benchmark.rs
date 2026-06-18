@@ -12,8 +12,8 @@ use rmu_core::{
 use crate::ServerState;
 use crate::rpc_tools::errors::invalid_params_error;
 use crate::rpc_tools::parsing::{
-    parse_optional_bool, parse_optional_non_empty_string, parse_optional_usize_with_min,
-    parse_required_non_empty_string, reject_unknown_fields,
+    parse_optional_bool, parse_optional_non_empty_string, parse_optional_usize_in_range,
+    parse_optional_usize_with_min, parse_required_non_empty_string, reject_unknown_fields,
 };
 use crate::rpc_tools::result::tool_result;
 
@@ -61,9 +61,9 @@ pub(super) fn query_benchmark(args: &Value, state: &mut ServerState) -> Result<V
     let migration_mode = parse_optional_migration_mode(args, "query_benchmark", "migration_mode")?
         .unwrap_or(MigrationMode::Auto);
     let max_chars =
-        parse_optional_usize_with_min(args, "query_benchmark", "max_chars", 256, 12_000)?;
+        parse_optional_usize_in_range(args, "query_benchmark", "max_chars", 256, 120_000, 12_000)?;
     let max_tokens =
-        parse_optional_usize_with_min(args, "query_benchmark", "max_tokens", 64, 3_000)?;
+        parse_optional_usize_in_range(args, "query_benchmark", "max_tokens", 64, 30_000, 3_000)?;
     let baseline = parse_optional_non_empty_string(args, "query_benchmark", "baseline")?;
     let thresholds = parse_optional_non_empty_string(args, "query_benchmark", "thresholds")?;
     let runs = parse_optional_usize_with_min(args, "query_benchmark", "runs", 1, 1)?;

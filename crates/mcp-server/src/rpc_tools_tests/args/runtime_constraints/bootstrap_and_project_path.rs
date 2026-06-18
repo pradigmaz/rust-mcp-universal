@@ -17,6 +17,16 @@ pub(super) fn cases() -> Vec<RuntimeConstraintCase> {
         ),
         (
             "agent_bootstrap",
+            json!({"max_chars": 120_001}),
+            "`max_chars` <= 120000",
+        ),
+        (
+            "agent_bootstrap",
+            json!({"max_tokens": 30_001}),
+            "`max_tokens` <= 30000",
+        ),
+        (
+            "agent_bootstrap",
             json!({"auto_index": "false"}),
             "boolean `auto_index`",
         ),

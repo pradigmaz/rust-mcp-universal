@@ -8,8 +8,8 @@ use rmu_core::{
 
 use crate::ServerState;
 use crate::rpc_tools::parsing::{
-    parse_optional_bool, parse_optional_non_empty_string, parse_optional_usize_with_min,
-    reject_unknown_fields,
+    parse_optional_bool, parse_optional_non_empty_string, parse_optional_usize_in_range,
+    parse_optional_usize_with_min, reject_unknown_fields,
 };
 use crate::rpc_tools::result::tool_result;
 
@@ -57,9 +57,9 @@ pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<V
     let migration_mode = parse_optional_migration_mode(args, "agent_bootstrap", "migration_mode")?
         .unwrap_or(MigrationMode::Auto);
     let max_chars =
-        parse_optional_usize_with_min(args, "agent_bootstrap", "max_chars", 256, 12_000)?;
+        parse_optional_usize_in_range(args, "agent_bootstrap", "max_chars", 256, 120_000, 12_000)?;
     let max_tokens =
-        parse_optional_usize_with_min(args, "agent_bootstrap", "max_tokens", 64, 3_000)?;
+        parse_optional_usize_in_range(args, "agent_bootstrap", "max_tokens", 64, 30_000, 3_000)?;
     let mode = parse_optional_agent_intent_mode(args, "agent_bootstrap", "mode")?;
     let profile = parse_optional_bootstrap_profile(args, "agent_bootstrap", "profile")?;
     let include_report =

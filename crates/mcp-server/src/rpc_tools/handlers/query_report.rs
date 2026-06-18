@@ -8,8 +8,8 @@ use rmu_core::{
 
 use crate::ServerState;
 use crate::rpc_tools::parsing::{
-    parse_optional_bool, parse_optional_usize_with_min, parse_required_non_empty_string,
-    reject_unknown_fields,
+    parse_optional_bool, parse_optional_usize_in_range, parse_optional_usize_with_min,
+    parse_required_non_empty_string, reject_unknown_fields,
 };
 use crate::rpc_tools::result::tool_result;
 
@@ -52,8 +52,10 @@ pub(super) fn query_report(args: &Value, state: &mut ServerState) -> Result<Valu
         .unwrap_or(RolloutPhase::Full100);
     let migration_mode = parse_optional_migration_mode(args, "query_report", "migration_mode")?
         .unwrap_or(MigrationMode::Auto);
-    let max_chars = parse_optional_usize_with_min(args, "query_report", "max_chars", 256, 12_000)?;
-    let max_tokens = parse_optional_usize_with_min(args, "query_report", "max_tokens", 64, 3_000)?;
+    let max_chars =
+        parse_optional_usize_in_range(args, "query_report", "max_chars", 256, 120_000, 12_000)?;
+    let max_tokens =
+        parse_optional_usize_in_range(args, "query_report", "max_tokens", 64, 30_000, 3_000)?;
     let mode = parse_optional_agent_intent_mode(args, "query_report", "mode")?;
 
     let semantic_effective =
