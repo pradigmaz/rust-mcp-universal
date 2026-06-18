@@ -11,7 +11,7 @@ pub(crate) fn sensitive_data_schema() -> Value {
             (
                 "limit",
                 integer_schema(
-                    "Maximum number of sensitive-data findings to return.",
+                    "Maximum number of sensitive-data findings to return. Defaults to 3 to keep MCP output compact.",
                     Some(1),
                 ),
             ),
@@ -35,7 +35,10 @@ pub(crate) fn signal_memory_schema() -> Value {
         &[
             (
                 "limit",
-                integer_schema("Maximum number of remembered decisions to return.", Some(1)),
+                integer_schema(
+                    "Maximum number of remembered decisions to return. Defaults to 3 to keep MCP output compact.",
+                    Some(1),
+                ),
             ),
             (
                 "finding_family",

@@ -2,6 +2,7 @@ use anyhow::{Context, Result};
 
 use crate::model::{AgentIntentMode, ContextMode};
 use crate::query_profile::{QueryProfile, derive_query_profile};
+use crate::text_utils::is_low_priority_path;
 use crate::vector_rank::SemanticRerankOutcome;
 
 #[derive(Debug, Clone, Copy)]
@@ -188,6 +189,7 @@ pub(super) fn path_role_prior(
     let is_markdown = normalized.ends_with(".md") || normalized.ends_with(".mdx");
     let is_hidden_planning =
         normalized.starts_with(".codex-planning/") || normalized.contains("/.codex-planning/");
+    let is_low_priority = is_low_priority_path(&normalized);
     let is_manifest_or_schema = normalized == "Cargo.toml"
         || normalized == "Cargo.lock"
         || normalized.starts_with("schemas/")
@@ -243,8 +245,11 @@ pub(super) fn path_role_prior(
     if is_hidden_planning {
         prior -= 0.035;
     }
+    if is_low_priority {
+        prior -= 0.050;
+    }
 
-    prior.clamp(-0.060, 0.030)
+    prior.clamp(-0.090, 0.030)
 }
 
 #[cfg(test)]

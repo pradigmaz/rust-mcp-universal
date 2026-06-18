@@ -11,7 +11,10 @@ pub(crate) fn rule_violations_schema() -> Value {
         &[
             (
                 "limit",
-                integer_schema("Maximum number of entries to return.", Some(1)),
+                integer_schema(
+                    "Maximum number of entries to return. Defaults to 3 to keep MCP output compact.",
+                    Some(1),
+                ),
             ),
             (
                 "path_prefix",
@@ -55,6 +58,12 @@ pub(crate) fn rule_violations_schema() -> Value {
                 "auto_index",
                 boolean_schema("Automatically build or refresh the index if needed."),
             ),
+            (
+                "details",
+                boolean_schema(
+                    "Return full metrics, per-rule entries, score components, and signal keys. Defaults to false for compact MCP output.",
+                ),
+            ),
             ("privacy_mode", privacy_mode_schema()),
             ("migration_mode", migration_mode_schema()),
         ],
@@ -74,7 +83,10 @@ pub(crate) fn quality_hotspots_schema() -> Value {
             ),
             (
                 "limit",
-                integer_schema("Maximum number of buckets to return.", Some(1)),
+                integer_schema(
+                    "Maximum number of buckets to return. Defaults to 3 to keep MCP output compact.",
+                    Some(1),
+                ),
             ),
             (
                 "path_prefix",
@@ -98,6 +110,12 @@ pub(crate) fn quality_hotspots_schema() -> Value {
             (
                 "auto_index",
                 boolean_schema("Automatically build or refresh the index if needed."),
+            ),
+            (
+                "details",
+                boolean_schema(
+                    "Return full rule counts, score components, and complete file lists. Defaults to false for compact MCP output.",
+                ),
             ),
             ("privacy_mode", privacy_mode_schema()),
             ("migration_mode", migration_mode_schema()),

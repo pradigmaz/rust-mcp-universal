@@ -5,11 +5,13 @@ use crate::model::{ContextMode, SearchHit};
 use super::types::{CandidateState, FusedExplainMeta};
 use crate::engine::query::intent::SearchIntent;
 use crate::engine::query::support::{FusionProfile, path_role_prior};
+use crate::text_utils::{is_low_priority_path, query_allows_low_priority_paths};
 
 const RRF_K: f32 = 60.0;
 
 pub(super) fn score_candidates(
     states: HashMap<String, CandidateState>,
+    query: &str,
     profile: FusionProfile,
     context_mode: Option<ContextMode>,
     search_intent: &SearchIntent,
@@ -31,13 +33,16 @@ pub(super) fn score_candidates(
         } else {
             0.0
         };
-        let fused_score = rrf_score
+        let mut fused_score = rrf_score
             + (0.020 * state.file_score)
             + (0.028 * state.chunk_score)
             + (0.012 * state.lexical_score)
             + lexical_anchor_bonus
             + search_intent.score_hit(&state.path, &state.preview, &state.language, context_mode)
             + path_role_prior(&state.path, &state.language, context_mode);
+        if is_low_priority_path(&state.path) && !query_allows_low_priority_paths(query) {
+            fused_score *= 0.35;
+        }
         let semantic_score = state.file_score.max(state.chunk_score);
         let semantic_source = match (state.semantic_indexed, state.semantic_fallback) {
             (true, true) => "mixed".to_string(),

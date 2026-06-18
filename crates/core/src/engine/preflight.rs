@@ -91,7 +91,7 @@ impl Engine {
             .unwrap_or(binary_path.as_str());
         let same_binary_other_pids =
             detect_same_binary_other_pids(stale_process_probe_target, &mut warnings);
-        let stale_process_suspected = !same_binary_other_pids.is_empty();
+        let stale_process_suspected = running_binary_stale && !same_binary_other_pids.is_empty();
         let status = if !errors.is_empty() {
             PreflightState::Incompatible
         } else if stale_process_suspected || !warnings.is_empty() {

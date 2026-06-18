@@ -41,7 +41,7 @@ pub(super) fn context_pack(args: &Value, state: &mut ServerState) -> Result<Valu
     let mode = parse_optional_context_mode(args, "context_pack", "mode")?.ok_or_else(|| {
         crate::rpc_tools::errors::invalid_params_error("context_pack requires `mode`")
     })?;
-    let limit = parse_optional_usize_with_min(args, "context_pack", "limit", 1, 20)?;
+    let limit = parse_optional_usize_with_min(args, "context_pack", "limit", 1, 3)?;
     let semantic = parse_optional_bool(args, "context_pack", "semantic")?.unwrap_or(false);
     let auto_index = parse_optional_bool(args, "context_pack", "auto_index")?.unwrap_or(false);
     let semantic_fail_mode =
@@ -56,9 +56,9 @@ pub(super) fn context_pack(args: &Value, state: &mut ServerState) -> Result<Valu
     let migration_mode = parse_optional_migration_mode(args, "context_pack", "migration_mode")?
         .unwrap_or(MigrationMode::Auto);
     let max_chars =
-        parse_optional_usize_in_range(args, "context_pack", "max_chars", 256, 120_000, 12_000)?;
+        parse_optional_usize_in_range(args, "context_pack", "max_chars", 256, 120_000, 4_000)?;
     let max_tokens =
-        parse_optional_usize_in_range(args, "context_pack", "max_tokens", 64, 30_000, 3_000)?;
+        parse_optional_usize_in_range(args, "context_pack", "max_tokens", 64, 30_000, 1_000)?;
 
     let semantic_effective =
         decide_semantic_rollout(semantic, vector_layer_enabled, rollout_phase, &query).enabled;

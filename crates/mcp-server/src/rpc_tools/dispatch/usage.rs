@@ -8,14 +8,15 @@ use crate::rpc_tools::parsing::{parse_optional_usize_in_range, reject_unknown_fi
 use crate::rpc_tools::result::tool_result;
 
 pub(super) fn record_tool_usage(state: &ServerState, tool: &str, result: &anyhow::Result<Value>) {
-    let Some(db_path) = state.db_path.as_deref() else {
-        return;
-    };
+    let db_path = state
+        .db_path
+        .clone()
+        .unwrap_or_else(|| state.project_path.join(".rmu").join("index.db"));
     if !db_path.exists() {
         return;
     }
 
-    let Ok(conn) = Connection::open(db_path) else {
+    let Ok(conn) = Connection::open(&db_path) else {
         return;
     };
 
@@ -46,11 +47,12 @@ pub(super) fn record_tool_usage(state: &ServerState, tool: &str, result: &anyhow
 
 pub(super) fn usage_stats(args: &Value, state: &ServerState) -> anyhow::Result<Value> {
     reject_unknown_fields(args, "usage_stats", &["limit"])?;
-    let limit = parse_optional_usize_in_range(args, "usage_stats", "limit", 1, 100, 20)?;
+    let limit = parse_optional_usize_in_range(args, "usage_stats", "limit", 1, 100, 5)?;
 
-    let Some(db_path) = state.db_path.as_deref() else {
-        return tool_result(json!({"summary": empty_summary(), "recent": []}));
-    };
+    let db_path = state
+        .db_path
+        .clone()
+        .unwrap_or_else(|| state.project_path.join(".rmu").join("index.db"));
     if !db_path.exists() {
         return tool_result(json!({"summary": empty_summary(), "recent": []}));
     }

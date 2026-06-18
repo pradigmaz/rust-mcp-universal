@@ -89,7 +89,8 @@ fn rule_violations_returns_filtered_hits_and_masks_paths() {
                 "path_prefix": "config/",
                 "rule_ids": ["max_non_empty_lines_config"],
                 "sort_by": "non_empty_lines",
-                "privacy_mode": "mask"
+                "privacy_mode": "mask",
+                "details": true
             }
         })),
         &mut state,
@@ -304,7 +305,8 @@ fn rule_violations_accept_metric_value_sorting_when_metric_context_is_provided()
             "arguments": {
                 "auto_index": true,
                 "sort_by": "metric_value",
-                "sort_metric_id": "non_empty_lines"
+                "sort_metric_id": "non_empty_lines",
+                "details": true
             }
         })),
         &mut state,

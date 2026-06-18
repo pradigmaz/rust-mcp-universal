@@ -27,7 +27,7 @@ pub(super) fn sensitive_data(args: &Value, state: &mut ServerState) -> Result<Va
             "migration_mode",
         ],
     )?;
-    let limit = parse_optional_usize_with_min(args, "sensitive_data", "limit", 1, 20)?;
+    let limit = parse_optional_usize_with_min(args, "sensitive_data", "limit", 1, 3)?;
     let path_prefix = parse_optional_non_empty_string(args, "sensitive_data", "path_prefix")?
         .map(|value| value.replace('\\', "/"));
     let include_low_confidence =

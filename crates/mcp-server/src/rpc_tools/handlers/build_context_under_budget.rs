@@ -37,7 +37,7 @@ pub(super) fn build_context_under_budget(args: &Value, state: &mut ServerState) 
         ],
     )?;
     let query = parse_required_non_empty_string(args, "build_context_under_budget", "query")?;
-    let limit = parse_optional_usize_with_min(args, "build_context_under_budget", "limit", 1, 20)?;
+    let limit = parse_optional_usize_with_min(args, "build_context_under_budget", "limit", 1, 3)?;
     let semantic =
         parse_optional_bool(args, "build_context_under_budget", "semantic")?.unwrap_or(false);
     let auto_index =
@@ -66,7 +66,7 @@ pub(super) fn build_context_under_budget(args: &Value, state: &mut ServerState) 
         "max_chars",
         256,
         120_000,
-        12_000,
+        4_000,
     )?;
     let max_tokens = parse_optional_usize_in_range(
         args,
@@ -74,7 +74,7 @@ pub(super) fn build_context_under_budget(args: &Value, state: &mut ServerState) 
         "max_tokens",
         64,
         30_000,
-        3_000,
+        1_000,
     )?;
 
     let semantic_effective =

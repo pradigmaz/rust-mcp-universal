@@ -33,7 +33,7 @@ fn run_symbol_references(args: &Value, state: &mut ServerState, wrap_hits: bool)
         ],
     )?;
     let name = parse_required_non_empty_string(args, "symbol_references", "name")?;
-    let limit = parse_optional_usize_with_min(args, "symbol_references", "limit", 1, 20)?;
+    let limit = parse_optional_usize_with_min(args, "symbol_references", "limit", 1, 3)?;
     let auto_index = parse_optional_bool(args, "symbol_references", "auto_index")?.unwrap_or(false);
     let privacy_mode = parse_optional_privacy_mode(args, "symbol_references", "privacy_mode")?
         .unwrap_or(PrivacyMode::Off);

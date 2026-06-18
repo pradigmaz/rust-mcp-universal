@@ -33,7 +33,7 @@ fn run_related_files(args: &Value, state: &mut ServerState, wrap_hits: bool) -> 
         ],
     )?;
     let path = parse_required_non_empty_string(args, "related_files", "path")?;
-    let limit = parse_optional_usize_with_min(args, "related_files", "limit", 1, 20)?;
+    let limit = parse_optional_usize_with_min(args, "related_files", "limit", 1, 3)?;
     let auto_index = parse_optional_bool(args, "related_files", "auto_index")?.unwrap_or(false);
     let privacy_mode = parse_optional_privacy_mode(args, "related_files", "privacy_mode")?
         .unwrap_or(PrivacyMode::Off);

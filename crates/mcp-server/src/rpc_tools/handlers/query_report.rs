@@ -35,10 +35,12 @@ pub(super) fn query_report(args: &Value, state: &mut ServerState) -> Result<Valu
             "max_chars",
             "max_tokens",
             "mode",
+            "details",
         ],
     )?;
     let query = parse_required_non_empty_string(args, "query_report", "query")?;
-    let limit = parse_optional_usize_with_min(args, "query_report", "limit", 1, 20)?;
+    let limit = parse_optional_usize_with_min(args, "query_report", "limit", 1, 3)?;
+    let details = parse_optional_bool(args, "query_report", "details")?.unwrap_or(false);
     let semantic = parse_optional_bool(args, "query_report", "semantic")?.unwrap_or(false);
     let auto_index = parse_optional_bool(args, "query_report", "auto_index")?.unwrap_or(false);
     let semantic_fail_mode =
@@ -53,9 +55,9 @@ pub(super) fn query_report(args: &Value, state: &mut ServerState) -> Result<Valu
     let migration_mode = parse_optional_migration_mode(args, "query_report", "migration_mode")?
         .unwrap_or(MigrationMode::Auto);
     let max_chars =
-        parse_optional_usize_in_range(args, "query_report", "max_chars", 256, 120_000, 12_000)?;
+        parse_optional_usize_in_range(args, "query_report", "max_chars", 256, 120_000, 4_000)?;
     let max_tokens =
-        parse_optional_usize_in_range(args, "query_report", "max_tokens", 64, 30_000, 3_000)?;
+        parse_optional_usize_in_range(args, "query_report", "max_tokens", 64, 30_000, 1_000)?;
     let mode = parse_optional_agent_intent_mode(args, "query_report", "mode")?;
 
     let semantic_effective =
@@ -70,7 +72,7 @@ pub(super) fn query_report(args: &Value, state: &mut ServerState) -> Result<Valu
         &QueryOptions {
             query,
             limit,
-            detailed: true,
+            detailed: details,
             semantic: semantic_effective,
             semantic_fail_mode,
             privacy_mode,

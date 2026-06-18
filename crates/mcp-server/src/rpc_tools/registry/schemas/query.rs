@@ -35,7 +35,10 @@ pub(crate) fn query_schema(include_semantic_flag: bool) -> Value {
         ),
         (
             "limit",
-            integer_schema("Maximum number of candidates to return.", Some(1)),
+            integer_schema(
+                "Maximum number of candidates to return. Defaults to 3 to keep MCP output compact.",
+                Some(1),
+            ),
         ),
     ];
     if include_semantic_flag {
@@ -74,7 +77,10 @@ pub(crate) fn budget_query_schema() -> Value {
             ),
             (
                 "limit",
-                integer_schema("Maximum number of candidates to return.", Some(1)),
+                integer_schema(
+                    "Maximum number of candidates to return. Defaults to 3 to keep MCP output compact.",
+                    Some(1),
+                ),
             ),
             (
                 "semantic",
@@ -101,7 +107,7 @@ pub(crate) fn budget_query_schema() -> Value {
             (
                 "max_chars",
                 integer_range_schema(
-                    "Maximum number of characters allowed in the assembled context.",
+                    "Maximum number of characters allowed in the assembled context. Defaults to 4000.",
                     Some(256),
                     Some(120_000),
                 ),
@@ -109,7 +115,7 @@ pub(crate) fn budget_query_schema() -> Value {
             (
                 "max_tokens",
                 integer_range_schema(
-                    "Maximum number of tokens allowed in the assembled context.",
+                    "Maximum number of tokens allowed in the assembled context. Defaults to 1000.",
                     Some(64),
                     Some(30_000),
                 ),
@@ -134,7 +140,16 @@ pub(crate) fn report_query_schema() -> Value {
             ),
             (
                 "limit",
-                integer_schema("Maximum number of candidates to return.", Some(1)),
+                integer_schema(
+                    "Maximum number of candidates to return. Defaults to 3 to keep MCP output compact.",
+                    Some(1),
+                ),
+            ),
+            (
+                "details",
+                boolean_schema(
+                    "Include investigation summary and timing diagnostics. Defaults to false.",
+                ),
             ),
             (
                 "semantic",
@@ -161,7 +176,7 @@ pub(crate) fn report_query_schema() -> Value {
             (
                 "max_chars",
                 integer_range_schema(
-                    "Maximum number of characters allowed in the assembled context.",
+                    "Maximum number of characters allowed in the assembled context. Defaults to 4000.",
                     Some(256),
                     Some(120_000),
                 ),
@@ -169,7 +184,7 @@ pub(crate) fn report_query_schema() -> Value {
             (
                 "max_tokens",
                 integer_range_schema(
-                    "Maximum number of tokens allowed in the assembled context.",
+                    "Maximum number of tokens allowed in the assembled context. Defaults to 1000.",
                     Some(64),
                     Some(30_000),
                 ),
@@ -195,7 +210,10 @@ pub(crate) fn context_pack_schema() -> Value {
             ),
             (
                 "limit",
-                integer_schema("Maximum number of candidates to consider.", Some(1)),
+                integer_schema(
+                    "Maximum number of candidates to consider. Defaults to 3 to keep MCP output compact.",
+                    Some(1),
+                ),
             ),
             (
                 "semantic",
@@ -222,7 +240,7 @@ pub(crate) fn context_pack_schema() -> Value {
             (
                 "max_chars",
                 integer_range_schema(
-                    "Maximum number of characters allowed in the assembled context.",
+                    "Maximum number of characters allowed in the assembled context. Defaults to 4000.",
                     Some(256),
                     Some(120_000),
                 ),
@@ -230,7 +248,7 @@ pub(crate) fn context_pack_schema() -> Value {
             (
                 "max_tokens",
                 integer_range_schema(
-                    "Maximum number of tokens allowed in the assembled context.",
+                    "Maximum number of tokens allowed in the assembled context. Defaults to 1000.",
                     Some(64),
                     Some(30_000),
                 ),
@@ -256,7 +274,10 @@ pub(crate) fn investigation_schema() -> Value {
             ),
             (
                 "limit",
-                integer_schema("Maximum number of variants or snippets to return.", Some(1)),
+                integer_schema(
+                    "Maximum number of variants or snippets to return. Defaults to 3 to keep MCP output compact.",
+                    Some(1),
+                ),
             ),
             (
                 "auto_index",

@@ -27,7 +27,7 @@ pub(super) fn signal_memory(args: &Value, state: &mut ServerState) -> Result<Val
             "migration_mode",
         ],
     )?;
-    let limit = parse_optional_usize_with_min(args, "signal_memory", "limit", 1, 20)?;
+    let limit = parse_optional_usize_with_min(args, "signal_memory", "limit", 1, 3)?;
     let finding_family = parse_optional_non_empty_string(args, "signal_memory", "finding_family")?
         .map(|value| parse_finding_family(&value))
         .transpose()?;

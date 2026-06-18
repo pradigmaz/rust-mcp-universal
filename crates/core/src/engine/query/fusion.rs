@@ -27,6 +27,7 @@ pub(super) fn fuse_candidate_pools(input: FusionInputs<'_>) -> FusionResult {
             input.chunk_pool,
             input.graph_pool,
         ),
+        input.query,
         input.profile,
         input.context_mode,
         &search_intent,

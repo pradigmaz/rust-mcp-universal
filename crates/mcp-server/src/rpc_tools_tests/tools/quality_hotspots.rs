@@ -20,7 +20,8 @@ fn quality_hotspots_returns_file_buckets_with_risk_scores() {
             "name": "quality_hotspots",
             "arguments": {
                 "aggregation": "file",
-                "auto_index": true
+                "auto_index": true,
+                "details": true
             }
         })),
         &mut state,

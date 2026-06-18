@@ -317,6 +317,53 @@ fn helper() {}
 }
 
 #[test]
+fn related_files_v2_downranks_archive_neighbors_for_live_files() {
+    let project_dir = temp_dir("rmu-mcp-tests-related-files-archive-noise");
+    fs::create_dir_all(project_dir.join("src")).expect("create src");
+    fs::create_dir_all(project_dir.join("docs/archive/reference/src")).expect("create archive");
+    fs::write(
+        project_dir.join("src/main.rs"),
+        "mod live;\nuse crate::live::helper;\nfn root() { helper(); }\n",
+    )
+    .expect("write main");
+    fs::write(project_dir.join("src/live.rs"), "pub fn helper() {}\n").expect("write live");
+    fs::write(
+        project_dir.join("docs/archive/reference/src/live.rs"),
+        "pub fn helper() {}\n",
+    )
+    .expect("write archive");
+
+    let mut state = state_for(project_dir.clone(), Some(project_dir.join(".rmu/index.db")));
+
+    let result = handle_tool_call(
+        Some(json!({
+            "name": "related_files_v2",
+            "arguments": {
+                "path": "src/main.rs",
+                "limit": 5,
+                "auto_index": true
+            }
+        })),
+        &mut state,
+    )
+    .expect("related_files_v2 should succeed");
+
+    assert_eq!(result["isError"], json!(false));
+    let paths = expect_navigation_v2_hits(&result)
+        .iter()
+        .filter_map(|hit| hit["path"].as_str())
+        .collect::<Vec<_>>();
+    let live_idx = paths
+        .iter()
+        .position(|path| *path == "src/live.rs")
+        .expect("live hit");
+    let archive_idx = paths.iter().position(|path| path.contains("docs/archive"));
+    assert!(archive_idx.is_none_or(|idx| live_idx < idx));
+
+    let _ = fs::remove_dir_all(project_dir);
+}
+
+#[test]
 fn call_path_returns_path_with_evidence() {
     let project_dir = temp_dir("rmu-mcp-tests-call-path");
     fs::create_dir_all(project_dir.join("src")).expect("create src");

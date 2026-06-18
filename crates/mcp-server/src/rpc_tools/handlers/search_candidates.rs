@@ -35,7 +35,7 @@ pub(super) fn search_candidates(args: &Value, state: &mut ServerState) -> Result
         ],
     )?;
     let query = parse_required_non_empty_string(args, "search_candidates", "query")?;
-    let limit = parse_optional_usize_with_min(args, "search_candidates", "limit", 1, 20)?;
+    let limit = parse_optional_usize_with_min(args, "search_candidates", "limit", 1, 3)?;
     let semantic = parse_optional_bool(args, "search_candidates", "semantic")?.unwrap_or(false);
     let auto_index = parse_optional_bool(args, "search_candidates", "auto_index")?.unwrap_or(false);
     let semantic_fail_mode =

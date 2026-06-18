@@ -163,3 +163,30 @@ fn query_report_stays_in_sync_with_search_candidates_for_mixed_queries() {
 
     let _ = fs::remove_dir_all(project_dir);
 }
+
+#[test]
+fn query_report_prefers_live_code_over_archive_matches() {
+    let project_dir = temp_dir("rmu-mcp-tests-query-report-archive-noise");
+    fs::create_dir_all(project_dir.join("src")).expect("create src");
+    fs::create_dir_all(project_dir.join("docs/archive/reference/src")).expect("create archive");
+    fs::write(
+        project_dir.join("src/usage.rs"),
+        "pub fn usage_stats() { let _label = \"MCP usage_stats tool implementation\"; }\n",
+    )
+    .expect("write live");
+    fs::write(
+        project_dir.join("docs/archive/reference/src/usage.rs"),
+        "pub fn usage_stats() { let _label = \"MCP usage_stats tool implementation archive\"; }\n",
+    )
+    .expect("write archive");
+
+    let mut state = state_for(project_dir.clone(), Some(project_dir.join(".rmu/index.db")));
+    let report_paths = query_report_paths(&mut state, "MCP usage_stats tool implementation");
+
+    assert_eq!(
+        report_paths.first().map(String::as_str),
+        Some("src/usage.rs")
+    );
+
+    let _ = fs::remove_dir_all(project_dir);
+}

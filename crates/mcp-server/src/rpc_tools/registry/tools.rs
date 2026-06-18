@@ -54,7 +54,7 @@ pub(super) fn tools_list() -> Value {
                             "type": "integer",
                             "minimum": 1,
                             "maximum": 100,
-                            "description": "Maximum number of recent calls to return."
+                            "description": "Maximum number of recent calls to return. Defaults to 5 to keep MCP output compact."
                         }),
                     )],
                     &[]
@@ -78,7 +78,7 @@ pub(super) fn tools_list() -> Value {
                             json!({
                                 "type": "integer",
                                 "minimum": 1,
-                                "description": "Maximum number of candidates to consider."
+                                "description": "Maximum number of candidates to consider. Defaults to 3 to keep MCP output compact."
                             }),
                         ),
                         (
@@ -122,7 +122,7 @@ pub(super) fn tools_list() -> Value {
                                 "type": "integer",
                                 "minimum": 256,
                                 "maximum": 120000,
-                                "description": "Maximum number of characters allowed in the assembled payload."
+                                "description": "Maximum number of characters allowed in the assembled payload. Defaults to 4000."
                             }),
                         ),
                         (
@@ -131,7 +131,7 @@ pub(super) fn tools_list() -> Value {
                                 "type": "integer",
                                 "minimum": 64,
                                 "maximum": 30000,
-                                "description": "Maximum number of tokens allowed in the assembled payload."
+                                "description": "Maximum number of tokens allowed in the assembled payload. Defaults to 1000."
                             }),
                         ),
                         (
@@ -269,12 +269,12 @@ pub(super) fn tools_list() -> Value {
             ),
             tool(
                 "rule_violations",
-                "Report persisted file-level quality violations from the quality index; use `path_prefix` to scope paths",
+                "Report compact persisted file-level quality violations from the quality index; pass details=true for full fields",
                 rule_violations_schema()
             ),
             tool(
                 "quality_hotspots",
-                "Report aggregated quality hotspots across file, directory, or module buckets",
+                "Report compact aggregated quality hotspots across file, directory, or module buckets; pass details=true for full fields",
                 quality_hotspots_schema()
             ),
             tool(

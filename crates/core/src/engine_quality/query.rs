@@ -16,6 +16,7 @@ use crate::model::{
 };
 use crate::quality::QUALITY_RULESET_ID;
 use crate::quality::compute_hit_risk_score;
+use crate::text_utils::is_low_priority_path;
 
 pub(super) fn load_quality_summary(engine: &Engine) -> Result<WorkspaceQualitySummary> {
     if !engine.db_path.exists() {
@@ -413,7 +414,9 @@ fn compare_hits(
             metric_value_for(right, sort_metric_id).cmp(&metric_value_for(left, sort_metric_id))
         }
     };
-    primary
+    is_low_priority_path(&left.path)
+        .cmp(&is_low_priority_path(&right.path))
+        .then(primary)
         .then_with(|| warning_prominence(right).cmp(&warning_prominence(left)))
         .then_with(|| right.size_bytes.cmp(&left.size_bytes))
         .then_with(|| left.path.cmp(&right.path))

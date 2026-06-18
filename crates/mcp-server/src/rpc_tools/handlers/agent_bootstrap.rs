@@ -42,7 +42,7 @@ pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<V
         ],
     )?;
     let query = parse_optional_non_empty_string(args, "agent_bootstrap", "query")?;
-    let limit = parse_optional_usize_with_min(args, "agent_bootstrap", "limit", 1, 20)?;
+    let limit = parse_optional_usize_with_min(args, "agent_bootstrap", "limit", 1, 3)?;
     let semantic = parse_optional_bool(args, "agent_bootstrap", "semantic")?.unwrap_or(false);
     let auto_index = parse_optional_bool(args, "agent_bootstrap", "auto_index")?.unwrap_or(false);
     let semantic_fail_mode =
@@ -57,9 +57,9 @@ pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<V
     let migration_mode = parse_optional_migration_mode(args, "agent_bootstrap", "migration_mode")?
         .unwrap_or(MigrationMode::Auto);
     let max_chars =
-        parse_optional_usize_in_range(args, "agent_bootstrap", "max_chars", 256, 120_000, 12_000)?;
+        parse_optional_usize_in_range(args, "agent_bootstrap", "max_chars", 256, 120_000, 4_000)?;
     let max_tokens =
-        parse_optional_usize_in_range(args, "agent_bootstrap", "max_tokens", 64, 30_000, 3_000)?;
+        parse_optional_usize_in_range(args, "agent_bootstrap", "max_tokens", 64, 30_000, 1_000)?;
     let mode = parse_optional_agent_intent_mode(args, "agent_bootstrap", "mode")?;
     let profile = parse_optional_bootstrap_profile(args, "agent_bootstrap", "profile")?;
     let include_report =

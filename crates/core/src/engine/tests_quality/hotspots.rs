@@ -129,6 +129,37 @@ fn quality_hotspots_file_mode_reuses_file_risk_scores() -> anyhow::Result<()> {
 }
 
 #[test]
+fn quality_ranking_prefers_active_paths_over_archive_paths() -> anyhow::Result<()> {
+    let root = temp_dir("rmu-quality-active-over-archive");
+    std::fs::create_dir_all(&root)?;
+    write_project_file(&root, "src/lib.rs", &repeated_lines("active", 120))?;
+    write_project_file(
+        &root,
+        "docs/archive/reference/old.rs",
+        &repeated_lines("archived", 1200),
+    )?;
+
+    let engine = Engine::new(root.clone(), Some(root.join(".rmu/index.db")))?;
+    engine.index_path()?;
+
+    let violations = engine.rule_violations(&RuleViolationsOptions {
+        limit: 1,
+        sort_by: RuleViolationsSortBy::SizeBytes,
+        ..RuleViolationsOptions::default()
+    })?;
+    let hotspots = engine.quality_hotspots(&QualityHotspotsOptions {
+        limit: 1,
+        ..QualityHotspotsOptions::default()
+    })?;
+
+    assert_eq!(violations.hits[0].path, "src/lib.rs");
+    assert_eq!(hotspots.buckets[0].bucket_id, "src/lib.rs");
+
+    let _ = std::fs::remove_dir_all(root);
+    Ok(())
+}
+
+#[test]
 fn rule_violations_and_hotspots_expose_complexity_contract() -> anyhow::Result<()> {
     let root = temp_dir("rmu-quality-complexity-contract");
     std::fs::create_dir_all(&root)?;

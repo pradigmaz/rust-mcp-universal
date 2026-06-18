@@ -34,7 +34,7 @@ pub(super) fn semantic_search(args: &Value, state: &mut ServerState) -> Result<V
         ],
     )?;
     let query = parse_required_non_empty_string(args, "semantic_search", "query")?;
-    let limit = parse_optional_usize_with_min(args, "semantic_search", "limit", 1, 20)?;
+    let limit = parse_optional_usize_with_min(args, "semantic_search", "limit", 1, 3)?;
     let auto_index = parse_optional_bool(args, "semantic_search", "auto_index")?.unwrap_or(false);
     let semantic_fail_mode =
         parse_optional_semantic_fail_mode(args, "semantic_search", "semantic_fail_mode")?

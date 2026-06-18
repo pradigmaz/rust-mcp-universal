@@ -7,7 +7,7 @@ use rusqlite::Connection;
 use super::super::Engine;
 use super::common::{ensure_file_exists, load_string_set};
 use crate::model::RelatedFileHit;
-use crate::text_utils::symbol_tail;
+use crate::text_utils::{is_low_priority_path, symbol_tail};
 
 #[derive(Debug, Default)]
 struct RelatedAccumulator {
@@ -66,6 +66,7 @@ impl Engine {
         )?;
         accumulate_ref_overlaps(&conn, &normalized_path, &base_symbols, &mut by_path)?;
 
+        let base_low_priority = is_low_priority_path(&normalized_path);
         let mut hits = by_path
             .into_iter()
             .filter_map(|(candidate_path, acc)| {
@@ -76,9 +77,12 @@ impl Engine {
                     return None;
                 }
 
-                let score = acc.dep_overlap as f32 * 0.45
+                let mut score = acc.dep_overlap as f32 * 0.45
                     + ref_overlap as f32 * 1.2
                     + acc.symbol_overlap as f32 * 0.35;
+                if !base_low_priority && is_low_priority_path(&candidate_path) {
+                    score *= 0.25;
+                }
 
                 Some(RelatedFileHit {
                     path: candidate_path,

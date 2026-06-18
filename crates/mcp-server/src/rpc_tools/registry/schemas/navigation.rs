@@ -17,7 +17,10 @@ pub(crate) fn navigation_schema(arg_name: &str) -> Value {
             (arg_name, string_schema(description, Some(1))),
             (
                 "limit",
-                integer_schema("Maximum number of hits to return.", Some(1)),
+                integer_schema(
+                    "Maximum number of hits to return. Defaults to 3 to keep MCP output compact.",
+                    Some(1),
+                ),
             ),
             (
                 "auto_index",

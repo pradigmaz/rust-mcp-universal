@@ -1,5 +1,5 @@
 use anyhow::Result;
-use serde_json::Value;
+use serde_json::{Map, Value};
 
 use rmu_core::{
     Engine, MigrationMode, PrivacyMode, RuleViolationsOptions, RuleViolationsSortBy,
@@ -31,9 +31,10 @@ pub(super) fn rule_violations(args: &Value, state: &mut ServerState) -> Result<V
             "auto_index",
             "privacy_mode",
             "migration_mode",
+            "details",
         ],
     )?;
-    let limit = parse_optional_usize_with_min(args, "rule_violations", "limit", 1, 20)?;
+    let limit = parse_optional_usize_with_min(args, "rule_violations", "limit", 1, 3)?;
     let path_prefix = parse_optional_non_empty_string(args, "rule_violations", "path_prefix")?
         .map(|value| value.replace('\\', "/"));
     let language = parse_optional_non_empty_string(args, "rule_violations", "language")?;
@@ -68,6 +69,9 @@ pub(super) fn rule_violations(args: &Value, state: &mut ServerState) -> Result<V
         .unwrap_or(PrivacyMode::Off);
     let migration_mode = parse_optional_migration_mode(args, "rule_violations", "migration_mode")?
         .unwrap_or(MigrationMode::Auto);
+    let details =
+        crate::rpc_tools::parsing::parse_optional_bool(args, "rule_violations", "details")?
+            .unwrap_or(false);
 
     let engine = Engine::new_with_migration_mode(
         state.project_path.clone(),
@@ -100,6 +104,96 @@ pub(super) fn rule_violations(args: &Value, state: &mut ServerState) -> Result<V
         })
         .map_err(|err| tool_domain_error(err.to_string()))?;
     let mut payload = serde_json::to_value(result)?;
+    if !details {
+        compact_rule_violations_payload(&mut payload);
+    }
     sanitize_value_for_privacy(privacy_mode, &mut payload);
     tool_result(payload)
+}
+
+fn compact_rule_violations_payload(payload: &mut Value) {
+    let Some(hits) = payload.get_mut("hits").and_then(Value::as_array_mut) else {
+        return;
+    };
+    for hit in hits {
+        let Some(object) = hit.as_object_mut() else {
+            continue;
+        };
+        let violation_count = object
+            .get("violations")
+            .and_then(Value::as_array)
+            .map_or(0, Vec::len);
+        let metric_count = object
+            .get("metrics")
+            .and_then(Value::as_array)
+            .map_or(0, Vec::len);
+        let top_rule_ids = object
+            .get("violations")
+            .and_then(Value::as_array)
+            .map(|violations| {
+                violations
+                    .iter()
+                    .filter_map(|item| item.get("rule_id").and_then(Value::as_str))
+                    .take(5)
+                    .map(Value::from)
+                    .collect()
+            })
+            .unwrap_or_else(Vec::new);
+
+        object.insert("violation_count".to_string(), Value::from(violation_count));
+        object.insert("metric_count".to_string(), Value::from(metric_count));
+        object.insert("top_rule_ids".to_string(), Value::Array(top_rule_ids));
+        compact_risk_score(object);
+        object.remove("violations");
+        object.remove("metrics");
+        object.remove("signal_key");
+    }
+}
+
+fn compact_risk_score(object: &mut Map<String, Value>) {
+    let Some(score) = object
+        .get("risk_score")
+        .and_then(|value| value.get("score"))
+        .cloned()
+    else {
+        return;
+    };
+    object.insert(
+        "risk_score".to_string(),
+        serde_json::json!({ "score": score }),
+    );
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    use super::compact_rule_violations_payload;
+
+    #[test]
+    fn compact_rule_violations_removes_heavy_fields() {
+        let mut payload = json!({
+            "hits": [{
+                "path": "src/lib.rs",
+                "risk_score": {"score": 12.0, "components": {"size": 1}, "weights": {"size": 1}},
+                "metrics": [{"id": "a"}, {"id": "b"}],
+                "violations": [
+                    {"rule_id": "long_file"},
+                    {"rule_id": "many_imports"}
+                ],
+                "signal_key": "abc"
+            }]
+        });
+
+        compact_rule_violations_payload(&mut payload);
+        let hit = &payload["hits"][0];
+
+        assert_eq!(hit["violation_count"], 2);
+        assert_eq!(hit["metric_count"], 2);
+        assert_eq!(hit["top_rule_ids"], json!(["long_file", "many_imports"]));
+        assert_eq!(hit["risk_score"], json!({"score": 12.0}));
+        assert!(hit.get("violations").is_none());
+        assert!(hit.get("metrics").is_none());
+        assert!(hit.get("signal_key").is_none());
+    }
 }

@@ -149,15 +149,19 @@ impl Engine {
         timings.context_ms = elapsed_ms(phase_started);
         let (chunk_coverage, chunk_source) = derive_chunk_telemetry(&context);
         let status = self.index_status()?;
-        let phase_started = Instant::now();
-        let snapshot = investigation::shared_query_investigation_snapshot(
-            self,
-            &options.query,
-            options.limit,
-        )?;
-        timings.investigation_ms = elapsed_ms(phase_started);
-        timings.investigation = snapshot.timings;
-        let investigation_summary = investigation_embed::format_investigation_summary(&snapshot);
+        let investigation_summary = if options.detailed {
+            let phase_started = Instant::now();
+            let snapshot = investigation::shared_query_investigation_snapshot(
+                self,
+                &options.query,
+                options.limit,
+            )?;
+            timings.investigation_ms = elapsed_ms(phase_started);
+            timings.investigation = snapshot.timings;
+            Some(investigation_embed::format_investigation_summary(&snapshot))
+        } else {
+            None
+        };
         let phase_started = Instant::now();
         let mut report = build_query_report(
             &self.project_root,
@@ -179,12 +183,14 @@ impl Engine {
                     chunk_coverage,
                     chunk_source,
                 },
-                investigation_summary: Some(investigation_summary),
+                investigation_summary,
             },
         )?;
         timings.format_ms = elapsed_ms(phase_started);
         timings.total_ms = elapsed_ms(started);
-        report.timings = Some(timings);
+        if options.detailed {
+            report.timings = Some(timings);
+        }
         Ok(report)
     }
 

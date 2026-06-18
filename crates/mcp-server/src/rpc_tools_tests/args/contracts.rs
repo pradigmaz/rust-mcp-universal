@@ -10,6 +10,45 @@ fn tool_error_result_has_structured_content() {
 }
 
 #[test]
+fn tool_result_text_is_compact_and_structured_content_keeps_payload() {
+    let project_dir = temp_dir("rmu-mcp-tests-compact-content");
+    std::fs::create_dir_all(project_dir.join("src")).expect("create temp dir");
+    std::fs::write(
+        project_dir.join("src/lib.rs"),
+        "pub fn compact_content_symbol() -> i32 { 1 }\n",
+    )
+    .expect("write file");
+
+    let mut state = state_for(project_dir.clone(), Some(project_dir.join(".rmu/index.db")));
+    let payload = handle_tool_call(
+        Some(json!({
+            "name": "search_candidates",
+            "arguments": {
+                "query": "compact_content_symbol",
+                "auto_index": true
+            }
+        })),
+        &mut state,
+    )
+    .expect("search_candidates should succeed");
+
+    assert_eq!(payload["isError"], json!(false));
+    assert_eq!(payload["content"][0]["text"], json!("ok: hits=1"));
+    assert_eq!(
+        payload["structuredContent"]["hits"][0]["path"],
+        json!("src/lib.rs")
+    );
+    assert!(
+        !payload["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .contains("compact_content_symbol")
+    );
+
+    let _ = std::fs::remove_dir_all(project_dir);
+}
+
+#[test]
 fn delete_index_tool_schema_requires_confirm_true() {
     let tools = tools_list();
     let delete_tool = tools["tools"]
@@ -83,6 +122,21 @@ fn query_and_quality_tool_schemas_reject_drifted_argument_aliases() {
         &json!({"sort_by": "path"}),
         violations_schema,
         "rule_violations.schema.sort_by.path",
+    );
+    assert_required_structure(
+        &json!({"details": true, "limit": 1}),
+        violations_schema,
+        "rule_violations.schema.details",
+    );
+
+    let hotspots_schema = &items
+        .iter()
+        .find(|tool| tool["name"].as_str() == Some("quality_hotspots"))
+        .expect("quality_hotspots tool should exist")["inputSchema"];
+    assert_required_structure(
+        &json!({"details": true, "limit": 1}),
+        hotspots_schema,
+        "quality_hotspots.schema.details",
     );
 
     let snapshot_schema = &items

@@ -22,6 +22,7 @@ fn query_report_returns_mcp_envelope_with_required_fields() {
             "arguments": {
                 "query": "query_report_symbol",
                 "limit": 5,
+                "details": true,
                 "auto_index": true
             }
         })),
@@ -219,6 +220,7 @@ fn query_report_payload_matches_local_json_schemas() {
             "arguments": {
                 "query": "schema_contract_symbol",
                 "limit": 5,
+                "details": true,
                 "auto_index": true
             }
         })),
@@ -263,6 +265,60 @@ fn query_report_payload_matches_local_json_schemas() {
         &report_schema,
         "mcp_result.structuredContent.invalid_rank_before",
     );
+
+    let _ = fs::remove_dir_all(project_dir);
+}
+
+#[test]
+fn query_report_is_compact_by_default_and_details_opt_in_restores_diagnostics() {
+    let project_dir = temp_dir("rmu-mcp-tests-report-compact");
+    fs::create_dir_all(project_dir.join("src")).expect("create temp dir");
+    fs::write(
+        project_dir.join("src/lib.rs"),
+        "pub fn compact_report_symbol() -> i32 { 1 }\n",
+    )
+    .expect("write file");
+
+    let mut state = state_for(project_dir.clone(), Some(project_dir.join(".rmu/index.db")));
+
+    let compact = handle_tool_call(
+        Some(json!({
+            "name": "query_report",
+            "arguments": {
+                "query": "compact_report_symbol",
+                "auto_index": true
+            }
+        })),
+        &mut state,
+    )
+    .expect("compact query_report should succeed");
+    assert!(compact["structuredContent"]["investigation_summary"].is_null());
+    assert!(compact["structuredContent"]["timings"].is_null());
+    assert!(
+        compact["structuredContent"]["selected_context"]
+            .as_array()
+            .unwrap()
+            .len()
+            <= 3
+    );
+    assert_eq!(
+        compact["structuredContent"]["budget"]["max_tokens"],
+        json!(1000)
+    );
+
+    let detailed = handle_tool_call(
+        Some(json!({
+            "name": "query_report",
+            "arguments": {
+                "query": "compact_report_symbol",
+                "details": true
+            }
+        })),
+        &mut state,
+    )
+    .expect("detailed query_report should succeed");
+    assert!(detailed["structuredContent"]["investigation_summary"].is_object());
+    assert!(detailed["structuredContent"]["timings"].is_object());
 
     let _ = fs::remove_dir_all(project_dir);
 }

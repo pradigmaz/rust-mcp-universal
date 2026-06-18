@@ -48,3 +48,36 @@ fn tool_calls_persist_usage_stats() {
         json!("set_project_path")
     );
 }
+
+#[test]
+fn tool_calls_persist_usage_stats_with_default_db_path() {
+    let project_dir = temp_dir("rmu-mcp-usage-stats-default-db");
+    std::fs::create_dir_all(project_dir.join(".rmu")).expect("create db parent");
+    let db_path = project_dir.join(".rmu/index.db");
+    Connection::open(&db_path).expect("create usage db");
+    let mut state = state_for(project_dir.clone(), None);
+
+    handle_tool_call(
+        Some(json!({
+            "name": "set_project_path",
+            "arguments": {"project_path": project_dir}
+        })),
+        &mut state,
+    )
+    .expect("set project path");
+
+    let stats = handle_tool_call(
+        Some(json!({
+            "name": "usage_stats",
+            "arguments": {"limit": 1}
+        })),
+        &mut state,
+    )
+    .expect("usage stats");
+
+    assert_eq!(stats["structuredContent"]["summary"]["calls"], json!(1));
+    assert_eq!(
+        stats["structuredContent"]["recent"][0]["tool"],
+        json!("set_project_path")
+    );
+}

@@ -47,6 +47,31 @@ fn symbol_body_extracts_rust_function_body() -> anyhow::Result<()> {
 }
 
 #[test]
+fn symbol_body_extracts_restricted_rust_function_body() -> anyhow::Result<()> {
+    let project_dir = temp_project_dir("rmu-investigation-restricted-rust-body");
+    fs::create_dir_all(project_dir.join("src"))?;
+    fs::write(
+        project_dir.join("src/lib.rs"),
+        "fn before() {}\n\npub(super) fn usage_stats() {\n    println!(\"ok\");\n}\n",
+    )?;
+
+    let engine = Engine::new(project_dir.clone(), Some(project_dir.join(".rmu/index.db")))?;
+    let _ = engine.ensure_index_ready_with_policy(true)?;
+    let result = engine.symbol_body("usage_stats", ConceptSeedKind::Symbol, 1)?;
+    let item = result.items.first().expect("usage_stats body");
+
+    assert_eq!(
+        item.resolution_kind,
+        SymbolBodyResolutionKind::ExactSymbolSpan
+    );
+    assert_eq!(item.signature, "pub(super) fn usage_stats() {");
+    assert!(item.body.starts_with("pub(super) fn usage_stats()"));
+
+    let _ = fs::remove_dir_all(project_dir);
+    Ok(())
+}
+
+#[test]
 fn symbol_body_path_seed_uses_chunk_excerpt_anchor_for_typescript_files() -> anyhow::Result<()> {
     let project_dir = temp_project_dir("rmu-investigation-typescript-chunk");
     fs::create_dir_all(project_dir.join("web"))?;

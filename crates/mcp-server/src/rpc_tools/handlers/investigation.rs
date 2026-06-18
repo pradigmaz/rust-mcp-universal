@@ -102,7 +102,7 @@ fn run_investigation(
     )?;
     let seed = parse_required_non_empty_string(args, tool_name, "seed")?;
     let seed_kind = parse_seed_kind(args, tool_name)?;
-    let limit = parse_optional_usize_with_min(args, tool_name, "limit", 1, 20)?;
+    let limit = parse_optional_usize_with_min(args, tool_name, "limit", 1, 3)?;
     let auto_index = parse_optional_bool(args, tool_name, "auto_index")?.unwrap_or(false);
     let privacy_mode =
         parse_optional_privacy_mode(args, tool_name, "privacy_mode")?.unwrap_or(PrivacyMode::Off);

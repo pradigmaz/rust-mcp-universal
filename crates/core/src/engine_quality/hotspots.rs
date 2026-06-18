@@ -15,6 +15,7 @@ use crate::model::{
 use crate::quality::{
     StructuralPolicy, StructuralUnmatchedBehavior, default_quality_policy, load_quality_policy,
 };
+use crate::text_utils::is_low_priority_path;
 
 const HOTSPOT_SCAN_LIMIT: usize = 100_000;
 const UNMATCHED_MODULE_BUCKET: &str = "unmatched";
@@ -242,7 +243,9 @@ fn compare_buckets(
             right.delta.new_violations.cmp(&left.delta.new_violations)
         }
     };
-    primary
+    is_low_priority_path(&left.bucket_id)
+        .cmp(&is_low_priority_path(&right.bucket_id))
+        .then(primary)
         .then_with(|| {
             right
                 .active_violation_count

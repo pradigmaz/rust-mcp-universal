@@ -267,17 +267,7 @@ fn extract_rust_block(
         .min(lines.len() - 1);
     let start = (0..=anchor).rev().find(|index| {
         let line = lines[*index].trim_start();
-        line.starts_with("fn ")
-            || line.starts_with("pub fn ")
-            || line.starts_with("async fn ")
-            || line.starts_with("pub async fn ")
-            || line.starts_with("struct ")
-            || line.starts_with("pub struct ")
-            || line.starts_with("enum ")
-            || line.starts_with("pub enum ")
-            || line.starts_with("impl ")
-            || line.starts_with("trait ")
-            || line.starts_with("pub trait ")
+        looks_like_rust_declaration(line)
     })?;
     let mut brace_balance = 0_i32;
     let mut seen_open = false;
@@ -456,6 +446,23 @@ fn looks_like_js_ts_declaration(line: &str) -> bool {
     }
 
     false
+}
+
+fn looks_like_rust_declaration(line: &str) -> bool {
+    let line = line.strip_prefix("pub ").unwrap_or(line);
+    let line = line.strip_prefix("pub(crate) ").unwrap_or(line);
+    let line = line.strip_prefix("pub(super) ").unwrap_or(line);
+    let line = if let Some(rest) = line.strip_prefix("pub(") {
+        rest.split_once(") ").map_or(line, |(_, rest)| rest)
+    } else {
+        line
+    };
+    line.starts_with("fn ")
+        || line.starts_with("async fn ")
+        || line.starts_with("struct ")
+        || line.starts_with("enum ")
+        || line.starts_with("impl ")
+        || line.starts_with("trait ")
 }
 
 fn elapsed_ms(started: Instant) -> u64 {
