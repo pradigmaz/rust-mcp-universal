@@ -20,8 +20,8 @@ pub use agent::{
 pub use context::{ContextFile, ContextPackResult, ContextSelection};
 pub use index::{
     DbCheckpointResult, DbMaintenanceOptions, DbMaintenanceResult, DbMaintenanceStats,
-    DbPruneResult, DeleteIndexResult, IgnoreInstallReport, IgnoreInstallTarget, IndexProfile,
-    IndexStatus, IndexingOptions, ScopePreviewResult,
+    DbPruneResult, DeleteIndexResult, IgnoreInstallReport, IgnoreInstallTarget,
+    IndexFreshnessStatus, IndexProfile, IndexStatus, IndexingOptions, ScopePreviewResult,
 };
 pub use investigation::{
     AxisObservation, ConceptSeed, ConceptSeedKind, ConstraintEvidence, ConstraintEvidenceResult,

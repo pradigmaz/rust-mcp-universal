@@ -19,6 +19,18 @@ pub struct IndexStatus {
     pub last_index_lock_wait_ms: u64,
     pub last_embedding_cache_hits: usize,
     pub last_embedding_cache_misses: usize,
+    pub freshness: IndexFreshnessStatus,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct IndexFreshnessStatus {
+    pub checked_files: usize,
+    pub stale_files: usize,
+    pub missing_files: usize,
+    #[serde(default)]
+    pub sample_paths: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hint: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

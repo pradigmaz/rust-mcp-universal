@@ -3,7 +3,8 @@ mod maintenance;
 mod profiles;
 
 pub use indexing::{
-    IgnoreInstallReport, IgnoreInstallTarget, IndexStatus, IndexingOptions, ScopePreviewResult,
+    IgnoreInstallReport, IgnoreInstallTarget, IndexFreshnessStatus, IndexStatus, IndexingOptions,
+    ScopePreviewResult,
 };
 pub use maintenance::{
     DbCheckpointResult, DbMaintenanceOptions, DbMaintenanceResult, DbMaintenanceStats,
