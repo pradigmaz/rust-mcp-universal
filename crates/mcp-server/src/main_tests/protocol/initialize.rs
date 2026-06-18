@@ -17,6 +17,11 @@ fn initialize_response_contains_protocol_version() {
         result["capabilities"],
         json!({"tools": {"listChanged": false}})
     );
+    assert!(
+        result["instructions"]
+            .as_str()
+            .is_some_and(|value| value.contains("agent_bootstrap"))
+    );
     assert!(result["capabilities"]["resources"].is_null());
     assert!(result["capabilities"]["prompts"].is_null());
     assert!(result["capabilities"]["logging"].is_null());

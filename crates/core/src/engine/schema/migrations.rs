@@ -11,7 +11,7 @@ use super::table_ensure::{
     ensure_files_artifact_fingerprint_columns, ensure_files_graph_count_columns,
     ensure_files_graph_edge_columns, ensure_files_graph_fingerprint_columns,
     ensure_files_source_mtime_column, ensure_refs_position_columns, ensure_schema_migrations_table,
-    ensure_semantic_ann_buckets_table, ensure_symbols_position_columns,
+    ensure_semantic_ann_buckets_table, ensure_symbols_fts_table, ensure_symbols_position_columns,
 };
 
 #[derive(Clone, Copy)]
@@ -21,7 +21,7 @@ pub(super) struct SchemaMigration {
     pub(super) apply: fn(&Transaction<'_>) -> Result<()>,
 }
 
-pub(super) const CURRENT_SCHEMA_MIGRATION_VERSION: u32 = 15;
+pub(super) const CURRENT_SCHEMA_MIGRATION_VERSION: u32 = 16;
 
 pub(super) const MIGRATIONS: [SchemaMigration; CURRENT_SCHEMA_MIGRATION_VERSION as usize] = [
     SchemaMigration {
@@ -98,6 +98,11 @@ pub(super) const MIGRATIONS: [SchemaMigration; CURRENT_SCHEMA_MIGRATION_VERSION 
         id: 15,
         name: "quality_signal_contract_fields",
         apply: migration_quality_signal_contract_fields,
+    },
+    SchemaMigration {
+        id: 16,
+        name: "symbols_fts_table",
+        apply: migration_symbols_fts_table,
     },
 ];
 
@@ -270,4 +275,8 @@ fn migration_quality_signal_contract_fields(tx: &Transaction<'_>) -> Result<()> 
 
 fn migration_quality_policy_stage3_contracts(tx: &Transaction<'_>) -> Result<()> {
     ensure_file_quality_tables(tx)
+}
+
+fn migration_symbols_fts_table(tx: &Transaction<'_>) -> Result<()> {
+    ensure_symbols_fts_table(tx)
 }

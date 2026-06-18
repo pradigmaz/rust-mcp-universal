@@ -55,6 +55,13 @@ pub(super) const INIT_DB_SCHEMA_SQL: &str = r#"
             CREATE INDEX IF NOT EXISTS idx_symbols_name ON symbols(name);
             CREATE INDEX IF NOT EXISTS idx_symbols_path ON symbols(path);
 
+            CREATE VIRTUAL TABLE IF NOT EXISTS symbols_fts USING fts5(
+                path UNINDEXED,
+                name,
+                kind,
+                language
+            );
+
             CREATE TABLE IF NOT EXISTS module_deps (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 path TEXT NOT NULL,
@@ -195,11 +202,12 @@ pub(super) const OPEN_DB_READ_ONLY_PRAGMAS_SQL: &str = r#"
             PRAGMA busy_timeout = 5000;
             "#;
 
-pub(super) const REQUIRED_SCHEMA_TABLES: [&str; 11] = [
+pub(super) const REQUIRED_SCHEMA_TABLES: [&str; 12] = [
     "meta",
     "files",
     "files_fts",
     "symbols",
+    "symbols_fts",
     "module_deps",
     "refs",
     "file_graph_edges",

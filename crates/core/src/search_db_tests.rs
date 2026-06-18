@@ -1,6 +1,6 @@
 use super::{
     compare_hits_desc, escape_like_value, extract_tokens, graph_boost, keep_top_hits,
-    like_prefilter_limit, like_scan_budget, like_score, path_match_boost, search_like,
+    like_prefilter_limit, like_scan_budget, like_score, path_match_boost, search_fts, search_like,
 };
 use crate::model::SearchHit;
 use crate::query_profile::QueryProfile;
@@ -9,6 +9,14 @@ use rusqlite::{Connection, params};
 fn setup_files_table(conn: &Connection) -> anyhow::Result<()> {
     conn.execute_batch(
         "CREATE TABLE files (path TEXT PRIMARY KEY, sample TEXT NOT NULL, size_bytes INTEGER NOT NULL, language TEXT NOT NULL);",
+    )?;
+    Ok(())
+}
+
+fn setup_files_fts_table(conn: &Connection) -> anyhow::Result<()> {
+    conn.execute_batch(
+        "CREATE VIRTUAL TABLE files_fts USING fts5(path, sample);
+         CREATE VIRTUAL TABLE symbols_fts USING fts5(path UNINDEXED, name, kind, language);",
     )?;
     Ok(())
 }
@@ -88,6 +96,36 @@ fn fallback_matches_canonical_equivalent_unicode_forms() -> anyhow::Result<()> {
 
     let hits = search_like(&conn, "CAFÉ", 10)?;
     assert!(hits.iter().any(|hit| hit.path == "src/unicode.rs"));
+    Ok(())
+}
+
+#[test]
+fn fts_search_finds_symbol_only_matches() -> anyhow::Result<()> {
+    let conn = Connection::open_in_memory()?;
+    setup_files_table(&conn)?;
+    setup_files_fts_table(&conn)?;
+    conn.execute(
+        "INSERT INTO files(path, sample, size_bytes, language) VALUES (?1, ?2, ?3, ?4)",
+        params![
+            "src/lib.rs",
+            "plain body without query token",
+            10_i64,
+            "rust"
+        ],
+    )?;
+    conn.execute(
+        "INSERT INTO files_fts(path, sample) VALUES (?1, ?2)",
+        params!["src/lib.rs", "plain body without query token"],
+    )?;
+    conn.execute(
+        "INSERT INTO symbols_fts(path, name, kind, language) VALUES (?1, ?2, ?3, ?4)",
+        params!["src/lib.rs", "RareBootstrapSymbol", "function", "rust"],
+    )?;
+    setup_graph_tables(&conn)?;
+
+    let hits = search_fts(&conn, "RareBootstrapSymbol", 10)?;
+    assert_eq!(hits.len(), 1);
+    assert_eq!(hits[0].path, "src/lib.rs");
     Ok(())
 }
 

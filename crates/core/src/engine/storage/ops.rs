@@ -8,6 +8,7 @@ pub(crate) fn clear_index_tables(tx: &rusqlite::Transaction<'_>) -> Result<()> {
     tx.execute_batch(
         r#"
         DELETE FROM files_fts;
+        DELETE FROM symbols_fts;
         DELETE FROM files;
         DELETE FROM symbols;
         DELETE FROM module_deps;
@@ -38,6 +39,7 @@ pub(crate) fn upsert_meta(tx: &rusqlite::Transaction<'_>, key: &str, value: &str
 
 pub(crate) fn remove_path_index(tx: &rusqlite::Transaction<'_>, path: &str) -> Result<()> {
     tx.execute("DELETE FROM files_fts WHERE path = ?1", [path])?;
+    tx.execute("DELETE FROM symbols_fts WHERE path = ?1", [path])?;
     tx.execute("DELETE FROM symbols WHERE path = ?1", [path])?;
     tx.execute("DELETE FROM module_deps WHERE path = ?1", [path])?;
     tx.execute("DELETE FROM refs WHERE path = ?1", [path])?;

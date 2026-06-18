@@ -46,7 +46,7 @@ pub(super) fn tools_list() -> Value {
             ),
             tool(
                 "agent_bootstrap",
-                "One-shot bootstrap payload for autonomous agents",
+                "Primary explore path for agents: one-shot bootstrap payload before narrower follow-up tools",
                 json_schema_object(
                     &[
                         (

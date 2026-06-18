@@ -117,6 +117,30 @@ pub(super) fn ensure_symbols_position_columns(conn: &Connection) -> Result<()> {
     )
 }
 
+pub(super) fn ensure_symbols_fts_table(conn: &Connection) -> Result<()> {
+    conn.execute_batch(
+        r#"
+        CREATE VIRTUAL TABLE IF NOT EXISTS symbols_fts USING fts5(
+            path UNINDEXED,
+            name,
+            kind,
+            language
+        );
+        "#,
+    )?;
+    if table_exists(conn, "symbols")? {
+        conn.execute_batch(
+            r#"
+            INSERT INTO symbols_fts(path, name, kind, language)
+                SELECT path, name, kind, language
+                FROM symbols
+                WHERE NOT EXISTS (SELECT 1 FROM symbols_fts LIMIT 1);
+            "#,
+        )?;
+    }
+    Ok(())
+}
+
 pub(super) fn ensure_refs_position_columns(conn: &Connection) -> Result<()> {
     ensure_table_columns(conn, "refs", &[("line", "INTEGER"), ("column", "INTEGER")])
 }
@@ -299,4 +323,13 @@ fn ensure_table_columns(
     }
 
     Ok(())
+}
+
+fn table_exists(conn: &Connection, table_name: &str) -> Result<bool> {
+    let count: i64 = conn.query_row(
+        "SELECT COUNT(1) FROM sqlite_master WHERE type = 'table' AND name = ?1",
+        [table_name],
+        |row| row.get(0),
+    )?;
+    Ok(count > 0)
 }

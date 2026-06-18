@@ -70,6 +70,7 @@ pub(crate) fn handle_request(req: RpcRequest, state: &mut ServerState) -> RpcRes
             Ok(json!({
                 "protocolVersion": resolve_protocol_version(req.params.as_ref()),
                 "serverInfo": {"name": "rmu-mcp-server", "version": "0.1.0"},
+                "instructions": "Start code exploration with agent_bootstrap. Use profile=fast first; rerun with profile=full or focused navigation tools only when deepen_available or the task requires narrower evidence.",
                 "capabilities": {
                     "tools": {"listChanged": false}
                 }

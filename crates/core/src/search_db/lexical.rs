@@ -37,14 +37,28 @@ pub fn search_fts(conn: &Connection, query: &str, limit: i64) -> Result<Vec<Sear
         return Ok(Vec::new());
     }
 
-    let mut raw = run_fts_query(conn, &primary_fts_query, limit)?;
+    let mut raw = run_file_fts_query(conn, &primary_fts_query, limit)?;
     let fallback_fts_query = prepare_fts_query(&query_tokens, query_profile, false);
     if fallback_fts_query != primary_fts_query && raw.len() < limit as usize {
         let mut seen_paths = raw
             .iter()
             .map(|row| row.path.clone())
             .collect::<HashSet<_>>();
-        for row in run_fts_query(conn, &fallback_fts_query, limit)? {
+        for row in run_file_fts_query(conn, &fallback_fts_query, limit)? {
+            if seen_paths.insert(row.path.clone()) {
+                raw.push(row);
+            }
+            if raw.len() >= limit as usize {
+                break;
+            }
+        }
+    }
+    if raw.len() < limit as usize {
+        let mut seen_paths = raw
+            .iter()
+            .map(|row| row.path.clone())
+            .collect::<HashSet<_>>();
+        for row in run_symbol_fts_query(conn, &fallback_fts_query, limit)? {
             if seen_paths.insert(row.path.clone()) {
                 raw.push(row);
             }
@@ -71,7 +85,7 @@ pub fn search_fts(conn: &Connection, query: &str, limit: i64) -> Result<Vec<Sear
     Ok(hits)
 }
 
-fn run_fts_query(conn: &Connection, fts_query: &str, limit: i64) -> Result<Vec<CandidateRow>> {
+fn run_file_fts_query(conn: &Connection, fts_query: &str, limit: i64) -> Result<Vec<CandidateRow>> {
     let mut stmt = conn.prepare(
         "SELECT f.path, f.sample, f.size_bytes, f.language, bm25(files_fts) as rank FROM files_fts JOIN files f ON f.path = files_fts.path WHERE files_fts MATCH ?1 ORDER BY rank LIMIT ?2",
     )?;
@@ -85,6 +99,30 @@ fn run_fts_query(conn: &Connection, fts_query: &str, limit: i64) -> Result<Vec<C
                 size_bytes: row.get(2)?,
                 language: row.get(3)?,
                 base_score: rank_to_score(rank),
+            })
+        })?
+        .collect::<rusqlite::Result<Vec<_>>>()?;
+    Ok(raw)
+}
+
+fn run_symbol_fts_query(
+    conn: &Connection,
+    fts_query: &str,
+    limit: i64,
+) -> Result<Vec<CandidateRow>> {
+    let mut stmt = conn.prepare(
+        "SELECT f.path, f.sample, f.size_bytes, f.language, bm25(symbols_fts) as rank FROM symbols_fts JOIN files f ON f.path = symbols_fts.path WHERE symbols_fts MATCH ?1 ORDER BY rank LIMIT ?2",
+    )?;
+
+    let raw = stmt
+        .query_map(params![fts_query, limit], |row| {
+            let rank: f64 = row.get(4)?;
+            Ok(CandidateRow {
+                path: row.get(0)?,
+                sample: row.get(1)?,
+                size_bytes: row.get(2)?,
+                language: row.get(3)?,
+                base_score: rank_to_score(rank) + 0.18,
             })
         })?
         .collect::<rusqlite::Result<Vec<_>>>()?;

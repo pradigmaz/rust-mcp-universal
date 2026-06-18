@@ -123,6 +123,46 @@ fn migration_runner_adds_position_columns_to_symbols_and_refs() -> anyhow::Resul
 }
 
 #[test]
+fn migration_runner_backfills_symbols_fts() -> anyhow::Result<()> {
+    let root = temp_dir("rmu-migrations-symbols-fts");
+    fs::create_dir_all(&root)?;
+    let db_path = root.join("index.db");
+    let mut conn = open_db(&db_path)?;
+    conn.execute_batch(
+        r#"
+        CREATE TABLE IF NOT EXISTS symbols (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            path TEXT NOT NULL,
+            name TEXT NOT NULL,
+            kind TEXT NOT NULL,
+            language TEXT NOT NULL,
+            line INTEGER,
+            column INTEGER
+        );
+        INSERT INTO symbols(path, name, kind, language, line, column)
+            VALUES ('src/lib.rs', 'build_context', 'function', 'rust', 10, 1);
+        CREATE TABLE IF NOT EXISTS schema_migrations (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL,
+            applied_at_utc TEXT NOT NULL
+        );
+        "#,
+    )?;
+
+    apply_schema_migrations(&mut conn, &db_path, true)?;
+
+    let count: i64 = conn.query_row(
+        "SELECT COUNT(1) FROM symbols_fts WHERE symbols_fts MATCH 'build_context'",
+        [],
+        |row| row.get(0),
+    )?;
+    assert_eq!(count, 1);
+
+    let _ = fs::remove_dir_all(root);
+    Ok(())
+}
+
+#[test]
 fn migration_runner_adds_source_mtime_column_to_files() -> anyhow::Result<()> {
     let root = temp_dir("rmu-migrations-source-mtime");
     fs::create_dir_all(&root)?;

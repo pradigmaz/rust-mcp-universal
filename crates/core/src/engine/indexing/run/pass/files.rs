@@ -58,6 +58,10 @@ pub(super) fn persist_indexed_file(
                     .map(|value| i64::try_from(value).unwrap_or(i64::MAX))
             ],
         )?;
+        tx.execute(
+            "INSERT INTO symbols_fts(path, name, kind, language) VALUES (?1, ?2, ?3, ?4)",
+            params![rel_text, &symbol.name, &symbol.kind, &source.language],
+        )?;
     }
     for dep in &graph.graph.deps {
         tx.execute(
