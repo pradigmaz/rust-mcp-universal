@@ -1,14 +1,13 @@
-use anyhow::Result;
-use serde_json::Value;
-
 use rmu_core::Engine;
 
-use crate::ServerState;
+use anyhow::Result;
 
 #[path = "handlers/agent_bootstrap.rs"]
 mod agent_bootstrap;
-#[path = "handlers/benchmark.rs"]
+#[path = "handlers/benchmark/mod.rs"]
 mod benchmark;
+#[path = "handlers/benchmark.rs"]
+mod benchmark_impl;
 #[path = "handlers/build_context_under_budget.rs"]
 mod build_context_under_budget;
 #[path = "handlers/call_path.rs"]
@@ -17,10 +16,16 @@ mod call_path;
 mod context_pack;
 #[path = "handlers/investigation.rs"]
 mod investigation;
-#[path = "handlers/maintenance.rs"]
+#[path = "handlers/maintenance/mod.rs"]
 mod maintenance;
+#[path = "handlers/maintenance.rs"]
+mod maintenance_impl;
 #[path = "handlers/modes.rs"]
 mod modes;
+#[path = "handlers/navigation/mod.rs"]
+mod navigation;
+#[path = "handlers/quality/mod.rs"]
+mod quality;
 #[path = "handlers/quality_hotspots.rs"]
 mod quality_hotspots;
 #[path = "handlers/quality_snapshot.rs"]
@@ -31,6 +36,8 @@ mod query_report;
 mod related_files;
 #[path = "handlers/rule_violations.rs"]
 mod rule_violations;
+#[path = "handlers/search/mod.rs"]
+mod search;
 #[path = "handlers/search_candidates.rs"]
 mod search_candidates;
 #[path = "handlers/semantic_search.rs"]
@@ -44,123 +51,26 @@ mod symbol_lookup;
 #[path = "handlers/symbol_references.rs"]
 mod symbol_references;
 
+pub(super) use benchmark::query_benchmark;
+pub(super) use maintenance::{db_maintenance, preflight};
 use modes::{
     parse_optional_agent_intent_mode, parse_optional_bootstrap_profile,
     parse_optional_context_mode, parse_optional_migration_mode, parse_optional_privacy_mode,
     parse_optional_rollout_phase, parse_optional_semantic_fail_mode,
 };
-
-pub(super) fn query_benchmark(args: &Value, state: &mut ServerState) -> Result<Value> {
-    benchmark::query_benchmark(args, state)
-}
-
-pub(super) fn db_maintenance(args: &Value, state: &mut ServerState) -> Result<Value> {
-    maintenance::db_maintenance(args, state)
-}
-
-pub(super) fn preflight(args: &Value, state: &mut ServerState) -> Result<Value> {
-    maintenance::preflight(args, state)
-}
-
-pub(super) fn search_candidates(args: &Value, state: &mut ServerState) -> Result<Value> {
-    search_candidates::search_candidates(args, state)
-}
-
-pub(super) fn semantic_search(args: &Value, state: &mut ServerState) -> Result<Value> {
-    semantic_search::semantic_search(args, state)
-}
-
-pub(super) fn build_context_under_budget(args: &Value, state: &mut ServerState) -> Result<Value> {
-    build_context_under_budget::build_context_under_budget(args, state)
-}
-
-pub(super) fn context_pack(args: &Value, state: &mut ServerState) -> Result<Value> {
-    context_pack::context_pack(args, state)
-}
-
-pub(super) fn query_report(args: &Value, state: &mut ServerState) -> Result<Value> {
-    query_report::query_report(args, state)
-}
-
-pub(super) fn symbol_lookup(args: &Value, state: &mut ServerState) -> Result<Value> {
-    symbol_lookup::symbol_lookup(args, state)
-}
-
-pub(super) fn symbol_lookup_v2(args: &Value, state: &mut ServerState) -> Result<Value> {
-    symbol_lookup::symbol_lookup_v2(args, state)
-}
-
-pub(super) fn symbol_references(args: &Value, state: &mut ServerState) -> Result<Value> {
-    symbol_references::symbol_references(args, state)
-}
-
-pub(super) fn symbol_references_v2(args: &Value, state: &mut ServerState) -> Result<Value> {
-    symbol_references::symbol_references_v2(args, state)
-}
-
-pub(super) fn related_files(args: &Value, state: &mut ServerState) -> Result<Value> {
-    related_files::related_files(args, state)
-}
-
-pub(super) fn related_files_v2(args: &Value, state: &mut ServerState) -> Result<Value> {
-    related_files::related_files_v2(args, state)
-}
-
-pub(super) fn rule_violations(args: &Value, state: &mut ServerState) -> Result<Value> {
-    rule_violations::rule_violations(args, state)
-}
-
-pub(super) fn quality_hotspots(args: &Value, state: &mut ServerState) -> Result<Value> {
-    quality_hotspots::quality_hotspots(args, state)
-}
-
-pub(super) fn quality_snapshot(args: &Value, state: &mut ServerState) -> Result<Value> {
-    quality_snapshot::quality_snapshot(args, state)
-}
-
-pub(super) fn sensitive_data(args: &Value, state: &mut ServerState) -> Result<Value> {
-    sensitive_data::sensitive_data(args, state)
-}
-
-pub(super) fn signal_memory(args: &Value, state: &mut ServerState) -> Result<Value> {
-    signal_memory::signal_memory(args, state)
-}
-
-pub(super) fn mark_signal_memory(args: &Value, state: &mut ServerState) -> Result<Value> {
-    signal_memory::mark_signal_memory(args, state)
-}
-
-pub(super) fn call_path(args: &Value, state: &mut ServerState) -> Result<Value> {
-    call_path::call_path(args, state)
-}
-
-pub(super) fn symbol_body(args: &Value, state: &mut ServerState) -> Result<Value> {
-    investigation::symbol_body(args, state)
-}
-
-pub(super) fn route_trace(args: &Value, state: &mut ServerState) -> Result<Value> {
-    investigation::route_trace(args, state)
-}
-
-pub(super) fn constraint_evidence(args: &Value, state: &mut ServerState) -> Result<Value> {
-    investigation::constraint_evidence(args, state)
-}
-
-pub(super) fn concept_cluster(args: &Value, state: &mut ServerState) -> Result<Value> {
-    investigation::concept_cluster(args, state)
-}
-
-pub(super) fn contract_trace(args: &Value, state: &mut ServerState) -> Result<Value> {
-    investigation::contract_trace(args, state)
-}
-
-pub(super) fn divergence_report(args: &Value, state: &mut ServerState) -> Result<Value> {
-    investigation::divergence_report(args, state)
-}
-
-pub(super) fn agent_bootstrap(args: &Value, state: &mut ServerState) -> Result<Value> {
-    agent_bootstrap::agent_bootstrap(args, state)
-}
+pub(super) use navigation::{
+    call_path, concept_cluster, constraint_evidence, contract_trace, divergence_report,
+    related_files, related_files_v2, route_trace, symbol_body, symbol_lookup, symbol_lookup_v2,
+    symbol_references, symbol_references_v2,
+};
+pub(super) use quality::{
+    mark_signal_memory, quality_hotspots, quality_snapshot, rule_violations, sensitive_data,
+    signal_memory,
+};
+pub(super) use search::{
+    agent_bootstrap, build_context_under_budget, context_pack, query_report, search_candidates,
+    semantic_search,
+};
 
 fn ensure_query_index_ready(engine: &Engine, auto_index: bool) -> Result<()> {
     let _ = engine.ensure_index_ready_with_policy(auto_index)?;
