@@ -12,10 +12,11 @@ pub(super) use indexing::{
 };
 pub(super) use navigation::{call_path_schema, navigation_schema};
 pub(super) use quality::{
-    quality_hotspots_schema, quality_snapshot_schema, rule_violations_schema,
+    mark_signal_memory_schema, quality_hotspots_schema, quality_snapshot_schema,
+    rule_violations_schema, signal_memory_schema,
 };
 pub(super) use query::{
     agent_intent_mode_schema, bootstrap_profile_schema, budget_query_schema, context_pack_schema,
     investigation_schema, query_benchmark_schema, query_schema, report_query_schema,
 };
-pub(super) use security::{mark_signal_memory_schema, sensitive_data_schema, signal_memory_schema};
+pub(super) use security::sensitive_data_schema;
