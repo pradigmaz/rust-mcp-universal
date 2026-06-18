@@ -1,53 +1,31 @@
 # rust-mcp-universal
 
-`rust-mcp-universal` - локальный движок индексации, поиска и навигации по кодовой базе на Rust.
+`rust-mcp-universal` (RMU) - локальный MCP-сервер для индексации, поиска и навигации по коду.
 
-Проект даёт одно ядро через MCP-поверхность:
+Он нужен агенту, который заходит в незнакомый репозиторий и должен быстро понять:
 
-- `rmu-mcp-server` для MCP-клиентов и агентских сценариев
+- какие файлы важны для задачи;
+- где лежат символы, ссылки и связанные файлы;
+- почему retrieval выбрал именно эти кандидаты;
+- где в проекте накапливается structural risk;
+- свежий ли локальный индекс.
 
-`RMU` сделан в первую очередь для агентов.
+RMU универсален: он не подгоняется под один стек, один репозиторий или один стиль кода.
 
-Его задача простая: дать агенту нормальную рабочую поверхность для разбора репозитория. Не голый текстовый поиск, а локальный индекс, поиск по смыслу, навигацию по символам и связям, сбор контекста, investigation-инструменты и quality-сигналы.
+## Возможности
 
-Это нужно там, где агенту мало просто найти строку. Обычно надо понять, какие файлы относятся к задаче, как они связаны между собой, где точка входа, как проходит маршрут вызова и в каких местах код уже тяжёлый.
-
-`MCP` здесь основной способ встраивания в агентский сценарий.
-
-## Что умеет
-
-- индексировать репозиторий в локальную базу `.rmu/index.db`
-- искать по коду лексически и семантически
-- строить короткий обзор проекта через `brief` и `workspace_brief`
-- находить символы, ссылки и связанные файлы
-- показывать, что именно попадёт в индекс, ещё до запуска индексации
-- объяснять, почему retrieval выбрал именно эти файлы
-- поднимать quality-отчёты и hotspots по файлам и директориям
-- показывать structural risk через `rule_violations`, `quality_hotspots` и `quality_snapshot`
-- отдавать функционал через MCP
-
-## Когда это полезно
-
-- нужно быстро разобраться в незнакомом репозитории
-- нужно дать агенту короткий и релевантный стартовый контекст
-- нужен поиск по смыслу, а не только по точному совпадению строки
-- нужен агентский доступ к локальному индексу и quality-сигналам
-
-## Quality Surface
-
-Wave 3 расширяет quality surface от symptom-only сигналов к structural risk:
-
-- `layering` для зон, направлений зависимостей и cross-layer нарушений
-- `git_risk` для churn, ownership concentration и change coupling
-- `test_risk` для статического test evidence вокруг public и hotspot-путей
-
-Отдельных top-level команд не добавлялось. Эти сигналы выходят через уже существующие `rule_violations`, `quality_hotspots` и `quality_snapshot`.
-
-Для quality policy используется версия `4`. Ключ `structural` заменён на `layering`, а рядом появились блоки `git_risk` и `test_risk`.
+- локальный SQLite-индекс в `.rmu/index.db`;
+- FTS-поиск по файлам и символам;
+- navigation graph: symbols, refs, related files, call paths;
+- task bootstrap для агентов через `agent_bootstrap`;
+- quality surface: `rule_violations`, `quality_hotspots`, `quality_snapshot`;
+- privacy-oriented output: пути и чувствительные строки не должны утекать в ответ без необходимости;
+- fresh launcher, который пересобирает stale binary перед запуском MCP.
 
 ## Требования
 
-- Rust `1.85` или новее
+- Rust `1.85+`;
+- MCP-клиент с поддержкой stdio servers.
 
 ## Сборка
 
@@ -55,53 +33,28 @@ Wave 3 расширяет quality surface от symptom-only сигналов к 
 cargo build --release -p rmu-mcp-server
 ```
 
-После сборки бинарь лежит в `target/release/`.
-
-- Linux и macOS:
-  - `rmu-mcp-server`
-- Windows:
-  - `rmu-mcp-server.exe`
-
 Проверка:
 
 ```bash
 target/release/rmu-mcp-server --help
 ```
 
-Если бинарники лежат в `PATH`, можно вызывать их по имени:
+На Windows бинарник будет `target/release/rmu-mcp-server.exe`.
 
-```bash
-rmu-mcp-server --help
-```
+## Быстрый старт MCP
 
-## Быстрый старт с MCP
+Обычный путь:
 
-Обычно порядок такой:
+1. MCP-клиент запускает RMU через fresh launcher.
+2. RMU получает workspace root из MCP `initialize`.
+3. Агент начинает с `agent_bootstrap` с `profile=fast`.
+4. Если `deepen_available=true`, агент добирает контекст через `profile=full` или navigation tools.
 
-1. MCP-клиент поднимает `rmu-universal` через fresh launcher
-2. сервер сам привязывается к workspace root из MCP `initialize`
-3. клиент вызывает `workspace_brief` или `agent_bootstrap`
-4. при необходимости используются `query_report`, `scope_preview` и navigation tools
+`set_project_path` - fallback. Он нужен, если клиент не передал workspace root или надо вручную сменить проект.
 
-`set_project_path` теперь fallback, а не основной путь. Он нужен только если клиент не передал workspace roots или если надо вручную переопределить auto-bind.
+## Подключение
 
-Что чаще всего используют:
-
-- `workspace_brief` - короткий снимок проекта
-- `agent_bootstrap` - снимок проекта плюс стартовый контекст под задачу
-- `query_report` - объяснение retrieval-пайплайна
-- `scope_preview` - проверка будущего индекса
-- `symbol_lookup_v2`, `symbol_references_v2`, `related_files_v2` - навигация по коду
-- `rule_violations`, `quality_hotspots` - quality-поверхность
-- `quality_snapshot` - debt-wave snapshot, baseline и regression gate
-
-Для navigation tools основной результат лежит в `structuredContent.hits`.
-
-## Подключение к MCP
-
-Рекомендуемый вариант для Kilo Code и похожих клиентов: указывать fresh launcher, а не напрямую `rmu-mcp-server`. Это закрывает stale-binary сценарий и не требует прописывать `--project-path` в MCP-конфиге.
-
-### Kilo Code `mcp_settings.json`
+### Kilo Code
 
 Windows:
 
@@ -109,27 +62,7 @@ Windows:
 {
   "mcpServers": {
     "rmu-universal": {
-      "type": "stdio",
-      "command": "cmd",
-      "args": [
-        "/c",
-        "<path-to-checkout>\\scripts\\rmu-mcp-server-fresh.cmd"
-      ],
-      "disabled": false,
-      "alwaysAllow": []
-    }
-  }
-}
-```
-
-Linux и macOS:
-
-```json
-{
-  "mcpServers": {
-    "rmu-universal": {
-      "type": "stdio",
-      "command": "/absolute/path/to/checkout/scripts/rmu-mcp-server-fresh.sh",
+      "command": "E:\\\\path\\\\to\\\\rust-mcp-universal\\\\scripts\\\\rmu-mcp-server-fresh.cmd",
       "args": [],
       "disabled": false,
       "alwaysAllow": []
@@ -138,111 +71,133 @@ Linux и macOS:
 }
 ```
 
-### WSL on Windows
+Linux/macOS:
 
-Если `rmu-mcp-server` запущен из Windows, а workspace лежит в WSL, передавайте root как:
+```json
+{
+  "mcpServers": {
+    "rmu-universal": {
+      "command": "/path/to/rust-mcp-universal/scripts/rmu-mcp-server-fresh.sh",
+      "args": [],
+      "disabled": false,
+      "alwaysAllow": []
+    }
+  }
+}
+```
 
-- UNC path: `\\wsl.localhost\<Distro>\home\<user>\repo`
-- file URI: `file://wsl.localhost/<Distro>/home/<user>/repo`
+### Codex
 
-`set_project_path` теперь принимает те же формы. Если сервер RMU запускается внутри самой WSL-среды, используйте обычную Linux/macOS настройку.
+Установить fresh binary в `~/.codex/bin/rmu-mcp-server`:
 
-Fresh launcher:
+```bash
+bash scripts/install-codex-rmu-bridge.sh
+```
 
-- Windows: `scripts/rmu-mcp-server-fresh.cmd`
-- Linux/macOS: `scripts/rmu-mcp-server-fresh.sh`
+Windows:
 
-Оба launcher'а перед стартом завершают все процессы `rmu-mcp-server` из `target/` этого же checkout, при необходимости пересобирают release binary, затем публикуют отдельную runtime-копию в `target/runtime/` и только потом запускают новый foreground-процесс. Это закрывает сценарий, когда индекс уже мигрирован новым кодом, а MCP-клиент всё ещё поднимает старый бинарь, и заодно убирает lock на `target/release/rmu-mcp-server`, пока сервер работает.
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/install-codex-rmu-bridge.ps1
+```
 
-Сервер принимает `2025-06-18`, `2025-03-26` и `2024-11-05`, чтобы не падать на клиентах с более старым MCP handshake.
+### WSL paths
 
-### Codex (`~/.codex/bin/rmu-mcp-server`)
+Если RMU запущен из Windows, а проект лежит в WSL, передавайте root как:
 
-Для Codex надёжнее использовать не bridge, а обычный standalone binary, который installer копирует в `~/.codex/bin/rmu-mcp-server`. Это убирает отдельный слой stdio-proxy между Codex и RMU и не требует поиска checkout'а по дискам.
+- `\\wsl.localhost\<Distro>\home\<user>\repo`;
+- `file://wsl.localhost/<Distro>/home/<user>/repo`.
 
-Установка из этого checkout:
+Если RMU запущен внутри WSL, используйте обычный Linux path.
 
-- Windows: `powershell -ExecutionPolicy Bypass -File scripts/install-codex-rmu-bridge.ps1`
-- Linux/macOS: `bash scripts/install-codex-rmu-bridge.sh`
+## Основные MCP tools
 
-Installer берёт свежий binary из этого checkout и копирует его в `~/.codex/bin`, чтобы Codex продолжал работать по стабильному пути из config, но уже без stale binary.
+Старт и индекс:
 
-Если installer выводит `pending_restart=true`, это ожидаемо: он не стал перетирать активный `~/.codex/bin/rmu-mcp-server` из живой Codex-сессии. В таком состоянии нужен полный restart Codex app, потом повторный запуск installer; новый чат сам по себе не пересоздаёт app-global MCP transport.
+- `agent_bootstrap` - главный вход для агента: task-aware обзор проекта;
+- `workspace_brief` - короткий снимок индекса и quality summary;
+- `index_status` - состояние индекса;
+- `index` - построить/обновить индекс;
+- `semantic_index` - подготовить semantic layer, если он включен;
+- `scope_preview` - посмотреть, что попадет в индекс;
+- `install_ignore_rules` - добавить RMU-managed ignore block;
+- `db_maintenance` - обслуживание базы;
+- `delete_index` - удалить локальный индекс.
 
-Это убирает две проблемы сразу:
+Навигация:
 
-- Codex больше не держится за устаревший глобальный binary
-- Codex не зависит от bridge-перепрыгивания в другой процесс перед MCP handshake
+- `symbol_lookup_v2`;
+- `symbol_references_v2`;
+- `symbol_body`;
+- `related_files_v2`;
+- `call_path`;
+- `route_trace`;
+- `constraint_evidence`;
+- `concept_cluster`;
+- `contract_trace`;
+- `divergence_report`.
 
-## Полезные MCP tools
+Поиск и отчеты:
 
-Общий статус:
+- `search_candidates`;
+- `semantic_search`;
+- `query_report`;
+- `query_benchmark`;
+- `build_context_under_budget`;
+- `context_pack`.
 
-- `preflight`
-- `index_status`
-- `workspace_brief`
-- `agent_bootstrap`
+Quality и privacy:
 
-Индексация:
+- `rule_violations`;
+- `quality_hotspots`;
+- `quality_snapshot`;
+- `sensitive_data`;
+- `signal_memory`;
+- `mark_signal_memory`.
 
-- `scope_preview`
-- `index`
-- `semantic_index`
+## Agent flow
 
-Поиск и навигация:
+Минимальный сценарий:
 
-- `search_candidates`
-- `semantic_search`
-- `symbol_lookup_v2`
-- `symbol_references_v2`
-- `related_files_v2`
-- `call_path`
+```text
+agent_bootstrap(profile=fast, query="<task>", auto_index=true)
+```
 
-Investigation surface:
+Дальше:
 
-- `symbol_body`
-- `route_trace`
-- `constraint_evidence`
-- `concept_cluster`
-- `contract_trace`
-- `divergence_report`
+- если кандидатов хватает - читать найденные файлы;
+- если `deepen_available=true` - вызвать `agent_bootstrap(profile=full)` или точечные navigation tools;
+- если нужен audit retrieval - вызвать `query_report`;
+- если задача про качество/рефакторинг - начать с `quality_hotspots` и `rule_violations`.
 
-Quality:
+## Индекс
 
-- `rule_violations`
-- `quality_hotspots`
-- `quality_snapshot`
+RMU хранит служебные файлы в `.rmu/`.
 
-## Авто `.gitignore`
+Основные таблицы:
 
-При первом пользовательском входе через `set_project_path` сервер может создать корневой `.gitignore`, если его ещё нет, и поддерживать в нём небольшой RMU-managed блок для служебных каталогов.
+- files/chunks FTS для lexical retrieval;
+- `symbols` и `symbols_fts` для поиска по именам;
+- refs/edges для навигационного графа;
+- quality tables для risk и hotspot surfaces.
 
-Туда обычно попадают:
+Служебные каталоги RMU можно добавить в `.gitignore` через `install_ignore_rules`.
 
-- `.rmu/`
-- `.codex/`
-- `.qodo/`
-- `.idea/`
-- `.vscode/`
-- `.DS_Store`
-- `Thumbs.db`
+## Структура
 
-Пользовательские правила не удаляются. `RMU` обновляет только свой помеченный блок.
-
-## Структура проекта
-
-- `crates/core` - ядро индексации, retrieval и ранжирования
-- `crates/mcp-server` - MCP-сервер поверх того же ядра
-- `schemas` - JSON-схемы результатов
-- `scripts` - служебные скрипты
-- `docs` - документация и рабочие планы
+```text
+crates/core        indexing, retrieval, schema, ranking, quality
+crates/mcp-server  MCP/JSON-RPC stdio server
+schemas            JSON schemas for tool outputs
+scripts            fresh launchers and local install helpers
+docs               durable project docs
+```
 
 ## Разработка
 
-Сборка:
+Форматирование:
 
 ```bash
-cargo build --release -p rmu-mcp-server
+cargo fmt --all --check
 ```
 
 Тесты:
@@ -251,30 +206,23 @@ cargo build --release -p rmu-mcp-server
 cargo test -p rmu-core -p rmu-mcp-server
 ```
 
-Линтер:
+Lint:
 
 ```bash
 cargo clippy -p rmu-core -p rmu-mcp-server --all-targets -- -D warnings
 ```
 
-## Куда идти дальше
+Production build:
 
-- Какой функционал есть в RMU и когда он нужен: [docs/rmu-functionality-guide-ru.md](docs/rmu-functionality-guide-ru.md)
-- Quality и hotspot-метрики: [docs/quality-metrics-guide-ru.md](docs/quality-metrics-guide-ru.md)
+```bash
+cargo build --release -p rmu-mcp-server
+```
 
-## Что важно помнить
+## Документация
 
-- индекс хранится локально в `.rmu/`
-- проект рассчитан на локальную и в основном офлайн-работу
-- `RMU` не заменяет чтение кода, а помогает быстрее дойти до нужных мест
-- подробные внутренние планы и stage-артефакты намеренно не выносятся в README
-
-## Wave 4 surfaces
-
-- `quality/dead_code` и `quality/security_smells` теперь идут как long-tail warning lanes внутри quality outputs.
-- `quality/security_smells` не участвует в ordinary numeric quality score.
-- `security/sensitive_data` доступен как отдельная security surface.
-- repo-local signal memory хранится в `.rmu/signal-memory.json` и доступна через MCP inspect/mark flows.
+- `docs/quality-metrics-guide-ru.md` - как читать quality surface;
+- `schemas/` - machine-readable output contracts;
+- `md/plans/` - локальные рабочие планы, не для git.
 
 ## Лицензия
 
