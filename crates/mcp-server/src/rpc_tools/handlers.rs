@@ -64,8 +64,8 @@ pub(super) use navigation::{
     symbol_references, symbol_references_v2,
 };
 pub(super) use quality::{
-    mark_signal_memory, quality_hotspots, quality_snapshot, rule_violations, sensitive_data,
-    signal_memory,
+    api_surface, complexity_report, dead_code_report, mark_signal_memory, quality_hotspots,
+    quality_snapshot, rule_violations, sensitive_data, signal_memory,
 };
 pub(super) use search::{
     agent_bootstrap, build_context_under_budget, context_pack, query_report, search_candidates,

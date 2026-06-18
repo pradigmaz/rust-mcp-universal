@@ -123,3 +123,38 @@ pub(crate) fn quality_hotspots_schema() -> Value {
         &[],
     )
 }
+
+pub(crate) fn quality_facade_schema() -> Value {
+    json_schema_object(
+        &[
+            (
+                "limit",
+                integer_schema(
+                    "Maximum number of entries to return. Defaults to 3 to keep MCP output compact.",
+                    Some(1),
+                ),
+            ),
+            (
+                "path_prefix",
+                string_schema("Only include files under this path prefix.", Some(1)),
+            ),
+            (
+                "language",
+                string_schema("Only include files detected as this language.", Some(1)),
+            ),
+            (
+                "auto_index",
+                boolean_schema("Automatically build or refresh the index if needed."),
+            ),
+            (
+                "details",
+                boolean_schema(
+                    "Return full metrics, per-rule entries, score components, and signal keys. Defaults to false for compact MCP output.",
+                ),
+            ),
+            ("privacy_mode", privacy_mode_schema()),
+            ("migration_mode", migration_mode_schema()),
+        ],
+        &[],
+    )
+}

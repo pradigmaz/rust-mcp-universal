@@ -328,6 +328,63 @@ fn rule_violations_accept_metric_value_sorting_when_metric_context_is_provided()
 }
 
 #[test]
+fn quality_facade_tools_return_rule_violation_reports() {
+    let project_dir = temp_dir("rmu-mcp-tests-quality-facades");
+    fs::create_dir_all(project_dir.join("src")).expect("create src");
+    fs::write(
+        project_dir.join("src/lib.rs"),
+        r#"
+pub use crate::api::{alpha, beta, delta, epsilon, gamma};
+
+pub mod api {
+    pub fn alpha(input: i32) -> i32 {
+        if input > 10 {
+            if input > 20 { return 20; }
+            return 10;
+        }
+        if input < 0 { return 0; }
+        input
+    }
+    pub fn beta() {}
+    pub fn gamma() {}
+    pub fn delta() {}
+    pub fn epsilon() {}
+}
+"#,
+    )
+    .expect("write src");
+
+    let mut state = state_for(project_dir.clone(), Some(project_dir.join(".rmu/index.db")));
+    handle_tool_call(
+        Some(json!({
+            "name": "index",
+            "arguments": { "reindex": true }
+        })),
+        &mut state,
+    )
+    .expect("index should succeed");
+
+    for tool_name in ["dead_code_report", "complexity_report", "api_surface"] {
+        let result = handle_tool_call(
+            Some(json!({
+                "name": tool_name,
+                "arguments": { "details": true }
+            })),
+            &mut state,
+        )
+        .expect("facade report should succeed");
+
+        assert_eq!(result["isError"], json!(false), "{tool_name}");
+        assert!(
+            result["structuredContent"]["summary"].is_object(),
+            "{tool_name} should return rule_violations envelope"
+        );
+    }
+
+    let _ = fs::remove_dir_all(project_dir);
+}
+
+#[test]
 fn rule_violations_auto_index_uses_rust_monorepo_for_fresh_rust_workspaces() {
     let project_dir = temp_dir("rmu-mcp-tests-rule-violations-auto-index-rust");
     fs::create_dir_all(project_dir.join("src")).expect("create src");
