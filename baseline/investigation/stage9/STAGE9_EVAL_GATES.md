@@ -17,17 +17,10 @@ This directory is the operational release-gate surface for the investigation lay
 
 ## Gate Commands
 
-Refresh the current accepted report:
+No CLI runner remains. Refresh through the MCP/native benchmark harness when the dedicated
+investigation benchmark is exposed again.
 
-```powershell
-target\debug\rmu-cli.exe --project-path . --db-path <temp-db> --json investigation-benchmark --dataset baseline/investigation/stage9/investigation_dataset.json --thresholds baseline/investigation/stage9/thresholds.json --auto-index
-```
-
-Run compare mode against the trusted baseline:
-
-```powershell
-target\debug\rmu-cli.exe --project-path . --db-path <temp-db> --json investigation-benchmark --dataset baseline/investigation/stage9/investigation_dataset.json --baseline-report baseline/investigation/stage9/baseline_report.json --thresholds baseline/investigation/stage9/thresholds.json --auto-index --enforce-gates
-```
+The old command path was removed with the CLI surface.
 
 ## Blocking Metrics
 
@@ -73,5 +66,4 @@ Interpretation:
 
 - Refresh `latest_report.json` only from `baseline/investigation/stage9/investigation_dataset.json`.
 - Refresh `baseline_report.json` only when intentionally accepting a new investigation-quality baseline.
-- Keep `stage0` artifacts as historical freeze inputs; do not repurpose them as the current release gate.
 - If the aggregate dataset changes, regenerate `latest_report.json`, review `baseline_report.json`, and keep the `gold/*.json` union exactly aligned with the aggregate corpus.

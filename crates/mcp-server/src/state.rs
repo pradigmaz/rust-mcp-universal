@@ -65,13 +65,13 @@ pub(crate) struct ServerState {
 
 impl ServerState {
     pub(crate) fn new(project_path: Option<PathBuf>, db_path: Option<PathBuf>) -> Self {
-        let resolved_cli_project_path = project_path.as_ref().map(|path| {
+        let resolved_startup_project_path = project_path.as_ref().map(|path| {
             normalize_existing_directory(path.as_path()).unwrap_or_else(|| path.clone())
         });
-        let normalized_project_path = resolved_cli_project_path
+        let normalized_project_path = resolved_startup_project_path
             .clone()
             .unwrap_or_else(|| PathBuf::from("."));
-        let binding = resolved_cli_project_path
+        let binding = resolved_startup_project_path
             .map(|resolved_path| ProjectBinding::Bound {
                 project_path: resolved_path,
                 source: ProjectBindingSource::StartupArgs,
