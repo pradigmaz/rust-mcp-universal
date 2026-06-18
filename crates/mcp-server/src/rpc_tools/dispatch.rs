@@ -1,6 +1,11 @@
+mod benchmark;
 mod indexing;
+mod maintenance;
+mod navigation;
 mod parsing;
 mod project;
+mod quality;
+mod search;
 mod usage;
 
 use anyhow::Result;
@@ -10,14 +15,6 @@ use serde_json::{Value, json};
 use crate::ServerState;
 
 use super::errors::{invalid_params_error, is_invalid_params_error, tool_domain_error};
-use super::handlers::{
-    agent_bootstrap, build_context_under_budget, call_path, concept_cluster, constraint_evidence,
-    context_pack, contract_trace, db_maintenance, divergence_report, mark_signal_memory, preflight,
-    quality_hotspots, quality_snapshot, query_benchmark, query_report, related_files,
-    related_files_v2, route_trace, rule_violations, search_candidates, semantic_search,
-    sensitive_data, signal_memory, symbol_body, symbol_lookup, symbol_lookup_v2, symbol_references,
-    symbol_references_v2,
-};
 use super::result::{tool_compatibility_error_result, tool_state_error_result};
 
 pub(super) fn handle_tool_call(params: Option<Value>, state: &mut ServerState) -> Result<Value> {
@@ -63,43 +60,32 @@ pub(super) fn handle_tool_call(params: Option<Value>, state: &mut ServerState) -
         "index_status" => project::index_status(&args, state),
         "workspace_brief" => project::workspace_brief(&args, state),
         "usage_stats" => usage::usage_stats(&args, state),
-        "agent_bootstrap" => agent_bootstrap(&args, state).map_err(into_tool_error),
         "index" | "semantic_index" => indexing::index(&args, name, state),
         "scope_preview" => indexing::scope_preview(&args, state),
         "delete_index" => indexing::delete_index(&args, state),
-        "preflight" => preflight(&args, state).map_err(into_tool_error),
-        "symbol_lookup" => symbol_lookup(&args, state).map_err(into_tool_error),
-        "symbol_lookup_v2" => symbol_lookup_v2(&args, state).map_err(into_tool_error),
-        "symbol_references" => symbol_references(&args, state).map_err(into_tool_error),
-        "symbol_references_v2" => symbol_references_v2(&args, state).map_err(into_tool_error),
-        "symbol_body" => symbol_body(&args, state).map_err(into_tool_error),
-        "related_files" => related_files(&args, state).map_err(into_tool_error),
-        "related_files_v2" => related_files_v2(&args, state).map_err(into_tool_error),
-        "call_path" => call_path(&args, state).map_err(into_tool_error),
-        "route_trace" => route_trace(&args, state).map_err(into_tool_error),
-        "constraint_evidence" => constraint_evidence(&args, state).map_err(into_tool_error),
-        "concept_cluster" => concept_cluster(&args, state).map_err(into_tool_error),
-        "contract_trace" => contract_trace(&args, state).map_err(into_tool_error),
-        "divergence_report" => divergence_report(&args, state).map_err(into_tool_error),
-        "search_candidates" => search_candidates(&args, state).map_err(into_tool_error),
-        "semantic_search" => semantic_search(&args, state).map_err(into_tool_error),
-        "rule_violations" => rule_violations(&args, state).map_err(into_tool_error),
-        "quality_hotspots" => quality_hotspots(&args, state).map_err(into_tool_error),
-        "quality_snapshot" => quality_snapshot(&args, state).map_err(into_tool_error),
-        "sensitive_data" => sensitive_data(&args, state).map_err(into_tool_error),
-        "signal_memory" => signal_memory(&args, state).map_err(into_tool_error),
-        "mark_signal_memory" => mark_signal_memory(&args, state).map_err(into_tool_error),
-        "build_context_under_budget" => {
-            build_context_under_budget(&args, state).map_err(into_tool_error)
-        }
-        "context_pack" => context_pack(&args, state).map_err(into_tool_error),
-        "query_report" => query_report(&args, state).map_err(into_tool_error),
-        "query_benchmark" => query_benchmark(&args, state).map_err(into_tool_error),
-        "db_maintenance" => db_maintenance(&args, state).map_err(into_tool_error),
-        _ => unreachable!("known tools are handled before dispatch"),
+        _ => dispatch_tool_domain(name, &args, state),
     };
     usage::record_tool_usage(state, name, &result);
     result
+}
+
+fn dispatch_tool_domain(name: &str, args: &Value, state: &mut ServerState) -> Result<Value> {
+    if let Some(result) = search::dispatch(name, args, state) {
+        return result;
+    }
+    if let Some(result) = navigation::dispatch(name, args, state) {
+        return result;
+    }
+    if let Some(result) = quality::dispatch(name, args, state) {
+        return result;
+    }
+    if let Some(result) = benchmark::dispatch(name, args, state) {
+        return result;
+    }
+    if let Some(result) = maintenance::dispatch(name, args, state) {
+        return result;
+    }
+    unreachable!("known tools are handled before dispatch")
 }
 
 fn is_known_tool(name: &str) -> bool {
