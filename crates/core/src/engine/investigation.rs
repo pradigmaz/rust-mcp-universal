@@ -28,6 +28,8 @@ mod constraints;
 mod contract_trace;
 #[path = "investigation/divergence.rs"]
 mod divergence;
+#[path = "investigation/divergence_signals.rs"]
+mod divergence_signals;
 #[path = "investigation/generated_lineage.rs"]
 mod generated_lineage;
 #[path = "investigation/path_helpers.rs"]
