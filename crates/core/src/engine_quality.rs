@@ -11,6 +11,8 @@ use crate::model::{
 mod breakdown;
 #[path = "engine_quality/hotspots.rs"]
 mod hotspots;
+#[path = "engine_quality/hotspots_buckets.rs"]
+mod hotspots_buckets;
 #[path = "engine_quality/metrics.rs"]
 mod metrics;
 #[path = "engine_quality/query.rs"]
