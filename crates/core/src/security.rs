@@ -8,6 +8,10 @@ use crate::model::{
 
 #[path = "security/sensitive_data.rs"]
 mod sensitive_data;
+#[path = "security/sensitive_data_ordering.rs"]
+mod sensitive_data_ordering;
+#[path = "security/sensitive_data_patterns.rs"]
+mod sensitive_data_patterns;
 
 impl Engine {
     pub fn sensitive_data(&self, options: &SensitiveDataOptions) -> Result<SensitiveDataResult> {
