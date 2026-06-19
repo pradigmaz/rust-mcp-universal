@@ -81,6 +81,7 @@ pub use rollout::{
     RollbackLevel, RollbackRecommendation, RollbackSignals, RolloutDecision,
     decide_semantic_rollout, recommend_rollback, stable_cycles_observed,
 };
+pub use utils::decode_normalized_path;
 pub use utils::{
     GitignoreUpdate, ProjectIgnoreMatcher, ensure_root_gitignore, install_ignore_rules,
 };

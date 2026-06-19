@@ -1,3 +1,4 @@
+use rmu_core::decode_normalized_path;
 use serde_json::Value;
 pub(super) fn compact_content_summary(value: &Value) -> String {
     let Value::Object(object) = value else {
@@ -67,7 +68,7 @@ fn report_summary(value: &Value) -> String {
     format!(
         "status={}; degradation_reason={}; top_hits={}",
         hit_status(hits, "hits", "no_hits"),
-        first_string(value.get("degradation_reasons")).unwrap_or("none"),
+        summary_degradation_reason(value.get("degradation_reasons")),
         top_hits(hits, true)
     )
 }
@@ -83,7 +84,7 @@ fn bootstrap_summary(value: &Value) -> String {
     format!(
         "status={}; degradation_reason={}; top_hits={}",
         hit_status(hits, "hits", "brief_only"),
-        first_string(value.get("degradation_reasons")).unwrap_or("none"),
+        summary_degradation_reason(value.get("degradation_reasons")),
         top_hits
     )
 }
@@ -119,6 +120,7 @@ fn hit_line(item: &Value, context_hit: bool) -> String {
         .get("path")
         .and_then(Value::as_str)
         .unwrap_or("unknown");
+    let path = decode_normalized_path(path).unwrap_or_else(|| path.to_string());
     let score = item.get("score").and_then(Value::as_f64).unwrap_or(0.0);
     let reason = if context_hit {
         item.get("why")
@@ -139,6 +141,14 @@ fn hit_line(item: &Value, context_hit: bool) -> String {
     format!("{path} ({reason}; score={score:.3}; source={source})")
 }
 
+fn summary_degradation_reason(value: Option<&Value>) -> &str {
+    match first_string(value) {
+        Some("chunk_preview_fallback") => "preview_limited",
+        Some(reason) => reason,
+        None => "none",
+    }
+}
+
 fn first_string(value: Option<&Value>) -> Option<&str> {
     value
         .and_then(Value::as_array)
@@ -147,4 +157,37 @@ fn first_string(value: Option<&Value>) -> Option<&str> {
 
 fn u64_at(value: &Value, pointer: &str) -> u64 {
     value.pointer(pointer).and_then(Value::as_u64).unwrap_or(0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::compact_content_summary;
+    use serde_json::json;
+
+    #[test]
+    fn query_report_summary_decodes_display_paths() {
+        let summary = compact_content_summary(&json!({
+            "selected_context": [{
+                "path": "frontend/src/app/report/%u005Bcode%u005D/PublicReportClient.tsx",
+                "score": 1.0,
+                "why": ["selected"],
+                "chunk_source": "indexed"
+            }],
+            "degradation_reasons": []
+        }));
+
+        assert!(summary.contains("frontend/src/app/report/[code]/PublicReportClient.tsx"));
+        assert!(!summary.contains("%u005Bcode%u005D"));
+    }
+
+    #[test]
+    fn query_report_summary_uses_plain_preview_reason() {
+        let summary = compact_content_summary(&json!({
+            "selected_context": [],
+            "degradation_reasons": ["chunk_preview_fallback"]
+        }));
+
+        assert!(summary.contains("degradation_reason=preview_limited"));
+        assert!(!summary.contains("chunk_preview_fallback"));
+    }
 }
