@@ -7,6 +7,8 @@ use crate::model::{
     WorkspaceQualitySummary,
 };
 
+#[path = "engine_quality/breakdown.rs"]
+mod breakdown;
 #[path = "engine_quality/hotspots.rs"]
 mod hotspots;
 #[path = "engine_quality/metrics.rs"]
@@ -15,10 +17,18 @@ mod metrics;
 mod query;
 #[path = "engine_quality/refresh.rs"]
 mod refresh;
+#[path = "engine_quality/rule_violation_rows.rs"]
+mod rule_violation_rows;
+#[path = "engine_quality/rule_violations.rs"]
+mod rule_violations;
 #[path = "engine_quality/scope.rs"]
 mod scope;
 #[path = "engine_quality/snapshot.rs"]
 mod snapshot;
+#[path = "engine_quality/snapshot_artifacts.rs"]
+mod snapshot_artifacts;
+#[path = "engine_quality/snapshot_delta.rs"]
+mod snapshot_delta;
 #[path = "engine_quality/status.rs"]
 mod status;
 #[path = "engine_quality/structural.rs"]
@@ -33,7 +43,7 @@ impl Engine {
     }
 
     pub fn rule_violations(&self, options: &RuleViolationsOptions) -> Result<RuleViolationsResult> {
-        query::load_rule_violations(self, options)
+        rule_violations::load_rule_violations(self, options)
     }
 
     pub fn quality_degradation_reason(&self) -> Result<Option<String>> {

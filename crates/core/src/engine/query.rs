@@ -5,6 +5,8 @@ use anyhow::Result;
 
 #[path = "query/agent.rs"]
 mod agent;
+#[path = "query/agent_surface.rs"]
+mod agent_surface;
 #[cfg(test)]
 #[path = "query/agent_tests.rs"]
 mod agent_tests;
