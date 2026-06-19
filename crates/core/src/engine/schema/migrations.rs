@@ -7,12 +7,13 @@ use time::OffsetDateTime;
 
 use super::backup::create_pre_migration_backup;
 use super::table_ensure::{
-    ensure_file_chunks_excerpt_column, ensure_file_graph_edges_table, ensure_file_quality_tables,
+    ensure_file_chunks_excerpt_column, ensure_file_graph_edges_table,
     ensure_files_artifact_fingerprint_columns, ensure_files_graph_count_columns,
     ensure_files_graph_edge_columns, ensure_files_graph_fingerprint_columns,
     ensure_files_source_mtime_column, ensure_refs_position_columns, ensure_schema_migrations_table,
     ensure_semantic_ann_buckets_table, ensure_symbols_fts_table, ensure_symbols_position_columns,
 };
+use super::table_quality::ensure_file_quality_tables;
 
 #[derive(Clone, Copy)]
 pub(super) struct SchemaMigration {

@@ -11,6 +11,8 @@ mod constants;
 mod migrations;
 #[path = "schema/table_ensure.rs"]
 mod table_ensure;
+#[path = "schema/table_quality.rs"]
+mod table_quality;
 
 pub(super) const INIT_DB_SCHEMA_SQL: &str = constants::INIT_DB_SCHEMA_SQL;
 pub(super) const OPEN_DB_PRAGMAS_SQL: &str = constants::OPEN_DB_PRAGMAS_SQL;
