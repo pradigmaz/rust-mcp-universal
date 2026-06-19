@@ -14,6 +14,8 @@ mod agent_tests;
 mod brief;
 #[path = "query/chunking.rs"]
 mod chunking;
+#[path = "query/context_selection.rs"]
+mod context_selection;
 #[path = "query/fusion.rs"]
 mod fusion;
 #[path = "query/graph_stage.rs"]
@@ -40,7 +42,7 @@ use crate::report::{
     QueryReportBuildInput, ResultExplainEntry, RetrievalStageCounts, build_query_report,
 };
 use crate::vector_rank::SemanticRerankOutcome;
-use chunking::best_chunks_for_hits;
+pub(super) use context_selection::{derive_chunk_telemetry, elapsed_ms};
 
 #[derive(Debug)]
 pub(super) struct SearchExecution {
@@ -196,79 +198,9 @@ impl Engine {
         Ok(report)
     }
 
-    pub(super) fn context_for_hits_with_chunks(
-        &self,
-        query: &str,
-        hits: &[SearchHit],
-        prefetched_chunks: Option<&HashMap<String, context::ChunkExcerpt>>,
-        context_mode: Option<ContextMode>,
-        max_chars: usize,
-        max_tokens: usize,
-    ) -> Result<ContextSelection> {
-        let chunk_map = if let Some(prefetched) = prefetched_chunks {
-            let mut filtered = HashMap::with_capacity(hits.len());
-            for hit in hits {
-                if let Some(chunk) = prefetched.get(&hit.path) {
-                    filtered.insert(hit.path.clone(), chunk.clone());
-                }
-            }
-            filtered
-        } else {
-            let conn = self.open_db()?;
-            best_chunks_for_hits(&conn, query, hits)?
-        };
-        Ok(context::context_from_hits(
-            hits,
-            &chunk_map,
-            context_mode,
-            max_chars,
-            max_tokens,
-        ))
-    }
-
     pub(super) fn search_with_meta(&self, options: &QueryOptions) -> Result<SearchExecution> {
         pipeline::search_with_meta(self, options)
     }
-}
-
-fn derive_chunk_telemetry(context: &ContextSelection) -> (f32, String) {
-    if context.files.is_empty() {
-        return (0.0, "none".to_string());
-    }
-
-    let chunk_coverage =
-        (context.chunk_selected as f32 / context.files.len() as f32).clamp(0.0, 1.0);
-    if context.chunk_selected == 0 {
-        return (chunk_coverage, "none".to_string());
-    }
-
-    let mut by_source = HashMap::new();
-    for item in &context.files {
-        if item.chunk_source == "preview_fallback" {
-            continue;
-        }
-        *by_source
-            .entry(item.chunk_source.clone())
-            .or_insert(0_usize) += 1;
-    }
-
-    let chunk_source = if by_source.is_empty() {
-        "none".to_string()
-    } else if by_source.len() == 1 {
-        by_source
-            .into_iter()
-            .next()
-            .map(|(source, _)| source)
-            .unwrap_or_else(|| "none".to_string())
-    } else {
-        "mixed".to_string()
-    };
-
-    (chunk_coverage, chunk_source)
-}
-
-fn elapsed_ms(started: Instant) -> u64 {
-    u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX)
 }
 
 #[cfg(test)]
