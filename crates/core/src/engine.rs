@@ -26,6 +26,8 @@ mod maintenance;
 mod navigation;
 #[path = "engine/preflight.rs"]
 mod preflight;
+#[path = "engine/preflight_runtime.rs"]
+mod preflight_runtime;
 #[path = "engine/preview.rs"]
 mod preview;
 #[path = "engine/query.rs"]
@@ -36,7 +38,7 @@ mod readiness;
 mod schema;
 #[path = "engine/storage.rs"]
 pub(crate) mod storage;
-pub use preflight::{
+pub use preflight_runtime::{
     ThreadRunningBinaryTimestampsOverrideGuard,
     set_thread_running_binary_timestamps_override_for_tests,
 };
