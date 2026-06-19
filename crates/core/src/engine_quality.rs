@@ -17,6 +17,10 @@ mod metrics;
 mod query;
 #[path = "engine_quality/refresh.rs"]
 mod refresh;
+#[path = "engine_quality/refresh_input.rs"]
+mod refresh_input;
+#[path = "engine_quality/refresh_persist.rs"]
+mod refresh_persist;
 #[path = "engine_quality/rule_violation_rows.rs"]
 mod rule_violation_rows;
 #[path = "engine_quality/rule_violations.rs"]
