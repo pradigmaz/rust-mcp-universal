@@ -2,6 +2,8 @@
 mod actionability;
 #[path = "investigation/body.rs"]
 mod body;
+#[path = "investigation/body_extraction.rs"]
+mod body_extraction;
 #[path = "investigation/candidate_relevance.rs"]
 mod candidate_relevance;
 #[path = "investigation/cluster.rs"]
