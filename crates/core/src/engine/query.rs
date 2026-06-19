@@ -30,6 +30,8 @@ mod pipeline;
 mod semantic_candidates;
 #[path = "query/support.rs"]
 mod support;
+#[path = "query/support_fusion.rs"]
+mod support_fusion;
 #[path = "query/vector_utils.rs"]
 mod vector_utils;
 
