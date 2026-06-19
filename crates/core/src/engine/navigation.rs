@@ -1,5 +1,7 @@
 #[path = "navigation/call_path.rs"]
 mod call_path;
+#[path = "navigation/call_path_graph.rs"]
+mod call_path_graph;
 #[path = "navigation/common.rs"]
 mod common;
 #[path = "navigation/related.rs"]
