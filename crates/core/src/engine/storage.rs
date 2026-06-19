@@ -12,8 +12,10 @@ mod graph_state;
 mod ops;
 #[path = "storage/quality_state.rs"]
 mod quality_state;
-#[path = "storage/quality_state_read.rs"]
-mod quality_state_read;
+#[path = "storage/quality_state_actual.rs"]
+mod quality_state_actual;
+#[path = "storage/quality_state_loader.rs"]
+mod quality_state_loader;
 
 pub(super) use cache::{
     CachedChunkEmbeddingLookup, delete_cached_chunk_embedding, load_cached_chunk_embedding,
@@ -31,5 +33,5 @@ pub(crate) use ops::{
     update_path_source_mtime, upsert_meta, upsert_quality_snapshot,
 };
 pub(crate) use quality_state::ExistingQualityState;
-pub(super) use quality_state::load_existing_quality_state;
-pub(crate) use quality_state_read::load_existing_quality_state_conn;
+pub(super) use quality_state_loader::load_existing_quality_state;
+pub(crate) use quality_state_loader::load_existing_quality_state as load_existing_quality_state_conn;
