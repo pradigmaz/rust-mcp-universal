@@ -12,6 +12,8 @@ mod cluster;
 mod cluster_constraints;
 #[path = "investigation/cluster_policy.rs"]
 mod cluster_policy;
+#[path = "investigation/cluster_pool.rs"]
+mod cluster_pool;
 #[path = "investigation/cluster_scoring.rs"]
 mod cluster_scoring;
 #[path = "investigation/cluster_selection.rs"]
