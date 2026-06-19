@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 
 use anyhow::Result;
-use rusqlite::params;
+use rusqlite::params_from_iter;
+use rusqlite::types::Value as SqlValue;
 
 use crate::model::{
     QualityMetricValue, QualitySource, RuleViolationsOptions, WorkspaceQualityTopMetric,
@@ -38,13 +39,7 @@ pub(super) fn load_metrics_by_path(
         .path_prefix
         .as_ref()
         .map(|prefix| format!("{prefix}%"));
-    let metric_filter = options
-        .metric_ids
-        .iter()
-        .map(String::as_str)
-        .collect::<Vec<_>>();
-    let mut stmt = conn.prepare(
-        r#"
+    let mut sql = r#"
         SELECT
             q.path,
             m.metric_id,
@@ -58,11 +53,27 @@ pub(super) fn load_metrics_by_path(
         JOIN file_quality_metrics m ON m.path = q.path
         WHERE (?1 IS NULL OR q.path LIKE ?1)
           AND (?2 IS NULL OR q.language = ?2)
-        ORDER BY q.path ASC, m.metric_id ASC
-        "#,
-    )?;
+        "#
+    .to_string();
+    let mut query_params = vec![
+        optional_text_value(path_like),
+        optional_text_value(options.language.clone()),
+    ];
+    if !options.metric_ids.is_empty() {
+        let placeholders = (0..options.metric_ids.len())
+            .map(|index| format!("?{}", index + 3))
+            .collect::<Vec<_>>()
+            .join(", ");
+        sql.push_str(" AND m.metric_id IN (");
+        sql.push_str(&placeholders);
+        sql.push(')');
+        query_params.extend(options.metric_ids.iter().cloned().map(SqlValue::Text));
+    }
+    sql.push_str(" ORDER BY q.path ASC, m.metric_id ASC");
+
+    let mut stmt = conn.prepare(&sql)?;
     let rows = stmt
-        .query_map(params![path_like, options.language.as_ref()], |row| {
+        .query_map(params_from_iter(query_params), |row| {
             Ok((
                 row.get::<_, String>(0)?,
                 QualityMetricValue {
@@ -84,12 +95,13 @@ pub(super) fn load_metrics_by_path(
 
     let mut metrics_by_path = HashMap::<String, Vec<QualityMetricValue>>::new();
     for (path, metric) in rows {
-        if !metric_filter.is_empty() && !metric_filter.contains(&metric.metric_id.as_str()) {
-            continue;
-        }
         metrics_by_path.entry(path).or_default().push(metric);
     }
     Ok(metrics_by_path)
+}
+
+fn optional_text_value(value: Option<String>) -> SqlValue {
+    value.map_or(SqlValue::Null, SqlValue::Text)
 }
 
 fn build_location(

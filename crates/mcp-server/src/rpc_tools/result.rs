@@ -2,6 +2,9 @@ use anyhow::Result;
 use rmu_core::PreflightStatus;
 use serde_json::{Value, json};
 
+mod summary;
+use summary::compact_content_summary;
+
 pub(super) fn tool_result(structured_content: Value) -> Result<Value> {
     let text = compact_content_summary(&structured_content);
     Ok(json!({
@@ -14,35 +17,6 @@ pub(super) fn tool_result(structured_content: Value) -> Result<Value> {
         "structuredContent": structured_content,
         "isError": false
     }))
-}
-
-fn compact_content_summary(value: &Value) -> String {
-    match value {
-        Value::Array(items) => format!("ok: items={}", items.len()),
-        Value::Object(object) => {
-            let mut parts = Vec::new();
-            for key in [
-                "hits",
-                "items",
-                "buckets",
-                "recent",
-                "selected_context",
-                "candidate_paths",
-                "excluded_by_scope_paths",
-                "warnings",
-                "errors",
-            ] {
-                if let Some(Value::Array(items)) = object.get(key) {
-                    parts.push(format!("{key}={}", items.len()));
-                }
-            }
-            if parts.is_empty() {
-                parts.push(format!("fields={}", object.len()));
-            }
-            format!("ok: {}", parts.join(", "))
-        }
-        _ => "ok".to_string(),
-    }
 }
 
 pub(super) fn tool_error_result(message: String) -> Value {

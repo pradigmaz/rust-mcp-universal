@@ -368,7 +368,7 @@ pub mod api {
         let result = handle_tool_call(
             Some(json!({
                 "name": tool_name,
-                "arguments": { "details": true }
+                "arguments": { "auto_index": true, "details": true }
             })),
             &mut state,
         )

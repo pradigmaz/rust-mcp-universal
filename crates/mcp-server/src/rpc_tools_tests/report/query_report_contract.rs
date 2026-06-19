@@ -292,6 +292,12 @@ fn query_report_is_compact_by_default_and_details_opt_in_restores_diagnostics() 
         &mut state,
     )
     .expect("compact query_report should succeed");
+    let compact_text = compact["content"][0]["text"]
+        .as_str()
+        .expect("compact query_report should expose text summary");
+    assert!(compact_text.contains("status="));
+    assert!(compact_text.contains("degradation_reason="));
+    assert!(compact_text.contains("top_hits="));
     assert!(compact["structuredContent"]["investigation_summary"].is_null());
     assert!(compact["structuredContent"]["timings"].is_null());
     assert!(

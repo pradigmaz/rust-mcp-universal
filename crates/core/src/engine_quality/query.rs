@@ -3,6 +3,8 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 use anyhow::Result;
 use rusqlite::params;
+use rusqlite::params_from_iter;
+use rusqlite::types::Value as SqlValue;
 
 use super::compute_quality_status;
 use super::metrics::{load_metrics_by_path, load_top_metrics};
@@ -215,13 +217,7 @@ fn attach_and_filter_violations(
         .path_prefix
         .as_ref()
         .map(|prefix| format!("{prefix}%"));
-    let rule_filter = options
-        .rule_ids
-        .iter()
-        .map(String::as_str)
-        .collect::<Vec<_>>();
-    let mut stmt = conn.prepare(
-        r#"
+    let mut sql = r#"
         SELECT
             q.path,
             v.rule_id,
@@ -244,11 +240,27 @@ fn attach_and_filter_violations(
         JOIN file_rule_violations v ON v.path = q.path
         WHERE (?1 IS NULL OR q.path LIKE ?1)
           AND (?2 IS NULL OR q.language = ?2)
-        ORDER BY q.path ASC, v.rule_id ASC
-        "#,
-    )?;
+        "#
+    .to_string();
+    let mut query_params = vec![
+        optional_text_value(path_like),
+        optional_text_value(options.language.clone()),
+    ];
+    if !options.rule_ids.is_empty() {
+        let placeholders = (0..options.rule_ids.len())
+            .map(|index| format!("?{}", index + 3))
+            .collect::<Vec<_>>()
+            .join(", ");
+        sql.push_str(" AND v.rule_id IN (");
+        sql.push_str(&placeholders);
+        sql.push(')');
+        query_params.extend(options.rule_ids.iter().cloned().map(SqlValue::Text));
+    }
+    sql.push_str(" ORDER BY q.path ASC, v.rule_id ASC");
+
+    let mut stmt = conn.prepare(&sql)?;
     let rows = stmt
-        .query_map(params![path_like, options.language.as_ref()], |row| {
+        .query_map(params_from_iter(query_params), |row| {
             Ok((
                 row.get::<_, String>(0)?,
                 QualityViolationEntry {
@@ -297,9 +309,6 @@ fn attach_and_filter_violations(
 
     let mut violations_by_path = HashMap::<String, Vec<QualityViolationEntry>>::new();
     for (path, violation) in rows {
-        if !rule_filter.is_empty() && !rule_filter.contains(&violation.rule_id.as_str()) {
-            continue;
-        }
         violations_by_path.entry(path).or_default().push(violation);
     }
 
@@ -475,6 +484,10 @@ fn parse_suppressed_violations_json(payload: &str) -> Result<Vec<SuppressedQuali
         return Ok(Vec::new());
     }
     Ok(serde_json::from_str(payload)?)
+}
+
+fn optional_text_value(value: Option<String>) -> SqlValue {
+    value.map_or(SqlValue::Null, SqlValue::Text)
 }
 
 fn load_severity_breakdown(
