@@ -1,0 +1,340 @@
+use super::{
+    sanitize_content_text, sanitize_path_text, sanitize_query_text, sanitize_value_for_privacy,
+};
+use crate::model::PrivacyMode;
+use serde_json::json;
+
+#[test]
+fn path_sanitization_masks_and_hashes() {
+    let masked = sanitize_path_text(PrivacyMode::Mask, r"C:\Users\Alice\repo\src\main.rs");
+    assert_eq!(masked, "<masked:main.rs>");
+    let hashed = sanitize_path_text(PrivacyMode::Hash, "/home/alice/repo/src/main.rs");
+    assert!(hashed.starts_with("<hash:"));
+    assert!(hashed.ends_with('>'));
+}
+
+#[test]
+fn query_sanitization_masks_query() {
+    assert_eq!(
+        sanitize_query_text(PrivacyMode::Mask, "secret query"),
+        "<redacted-query>"
+    );
+    assert!(sanitize_query_text(PrivacyMode::Hash, "secret query").starts_with("<query-hash:"));
+}
+
+#[test]
+fn content_sanitization_masks_and_hashes() {
+    assert_eq!(
+        sanitize_content_text(PrivacyMode::Mask, "secret body"),
+        "<redacted-content>"
+    );
+    assert!(sanitize_content_text(PrivacyMode::Hash, "secret body").starts_with("<content-hash:"));
+}
+
+#[test]
+fn json_sanitization_scrubs_sensitive_keys() {
+    let mut payload = json!({
+        "project_root": "C:\\Users\\Alice\\repo",
+        "db_path": "C:\\Users\\Alice\\repo\\.rmu\\index.db",
+        "query": "find secret",
+        "nested": {
+            "path": "src/main.rs"
+        },
+        "candidate_paths": ["src/lib.rs"]
+    });
+    sanitize_value_for_privacy(PrivacyMode::Mask, &mut payload);
+    assert_eq!(payload["query"], json!("<redacted-query>"));
+    assert_eq!(payload["nested"]["path"], json!("<masked:main.rs>"));
+    assert_eq!(payload["project_root"], json!("<masked:repo>"));
+    assert_eq!(payload["candidate_paths"][0], json!("<masked:lib.rs>"));
+}
+
+#[test]
+fn json_sanitization_scrubs_removed_files_arrays() {
+    let mut payload = json!({
+        "removed_files": [
+            "C:\\Users\\Alice\\repo\\.rmu\\index.db",
+            "C:\\Users\\Alice\\repo\\.rmu\\index.db-wal"
+        ]
+    });
+    sanitize_value_for_privacy(PrivacyMode::Mask, &mut payload);
+    assert_eq!(payload["removed_files"][0], json!("<masked:index.db>"));
+    assert_eq!(payload["removed_files"][1], json!("<masked:index.db-wal>"));
+}
+
+#[test]
+fn json_sanitization_scrubs_investigation_payload_content() {
+    let mut payload = json!({
+        "seed": "resolve_origin",
+        "items": [
+            {
+                "anchor": {
+                    "path": "src/services/origin_service.rs",
+                    "symbol": "resolve_origin"
+                },
+                "signature": "pub fn resolve_origin(key: &str) -> bool {",
+                "body": "pub fn resolve_origin(key: &str) -> bool {\n    validate_origin(key);\n    true\n}",
+                "source_kind": "symbol_lookup"
+            }
+        ],
+        "variants": [
+            {
+                "route": [
+                    {
+                        "path": "src/services/origin_service.rs",
+                        "evidence": "service references validator"
+                    }
+                ],
+                "related_tests": ["tests/test_origin_flow.py"],
+                "gaps": ["missing migration proof"]
+            }
+        ],
+        "shared_evidence": ["both variants validate key"],
+        "missing_evidence": ["db constraint not recovered"],
+        "unknowns": ["legacy branch behavior"],
+        "recommended_followups": ["inspect schema backing"],
+        "divergence_signals": [
+            {
+                "summary": "validator layer diverges"
+            }
+        ],
+        "constraints": [
+            {
+                "path": "migrations/001_create_origins.sql",
+                "excerpt": "create unique index uq_origins_origin_key on origins(origin_key)",
+                "normalized_key": "index_constraint:index_declaration:create unique index uq_origins_origin_key on origins(origin_key)",
+                "source_path": "migrations/001_create_origins.sql",
+                "normalized_text": "create unique index uq_origins_origin_key"
+            }
+        ]
+    });
+
+    sanitize_value_for_privacy(PrivacyMode::Mask, &mut payload);
+
+    assert_eq!(payload["seed"], json!("<redacted-query>"));
+    assert_eq!(
+        payload["items"][0]["anchor"]["path"],
+        json!("<masked:origin_service.rs>")
+    );
+    assert_eq!(
+        payload["items"][0]["signature"],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["items"][0]["anchor"]["symbol"],
+        json!("<redacted-content>")
+    );
+    assert_eq!(payload["items"][0]["body"], json!("<redacted-content>"));
+    assert_eq!(
+        payload["variants"][0]["route"][0]["path"],
+        json!("<masked:origin_service.rs>")
+    );
+    assert_eq!(
+        payload["variants"][0]["route"][0]["evidence"],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["variants"][0]["related_tests"][0],
+        json!("<masked:test_origin_flow.py>")
+    );
+    assert_eq!(
+        payload["variants"][0]["gaps"][0],
+        json!("<redacted-content>")
+    );
+    assert_eq!(payload["shared_evidence"][0], json!("<redacted-content>"));
+    assert_eq!(payload["missing_evidence"][0], json!("<redacted-content>"));
+    assert_eq!(payload["unknowns"][0], json!("<redacted-content>"));
+    assert_eq!(
+        payload["recommended_followups"][0],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["divergence_signals"][0]["summary"],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["constraints"][0]["path"],
+        json!("<masked:001_create_origins.sql>")
+    );
+    assert_eq!(
+        payload["constraints"][0]["excerpt"],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["constraints"][0]["normalized_key"],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["constraints"][0]["source_path"],
+        json!("<masked:001_create_origins.sql>")
+    );
+    assert_eq!(
+        payload["constraints"][0]["normalized_text"],
+        json!("<redacted-content>")
+    );
+}
+
+#[test]
+fn json_sanitization_scrubs_embedded_investigation_summary_and_hints() {
+    let mut payload = json!({
+        "investigation_summary": {
+            "concept_cluster": {
+                "top_variants": [
+                    {
+                        "path": "src/services/origin_service.rs",
+                        "symbol": "resolve_origin",
+                        "confidence": 0.91
+                    }
+                ]
+            },
+            "constraint_evidence": {
+                "normalized_keys": ["index_constraint:index_declaration:create unique index uq_origins_origin_key"]
+            },
+            "divergence": {
+                "recommended_followups": ["inspect schema backing"]
+            }
+        },
+        "investigation_hints": {
+            "top_variants": [
+                {
+                    "path": "src/services/origin_service.rs",
+                    "symbol": "resolve_origin",
+                    "confidence": 0.88
+                }
+            ],
+            "constraint_keys": ["model_constraint:model:origin_key"],
+            "followups": ["compare route validators"]
+        }
+    });
+
+    sanitize_value_for_privacy(PrivacyMode::Mask, &mut payload);
+
+    assert_eq!(
+        payload["investigation_summary"]["concept_cluster"]["top_variants"][0]["path"],
+        json!("<masked:origin_service.rs>")
+    );
+    assert_eq!(
+        payload["investigation_summary"]["concept_cluster"]["top_variants"][0]["symbol"],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["investigation_summary"]["constraint_evidence"]["normalized_keys"][0],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["investigation_summary"]["divergence"]["recommended_followups"][0],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["investigation_hints"]["top_variants"][0]["path"],
+        json!("<masked:origin_service.rs>")
+    );
+    assert_eq!(
+        payload["investigation_hints"]["top_variants"][0]["symbol"],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["investigation_hints"]["constraint_keys"][0],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["investigation_hints"]["followups"][0],
+        json!("<redacted-content>")
+    );
+}
+
+#[test]
+fn json_sanitization_scrubs_contract_trace_actionability_and_lineage_fields() {
+    let mut payload = json!({
+        "chain": [
+            {
+                "anchor": {
+                    "path": "src/generated/origin_client.generated.ts",
+                    "language": "typescript"
+                },
+                "evidence": "generated client consumes upstream contract",
+                "rank_reason": "generated targets are downgraded below source of truth",
+                "generated_lineage": {
+                    "status": "generated",
+                    "detection_basis": "path_convention",
+                    "source_of_truth_path": "src/services/origin_service.rs",
+                    "source_of_truth_kind": "upstream_contract",
+                    "confidence": 0.92
+                }
+            }
+        ],
+        "contract_breaks": [
+            {
+                "reason": "consumer chain ended before test coverage",
+                "last_resolved_path": "frontend/src/origin_page.tsx"
+            }
+        ],
+        "actionability": {
+            "recommended_target_path": "src/services/origin_service.rs",
+            "reason": "edit source of truth instead of generated client",
+            "next_steps": [
+                {
+                    "kind": "edit_source_of_truth",
+                    "detail": "update origin service contract before regenerating client"
+                }
+            ],
+            "related_tests": ["tests/test_origin_resolution.py"],
+            "adjacent_paths": ["frontend/src/origin_page.tsx"],
+            "checks": ["cargo test -p rmu-core contract_trace -- --nocapture"],
+            "rollback_sensitive_paths": ["migrations/001_create_origins.sql"],
+            "manual_review_required": true
+        }
+    });
+
+    sanitize_value_for_privacy(PrivacyMode::Mask, &mut payload);
+
+    assert_eq!(
+        payload["chain"][0]["anchor"]["path"],
+        json!("<masked:origin_client.generated.ts>")
+    );
+    assert_eq!(payload["chain"][0]["evidence"], json!("<redacted-content>"));
+    assert_eq!(
+        payload["chain"][0]["rank_reason"],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["chain"][0]["generated_lineage"]["source_of_truth_path"],
+        json!("<masked:origin_service.rs>")
+    );
+    assert_eq!(
+        payload["contract_breaks"][0]["reason"],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["contract_breaks"][0]["last_resolved_path"],
+        json!("<masked:origin_page.tsx>")
+    );
+    assert_eq!(
+        payload["actionability"]["recommended_target_path"],
+        json!("<masked:origin_service.rs>")
+    );
+    assert_eq!(
+        payload["actionability"]["reason"],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["actionability"]["next_steps"][0]["detail"],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["actionability"]["related_tests"][0],
+        json!("<masked:test_origin_resolution.py>")
+    );
+    assert_eq!(
+        payload["actionability"]["adjacent_paths"][0],
+        json!("<masked:origin_page.tsx>")
+    );
+    assert_eq!(
+        payload["actionability"]["checks"][0],
+        json!("<redacted-content>")
+    );
+    assert_eq!(
+        payload["actionability"]["rollback_sensitive_paths"][0],
+        json!("<masked:001_create_origins.sql>")
+    );
+}
