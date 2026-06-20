@@ -4,6 +4,10 @@ use anyhow::Result;
 
 #[path = "query/agent.rs"]
 mod agent;
+#[path = "query/agent_bootstrap.rs"]
+mod agent_bootstrap;
+#[path = "query/agent_compat.rs"]
+mod agent_compat;
 #[path = "query/agent_query.rs"]
 mod agent_query;
 #[path = "query/agent_surface.rs"]

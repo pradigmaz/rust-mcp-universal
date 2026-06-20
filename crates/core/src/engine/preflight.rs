@@ -30,28 +30,12 @@ impl Engine {
         let safe_recovery_hint = messages::compatibility_hint();
         let mut errors = Vec::new();
         let mut warnings = Vec::new();
-        let mut db_schema_version = None;
-        let mut index_format_version = None;
-        let mut ann_version = None;
         let running_binary_stale =
             detect_running_binary_stale(Path::new(&binary_path), &mut errors);
         if running_binary_stale {
             errors.push(messages::stale_running_binary(&running_binary_version));
         }
-
-        if self.db_path.exists() {
-            match store::open_db(&self.db_path) {
-                Ok(conn) => {
-                    db_schema_version = store::read_meta_u32(&conn, "schema_version")?;
-                    index_format_version = store::read_meta_u32(&conn, "index_format_version")?;
-                    ann_version = store::read_meta_u32(&conn, "ann_version")?;
-                    if let Err(err) = super::compatibility::ensure_schema_preflight(&conn) {
-                        errors.push(err.to_string());
-                    }
-                }
-                Err(err) => errors.push(err.to_string()),
-            }
-        }
+        let db_versions = store::load_versions(&self.db_path, &mut errors)?;
 
         let stale_process_probe_target = stale_process_probe_binary_path
             .as_deref()
@@ -59,13 +43,7 @@ impl Engine {
         let same_binary_other_pids =
             detect_same_binary_other_pids(stale_process_probe_target, &mut warnings);
         let stale_process_suspected = running_binary_stale && !same_binary_other_pids.is_empty();
-        let status = if !errors.is_empty() {
-            PreflightState::Incompatible
-        } else if stale_process_suspected || !warnings.is_empty() {
-            PreflightState::Warning
-        } else {
-            PreflightState::Ok
-        };
+        let status = status_for(&errors, &warnings, stale_process_suspected);
 
         Ok(PreflightStatus {
             status,
@@ -75,9 +53,11 @@ impl Engine {
             running_binary_stale,
             stale_process_probe_binary_path,
             supported_schema_version: Some(CURRENT_SCHEMA_VERSION),
-            db_schema_version,
-            index_format_version: index_format_version.or(Some(CURRENT_INDEX_FORMAT_VERSION)),
-            ann_version: ann_version.or(Some(CURRENT_ANN_VERSION)),
+            db_schema_version: db_versions.db_schema_version,
+            index_format_version: db_versions
+                .index_format_version
+                .or(Some(CURRENT_INDEX_FORMAT_VERSION)),
+            ann_version: db_versions.ann_version.or(Some(CURRENT_ANN_VERSION)),
             same_binary_other_pids,
             stale_process_suspected,
             launcher_recommended,
@@ -85,6 +65,20 @@ impl Engine {
             warnings,
             errors,
         })
+    }
+}
+
+fn status_for(
+    errors: &[String],
+    warnings: &[String],
+    stale_process_suspected: bool,
+) -> PreflightState {
+    if !errors.is_empty() {
+        PreflightState::Incompatible
+    } else if stale_process_suspected || !warnings.is_empty() {
+        PreflightState::Warning
+    } else {
+        PreflightState::Ok
     }
 }
 

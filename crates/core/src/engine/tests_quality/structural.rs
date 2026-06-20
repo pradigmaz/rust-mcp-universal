@@ -31,7 +31,7 @@ fn rule_violations_expose_structural_hotspots() -> anyhow::Result<()> {
     write_project_file(
         &root,
         "src/ui/view.ts",
-        "import { run } from '../domain/use_case';\nimport { save } from '../data/repo';\nexport function view() { return run() + save(); }\n",
+        "import { run } from '../domain/use_case';\nimport { save } from '../data/repo';\nexport function view(value: number) {\n  if (value > 5) return run();\n  if (value > 4) return save();\n  if (value > 3) return run() + save();\n  if (value > 2) return run() - save();\n  if (value > 1) return save() - run();\n  return run() + save();\n}\n",
     )?;
     write_project_file(
         &root,

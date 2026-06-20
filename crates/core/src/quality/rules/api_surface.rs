@@ -1,7 +1,7 @@
 use anyhow::Result;
 
 use super::{
-    QualityRule, RuleContext, explicit_violation, metric_with_details,
+    QualityRule, RuleContext, explicit_violation, is_thin_facade, metric_with_details,
     threshold_violation_with_source,
 };
 use crate::model::{QualitySource, QualityViolationEntry};
@@ -96,6 +96,9 @@ impl QualityRule for PublicApiHubRule {
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
+        if is_thin_facade(ctx) {
+            return Ok(None);
+        }
         let fan_in = ctx.facts.structural.fan_in_count.unwrap_or_default();
         let score = public_api_hub_score(ctx);
         Ok((fan_in > ctx.thresholds.max_fan_in_per_file
@@ -127,6 +130,9 @@ impl QualityRule for UnstablePublicHubRule {
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
+        if is_thin_facade(ctx) {
+            return Ok(None);
+        }
         let fan_in = ctx.facts.structural.fan_in_count.unwrap_or_default();
         let score = public_api_hub_score(ctx);
         let churn = ctx.facts.git_risk.recent_churn_lines;

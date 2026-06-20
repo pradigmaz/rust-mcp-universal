@@ -73,7 +73,7 @@ fn api_surface_rules_emit_metrics_and_violations() {
         "typescript",
         128,
         Some(1),
-        "export { A, B, C } from './a';\nexport * from './b';\nexport function run() {}\n",
+        "export { A, B, C } from './a';\nexport * from './b';\nexport function run(value) {\n  if (value > 5) return 5;\n  if (value > 4) return 4;\n  if (value > 3) return 3;\n  if (value > 2) return 2;\n  if (value > 1) return 1;\n  return 0;\n}\n",
     );
     facts.structural = StructuralFacts {
         fan_in_count: Some(30),
@@ -114,4 +114,85 @@ fn api_surface_rules_emit_metrics_and_violations() {
             "{rule_id} should be emitted"
         );
     }
+}
+
+#[test]
+fn thin_facades_do_not_emit_public_api_hub_violations() {
+    let mut facts = build_indexed_quality_facts(
+        "src/api/facade.rs",
+        "rust",
+        128,
+        Some(1),
+        "pub fn run() { inner::run(); }\n",
+    );
+    facts.structural = StructuralFacts {
+        fan_in_count: Some(80),
+        fan_out_count: Some(30),
+        ..StructuralFacts::default()
+    };
+    facts.git_risk = GitRiskFacts {
+        recent_churn_lines: 2_000,
+        ..GitRiskFacts::default()
+    };
+    let mut policy = default_quality_policy();
+    policy.thresholds.max_public_api_hub_score = 20;
+    policy.git_risk.max_recent_churn_lines_per_file = 100;
+
+    let evaluation = evaluate_quality(&facts, &IndexedQualityMetrics::default(), &policy);
+
+    assert!(
+        evaluation.snapshot.metrics.iter().any(|metric| {
+            metric.metric_id == "public_api_hub_score" && metric.metric_value == 80
+        })
+    );
+    assert!(
+        !evaluation
+            .snapshot
+            .violations
+            .iter()
+            .any(|violation| violation.rule_id == "public_api_hub")
+    );
+    assert!(
+        !evaluation
+            .snapshot
+            .violations
+            .iter()
+            .any(|violation| violation.rule_id == "unstable_public_hub")
+    );
+}
+
+#[test]
+fn low_complexity_root_facades_keep_wide_surface_but_not_public_hub() {
+    let mut facts = build_indexed_quality_facts(
+        "src/engine.rs",
+        "rust",
+        512,
+        Some(1),
+        "pub use crate::runtime::Guard;\npub struct Engine {\n  pub project_root: String,\n  pub db_path: String,\n  pub migration_mode: String,\n}\npub struct Summary {\n  pub scanned: usize,\n  pub indexed: usize,\n  pub skipped: usize,\n  pub changed: usize,\n  pub unchanged: usize,\n  pub deleted: usize,\n  pub lock_wait_ms: u64,\n  pub cache_hits: usize,\n  pub cache_misses: usize,\n}\n",
+    );
+    facts.structural = StructuralFacts {
+        fan_in_count: Some(80),
+        fan_out_count: Some(30),
+        ..StructuralFacts::default()
+    };
+    let mut policy = default_quality_policy();
+    policy.thresholds.max_public_api_exports_per_file = 8;
+    policy.thresholds.max_public_api_hub_score = 20;
+
+    let evaluation = evaluate_quality(&facts, &IndexedQualityMetrics::default(), &policy);
+
+    assert!(
+        evaluation
+            .snapshot
+            .violations
+            .iter()
+            .any(|violation| violation.rule_id == "wide_public_api_surface")
+    );
+    assert!(
+        !evaluation
+            .snapshot
+            .violations
+            .iter()
+            .any(|violation| violation.rule_id == "public_api_hub")
+    );
 }

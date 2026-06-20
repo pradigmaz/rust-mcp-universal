@@ -196,6 +196,35 @@ pub(super) fn explicit_violation(
     }
 }
 
+pub(super) fn is_thin_facade(ctx: &RuleContext<'_>) -> bool {
+    let Some(non_empty_lines) = ctx.facts.non_empty_lines else {
+        return false;
+    };
+    let max_cognitive_complexity =
+        observed_value(ctx.facts.hotspots.max_cognitive_complexity.as_ref());
+    let max_branch_count = observed_value(ctx.facts.hotspots.max_branch_count.as_ref());
+    let max_function_lines = observed_value(ctx.facts.hotspots.max_function_lines.as_ref());
+
+    let low_complexity_facade = non_empty_lines <= 150
+        && ctx.facts.import_count.unwrap_or_default() <= 12
+        && max_cognitive_complexity <= 4
+        && max_branch_count <= 4
+        && max_function_lines <= 80;
+    low_complexity_facade && facade_surface_is_narrow_or_root(ctx)
+}
+
+fn facade_surface_is_narrow_or_root(ctx: &RuleContext<'_>) -> bool {
+    let public_exports = ctx.facts.api_surface.public_export_count;
+    let public_reexports = ctx.facts.api_surface.public_reexport_count;
+    let narrow_facade_surface = public_exports <= 8 && public_reexports == 0;
+    let root_facade_surface = public_exports <= 32 && public_reexports <= 4;
+    narrow_facade_surface || root_facade_surface
+}
+
+fn observed_value(metric: Option<&super::ObservedMetric>) -> i64 {
+    metric.map(|value| value.metric_value).unwrap_or_default()
+}
+
 pub(super) fn signal_violation(
     ctx: &RuleContext<'_>,
     rule_id: &str,

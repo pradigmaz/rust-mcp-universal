@@ -1,6 +1,8 @@
 use anyhow::Result;
 
-use super::{QualityRule, RuleContext, explicit_violation, metric, threshold_violation};
+use super::{
+    QualityRule, RuleContext, explicit_violation, is_thin_facade, metric, threshold_violation,
+};
 use crate::model::QualityViolationEntry;
 
 struct FanInRule;
@@ -81,6 +83,9 @@ impl QualityRule for CycleMemberRule {
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
+        if is_thin_facade(ctx) {
+            return Ok(None);
+        }
         Ok(ctx.facts.structural.cycle_member.then(|| {
             explicit_violation(
                 ctx,
@@ -105,6 +110,9 @@ impl QualityRule for HubModuleRule {
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
+        if is_thin_facade(ctx) {
+            return Ok(None);
+        }
         let fan_in = ctx.facts.structural.fan_in_count.unwrap_or_default();
         let fan_out = ctx.facts.structural.fan_out_count.unwrap_or_default();
         Ok((fan_in > ctx.thresholds.max_fan_in_per_file

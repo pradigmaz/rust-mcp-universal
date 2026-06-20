@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use anyhow::Result;
 
 use crate::DegradationReason;
@@ -8,7 +10,6 @@ use crate::model::{
     IndexTelemetry, PrivacyMode, QueryOptions, SemanticFailMode,
 };
 
-use super::agent::elapsed_ms;
 use super::agent_surface::{BootstrapQuerySurfaceInput, build_bootstrap_query_surface};
 use super::intent::SearchIntent;
 
@@ -47,7 +48,7 @@ pub(super) fn build_agent_query_bundle(
         agent_intent_mode: input.agent_intent_mode,
     };
 
-    let phase_started = std::time::Instant::now();
+    let phase_started = Instant::now();
     let execution = input.engine.search_with_meta(&options)?;
     input.timings.search_ms = elapsed_ms(phase_started);
     let followup_intent = input
@@ -56,7 +57,7 @@ pub(super) fn build_agent_query_bundle(
         .unwrap_or_else(|| SearchIntent::from_query(input.query));
     let followups = followup_intent.bootstrap_followups(&execution.hits);
 
-    let phase_started = std::time::Instant::now();
+    let phase_started = Instant::now();
     let context = input.engine.context_for_hits_with_chunks(
         input.query,
         &execution.hits,
@@ -112,4 +113,8 @@ pub(super) fn build_agent_query_bundle(
         },
         degradation_reasons,
     ))
+}
+
+fn elapsed_ms(started: Instant) -> u64 {
+    u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX)
 }
