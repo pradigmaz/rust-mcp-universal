@@ -10,6 +10,12 @@ fn expect_navigation_v2_hits(result: &Value) -> &[Value] {
         .expect("structuredContent.hits should be array")
 }
 
+fn expect_reason_codes(hit: &Value) -> &[Value] {
+    hit["reason_codes"]
+        .as_array()
+        .expect("hit.reason_codes should be array")
+}
+
 #[test]
 fn symbol_lookup_returns_matches_with_auto_index() {
     let project_dir = temp_dir("rmu-mcp-tests-symbol-lookup");
@@ -43,6 +49,7 @@ fn symbol_lookup_returns_matches_with_auto_index() {
     assert!(hits[0]["path"].is_string());
     assert!(hits[0]["line"].is_number());
     assert!(hits[0]["column"].is_number());
+    assert!(expect_reason_codes(&hits[0]).contains(&json!("symbol_table")));
 
     let _ = fs::remove_dir_all(project_dir);
 }
@@ -122,6 +129,7 @@ mod caller {
     assert!(hits[0]["ref_count"].is_number());
     assert!(hits[0]["line"].is_number());
     assert!(hits[0]["column"].is_number());
+    assert!(expect_reason_codes(&hits[0]).contains(&json!("refs_table")));
 
     let _ = fs::remove_dir_all(project_dir);
 }
@@ -311,7 +319,9 @@ fn helper() {}
 
     assert_eq!(result["isError"], json!(false));
     let hits = expect_navigation_v2_hits(&result);
-    assert!(hits.iter().any(|hit| hit["path"] == "src/shared.rs"));
+    assert!(hits.iter().any(|hit| {
+        hit["path"] == "src/shared.rs" && expect_reason_codes(hit).contains(&json!("graph_edge"))
+    }));
 
     let _ = fs::remove_dir_all(project_dir);
 }

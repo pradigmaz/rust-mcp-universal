@@ -9,6 +9,7 @@ pub struct SymbolMatch {
     pub line: Option<usize>,
     pub column: Option<usize>,
     pub exact: bool,
+    pub reason_codes: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -19,6 +20,7 @@ pub struct SymbolReferenceHit {
     pub line: Option<usize>,
     pub column: Option<usize>,
     pub exact: bool,
+    pub reason_codes: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -29,6 +31,7 @@ pub struct RelatedFileHit {
     pub dep_overlap: usize,
     pub ref_overlap: usize,
     pub symbol_overlap: usize,
+    pub reason_codes: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

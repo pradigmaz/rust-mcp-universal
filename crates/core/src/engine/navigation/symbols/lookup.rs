@@ -35,6 +35,7 @@ impl Engine {
 
         let rows = stmt
             .query_map(params![query, like, db_limit], |row| {
+                let exact = row.get::<_, i64>(6)? > 0;
                 Ok(SymbolMatch {
                     path: row.get(0)?,
                     name: row.get(1)?,
@@ -42,11 +43,20 @@ impl Engine {
                     language: row.get(3)?,
                     line: row.get::<_, Option<i64>>(4)?.and_then(i64_to_option_usize),
                     column: row.get::<_, Option<i64>>(5)?.and_then(i64_to_option_usize),
-                    exact: row.get::<_, i64>(6)? > 0,
+                    exact,
+                    reason_codes: symbol_lookup_reason_codes(exact),
                 })
             })?
             .collect::<rusqlite::Result<Vec<_>>>()?;
 
         Ok(rows)
     }
+}
+
+fn symbol_lookup_reason_codes(exact: bool) -> Vec<String> {
+    let mut codes = vec!["symbol_table".to_string()];
+    if !exact {
+        codes.push("lexical_fallback".to_string());
+    }
+    codes
 }

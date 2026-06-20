@@ -64,13 +64,15 @@ impl SymbolReferenceHitAccumulator {
     }
 
     fn into_hit(self) -> SymbolReferenceHit {
+        let exact = self.match_rank >= 3;
         SymbolReferenceHit {
             path: self.path,
             language: self.language,
             ref_count: self.ref_count,
             line: self.line,
             column: self.column,
-            exact: self.match_rank >= 3,
+            exact,
+            reason_codes: symbol_reference_reason_codes(exact),
         }
     }
 }
@@ -153,6 +155,14 @@ fn compare_symbol_reference_hits(
 
 fn rank_key(exact: bool) -> i32 {
     if exact { 1 } else { 0 }
+}
+
+fn symbol_reference_reason_codes(exact: bool) -> Vec<String> {
+    let mut codes = vec!["refs_table".to_string()];
+    if !exact {
+        codes.push("lexical_fallback".to_string());
+    }
+    codes
 }
 
 fn compare_position(

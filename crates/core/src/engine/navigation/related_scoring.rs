@@ -99,7 +99,19 @@ fn related_hit(
         dep_overlap: acc.dep_overlap,
         ref_overlap,
         symbol_overlap: acc.symbol_overlap,
+        reason_codes: related_reason_codes(ref_overlap, acc.symbol_overlap),
     })
+}
+
+fn related_reason_codes(ref_overlap: usize, symbol_overlap: usize) -> Vec<String> {
+    let mut codes = vec!["graph_edge".to_string()];
+    if ref_overlap > 0 {
+        codes.push("refs_table".to_string());
+    }
+    if symbol_overlap > 0 {
+        codes.push("symbol_table".to_string());
+    }
+    codes
 }
 
 fn accumulate_dep_overlaps(

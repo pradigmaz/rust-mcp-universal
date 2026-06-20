@@ -18,6 +18,14 @@ fn symbol_lookup_returns_exact_match_before_partial_matches() -> Result<(), Box<
     assert!(matches[0].exact);
     assert_eq!(matches[0].line, Some(1));
     assert_eq!(matches[0].column, Some(14));
+    assert_eq!(matches[0].reason_codes, vec!["symbol_table"]);
+
+    let partial_matches = engine.symbol_lookup("alpha_beta", 10)?;
+    assert!(partial_matches.iter().any(|hit| {
+        hit.name == "alpha_beta_gamma"
+            && !hit.exact
+            && hit.reason_codes == vec!["symbol_table", "lexical_fallback"]
+    }));
 
     cleanup_project(&project_dir);
     Ok(())
@@ -42,6 +50,17 @@ fn symbol_references_groups_reference_hits_by_file() -> Result<(), Box<dyn Error
     assert!(
         hits.iter()
             .any(|hit| { hit.exact && hit.line == Some(5) && hit.column == Some(9) })
+    );
+    assert!(
+        hits.iter()
+            .any(|hit| { hit.exact && hit.reason_codes == vec!["refs_table"] })
+    );
+
+    let fallback_hits = engine.symbol_references("symbol", 10)?;
+    assert!(
+        fallback_hits.iter().any(|hit| {
+            !hit.exact && hit.reason_codes == vec!["refs_table", "lexical_fallback"]
+        })
     );
 
     cleanup_project(&project_dir);
@@ -111,6 +130,9 @@ fn related_files_returns_files_connected_by_calls_and_shared_deps() -> Result<()
     let related = engine.related_files("src/main.rs", 10)?;
     assert!(related.iter().any(|hit| hit.path == "src/shared.rs"));
     assert!(related.iter().all(|hit| hit.path != "src/main.rs"));
+    assert!(related.iter().any(|hit| {
+        hit.path == "src/shared.rs" && hit.reason_codes.iter().any(|code| code == "graph_edge")
+    }));
 
     cleanup_project(&project_dir);
     Ok(())

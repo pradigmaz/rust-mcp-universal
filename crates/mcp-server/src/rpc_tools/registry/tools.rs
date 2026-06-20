@@ -179,7 +179,7 @@ const TOOL_METADATA: &[ToolMetadata] = &[
     ),
     bound_tool(
         names::SYMBOL_LOOKUP_V2,
-        "Canonical navigation contract: find symbol definitions in result.structuredContent.hits",
+        "Canonical navigation contract: find symbol definitions in result.structuredContent.hits with reason_codes",
         navigation_name_schema,
         ToolHandler::SymbolLookupV2,
     ),
@@ -191,7 +191,7 @@ const TOOL_METADATA: &[ToolMetadata] = &[
     ),
     bound_tool(
         names::SYMBOL_REFERENCES_V2,
-        "Canonical navigation contract: find symbol references in result.structuredContent.hits",
+        "Canonical navigation contract: find symbol references in result.structuredContent.hits with reason_codes",
         navigation_name_schema,
         ToolHandler::SymbolReferencesV2,
     ),
@@ -209,7 +209,7 @@ const TOOL_METADATA: &[ToolMetadata] = &[
     ),
     bound_tool(
         names::RELATED_FILES_V2,
-        "Canonical navigation contract: show related files in result.structuredContent.hits",
+        "Canonical navigation contract: show related files in result.structuredContent.hits with reason_codes",
         navigation_path_schema,
         ToolHandler::RelatedFilesV2,
     ),

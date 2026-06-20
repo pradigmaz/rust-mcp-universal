@@ -73,6 +73,7 @@ fn exact_symbol_matches(conn: &Connection, input: &str) -> Result<Vec<SymbolMatc
                 line: row.get::<_, Option<i64>>(2)?.and_then(i64_to_option_usize),
                 column: row.get::<_, Option<i64>>(3)?.and_then(i64_to_option_usize),
                 exact: true,
+                reason_codes: vec!["symbol_table".to_string()],
             })
         })?
         .collect::<rusqlite::Result<Vec<_>>>()?;
