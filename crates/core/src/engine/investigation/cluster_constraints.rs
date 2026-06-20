@@ -3,6 +3,7 @@ use crate::model::RouteSegmentKind;
 
 use super::common::CandidateFile;
 use super::common::normalized_values;
+use super::route_classification::classify_route_segment;
 
 const MIN_CONSTRAINT_PATH_OVERLAP: f32 = 0.15;
 
@@ -29,7 +30,7 @@ pub(super) fn constraint_relevant_paths(
                     .into_iter()
                     .filter(|entry| {
                         constraint_path_is_relevant(
-                            super::common::classify_route_segment(&entry.path),
+                            classify_route_segment(&entry.path),
                             &entry.source_kind,
                         )
                     })

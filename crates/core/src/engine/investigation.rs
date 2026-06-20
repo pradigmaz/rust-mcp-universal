@@ -41,7 +41,7 @@ pub(crate) mod path_helpers;
 #[path = "investigation/route.rs"]
 mod route;
 #[path = "investigation/route_classification.rs"]
-mod route_classification;
+pub(crate) mod route_classification;
 #[path = "investigation/shared_snapshot.rs"]
 mod shared_snapshot;
 

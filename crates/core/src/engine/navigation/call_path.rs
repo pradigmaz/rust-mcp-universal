@@ -9,7 +9,8 @@ use super::call_path_graph::{
     CallPathState, edge_cost, load_outgoing_graph_edges, pop_best_call_path_state,
     resolve_edge_evidence,
 };
-use super::common::{file_exists, require_non_empty};
+use super::common::file_exists;
+use super::validation::require_non_empty;
 use crate::model::{CallPathEndpoint, CallPathExplain, CallPathResult, CallPathStep, SymbolMatch};
 use crate::text_utils::i64_to_option_usize;
 use crate::utils::normalize_path;

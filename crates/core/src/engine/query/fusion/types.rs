@@ -5,7 +5,7 @@ use crate::model::{AgentIntentMode, ContextMode, SearchHit};
 use super::super::chunking::ChunkPoolCandidate;
 use super::super::graph_stage::GraphPoolCandidate;
 use super::super::semantic_candidates::SemanticFileCandidate;
-use super::super::support::FusionProfile;
+use super::super::support_fusion::FusionProfile;
 
 #[derive(Debug, Clone)]
 pub(crate) struct FusedExplainMeta {

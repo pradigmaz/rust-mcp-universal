@@ -10,9 +10,7 @@ use crate::model::{
 use crate::vector_rank::SemanticRerankOutcome;
 
 use super::candidate_relevance::retain_query_relevant_candidates;
-pub(super) use super::cluster_pool::{
-    canonical_entry_candidate, cap_candidate_pool, dedupe_candidates, dedupe_variants,
-};
+use super::cluster_pool::{cap_candidate_pool, dedupe_candidates};
 use super::common::{CandidateFile, CandidateMatchKind, detect_language};
 use super::path_helpers::display_path;
 

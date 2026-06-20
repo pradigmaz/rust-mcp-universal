@@ -12,9 +12,6 @@ use crate::model::{
 
 use super::candidate_relevance::retain_query_relevant_candidates;
 use super::path_helpers::{display_path, source_fs_path};
-pub(crate) use super::route_classification::{
-    classify_route_segment, classify_route_source_kind, route_kind_label,
-};
 
 #[derive(Debug, Clone)]
 pub(crate) struct CandidateFile {

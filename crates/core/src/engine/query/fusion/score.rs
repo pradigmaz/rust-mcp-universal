@@ -4,7 +4,8 @@ use crate::model::{ContextMode, SearchHit};
 
 use super::types::{CandidateState, FusedExplainMeta};
 use crate::engine::query::intent::SearchIntent;
-use crate::engine::query::support::{FusionProfile, path_role_prior};
+use crate::engine::query::support::path_role_prior;
+use crate::engine::query::support_fusion::FusionProfile;
 use crate::text_utils::{is_low_priority_path, query_allows_low_priority_paths};
 
 const RRF_K: f32 = 60.0;

@@ -9,8 +9,9 @@ mod route_trace_build;
 #[path = "route_trace_ranking.rs"]
 mod route_trace_ranking;
 
-use crate::engine::investigation::common::{
-    canonical_seed, classify_route_segment, collect_candidates, route_kind_label,
+use crate::engine::investigation::common::{canonical_seed, collect_candidates};
+use crate::engine::investigation::route_classification::{
+    classify_route_segment, route_kind_label,
 };
 use crate::model::{ConceptSeedKind, RouteGap, RoutePath, RouteTraceResult};
 use route_trace_build::{

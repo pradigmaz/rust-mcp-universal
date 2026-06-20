@@ -7,16 +7,15 @@ use crate::model::{
 };
 
 use super::candidate_relevance::retain_query_relevant_candidates;
-use super::cluster_policy::{
-    cap_candidate_pool, collect_expanded_candidates, dedupe_candidates, dedupe_variants,
-    expand_evidence_candidates,
-};
+use super::cluster_policy::{collect_expanded_candidates, expand_evidence_candidates};
+use super::cluster_pool::{cap_candidate_pool, dedupe_candidates, dedupe_variants};
 use super::cluster_selection::diversify_variants;
 use super::cluster_variants::{
     average_confidence, build_variants, retain_relevant_variants, semantic_state_for_seed,
 };
-use super::common::{capability_status, collect_candidates, normalized_values, route_kind_label};
+use super::common::{capability_status, collect_candidates, normalized_values};
 use super::constraint_items::normalized_constraint_items;
+use super::route_classification::route_kind_label;
 
 pub(super) fn concept_cluster(
     engine: &Engine,

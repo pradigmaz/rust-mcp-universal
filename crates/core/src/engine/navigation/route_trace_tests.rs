@@ -1,4 +1,6 @@
-use crate::engine::investigation::common::{classify_route_segment, classify_route_source_kind};
+use crate::engine::investigation::route_classification::{
+    classify_route_segment, classify_route_source_kind,
+};
 use crate::model::{RouteSegment, RouteSegmentKind};
 
 use super::route_trace_build::collapse_route_segments;

@@ -21,10 +21,8 @@ use super::fusion::{FusionInputs, fuse_candidate_pools};
 use super::graph_stage::graph_candidate_pool;
 use super::intent::SearchIntent;
 use super::semantic_candidates::semantic_file_candidates;
-use super::support::{
-    db_limit_for, derive_fusion_profile, is_low_signal_query, seed_fusion_profile,
-    semantic_outcome_code,
-};
+use super::support::{db_limit_for, is_low_signal_query, semantic_outcome_code};
+use super::support_fusion::{derive_fusion_profile, seed_fusion_profile};
 use super::{Engine, SearchExecution};
 use crate::model::{QueryOptions, SemanticFailMode};
 use crate::report::RetrievalStageCounts;

@@ -1,10 +1,7 @@
 #[path = "helpers/degradation.rs"]
-mod degradation;
+pub(crate) mod degradation;
 #[path = "helpers/provenance.rs"]
-mod provenance;
-
-pub(crate) use degradation::{deepen_available, deepen_hint, derive_degradation_reasons};
-pub(crate) use provenance::{canonical_provenance_for_context_item, summarize_provenance};
+pub(crate) mod provenance;
 
 use crate::model::RankExplainBreakdown;
 use crate::vector_rank::SemanticRerankOutcome;
@@ -132,11 +129,13 @@ pub(super) fn gap_reasons(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::degradation::{deepen_available, deepen_hint, derive_degradation_reasons};
+    use super::provenance::summarize_provenance;
     use crate::model::{
         BootstrapProfile, CanonicalBasis, CanonicalFreshness, CanonicalProvenance,
         CanonicalStrength, ContextFile, ContextSelection, DegradationReason,
     };
+    use crate::vector_rank::SemanticRerankOutcome;
 
     fn context_selection(chunk_source: &str, truncated: bool) -> ContextSelection {
         ContextSelection {

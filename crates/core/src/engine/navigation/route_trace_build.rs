@@ -1,8 +1,10 @@
 use std::collections::BTreeSet;
 
 use crate::engine::investigation::common::{
-    build_anchor, classify_route_segment, classify_route_source_kind, detect_language,
-    route_kind_label, source_span_from_position,
+    build_anchor, detect_language, source_span_from_position,
+};
+use crate::engine::investigation::route_classification::{
+    classify_route_segment, classify_route_source_kind, route_kind_label,
 };
 use crate::model::{CallPathResult, RouteGap, RoutePath, RouteSegment};
 

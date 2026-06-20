@@ -9,7 +9,7 @@ use crate::vector_rank::SemanticRerankOutcome;
 
 use super::body::extract_body_for_candidate;
 use super::cluster_constraints::constraint_relevant_paths;
-use super::cluster_policy::canonical_entry_candidate;
+use super::cluster_pool::canonical_entry_candidate;
 use super::cluster_scoring::ClusterScoringInputs;
 use super::cluster_scoring::ClusterScoringSignals;
 use super::cluster_scoring::compute_scoring_signals;

@@ -6,10 +6,10 @@ use crate::engine::Engine;
 use crate::model::{RouteSegment, RouteSegmentKind};
 
 use super::common::{
-    CandidateFile, classify_route_segment, classify_route_source_kind, detect_language,
-    is_supported_language, source_span_from_position,
+    CandidateFile, detect_language, is_supported_language, source_span_from_position,
 };
 use super::path_helpers::display_path;
+use super::route_classification::{classify_route_segment, classify_route_source_kind};
 
 pub(super) fn build_route(engine: &Engine, candidate: &CandidateFile) -> Result<Vec<RouteSegment>> {
     let mut segments = vec![RouteSegment {

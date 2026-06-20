@@ -12,3 +12,5 @@ pub(super) mod route_trace;
 mod route_trace_targets;
 #[path = "navigation/symbols.rs"]
 mod symbols;
+#[path = "navigation/validation.rs"]
+mod validation;

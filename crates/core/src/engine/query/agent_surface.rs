@@ -8,7 +8,10 @@ use crate::model::{
     DegradationReason, IndexTelemetry, InvestigationPhaseTimings, InvestigationSummary,
     PrivacyMode, QueryReport, QuerySurfaceTimings,
 };
-use crate::report::{QueryReportBuildInput, build_query_report, helpers as report_helpers};
+use crate::report::{
+    QueryReportBuildInput, build_query_report,
+    helpers::{self as report_helpers, degradation, provenance},
+};
 
 use super::{SearchExecution, investigation_embed};
 
@@ -92,7 +95,7 @@ pub(super) fn build_bootstrap_query_surface(
                         item.score.max(0.0),
                     )
                 });
-            report_helpers::canonical_provenance_for_context_item(
+            provenance::canonical_provenance_for_context_item(
                 &item.chunk_source,
                 explain,
                 item.score,
@@ -104,8 +107,8 @@ pub(super) fn build_bootstrap_query_surface(
         bundle_provenance_inputs.push(summary.provenance.clone());
     }
     let provenance =
-        report_helpers::summarize_provenance(&bundle_provenance_inputs, "agent_query_bundle");
-    let degradation_reasons = report_helpers::derive_degradation_reasons(
+        provenance::summarize_provenance(&bundle_provenance_inputs, "agent_query_bundle");
+    let degradation_reasons = degradation::derive_degradation_reasons(
         input.semantic,
         input.execution.semantic_outcome,
         input.context,

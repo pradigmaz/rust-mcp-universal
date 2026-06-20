@@ -3,11 +3,11 @@ use std::collections::HashSet;
 use anyhow::Result;
 
 use super::super::Engine;
-use crate::engine::investigation::common::{
-    CandidateFile, classify_route_segment, classify_route_source_kind, detect_language,
-    is_supported_language,
-};
+use crate::engine::investigation::common::{CandidateFile, detect_language, is_supported_language};
 use crate::engine::investigation::path_helpers::display_path;
+use crate::engine::investigation::route_classification::{
+    classify_route_segment, classify_route_source_kind,
+};
 use crate::model::RouteSegmentKind;
 
 pub(super) const MAX_ROUTE_HOPS: usize = 6;

@@ -10,12 +10,12 @@ pub(super) fn read_only_repair_hint(engine: &Engine) -> Result<Option<WorkspaceR
     }
 
     let conn = engine.open_db_read_only()?;
-    let files = super::count_files(&conn)?;
+    let files = super::readiness::count_files(&conn)?;
     if files == 0 {
         return Ok(None);
     }
 
-    if super::uses_legacy_default_scope(&conn, engine)? {
+    if super::readiness::uses_legacy_default_scope(&conn, engine)? {
         return Ok(Some(WorkspaceRepairHint {
             action: "reindex".to_string(),
             reason: "legacy_default_scope".to_string(),

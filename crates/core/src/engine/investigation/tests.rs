@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::engine::Engine;
-use crate::engine::investigation::cluster_policy::canonical_entry_candidate;
+use crate::engine::investigation::cluster_pool::canonical_entry_candidate;
 use crate::engine::investigation::common::{CandidateFile, CandidateMatchKind};
 use crate::model::{ConceptSeedKind, RouteSegment, RouteSegmentKind};
 

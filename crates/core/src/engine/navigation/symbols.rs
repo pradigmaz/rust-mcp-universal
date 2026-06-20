@@ -5,7 +5,7 @@ use anyhow::Result;
 use rusqlite::params;
 
 use super::super::Engine;
-use super::common::{db_limit, require_non_empty};
+use super::validation::{db_limit, require_non_empty};
 use crate::model::{SymbolMatch, SymbolReferenceHit};
 use crate::text_utils::{escape_like_value, i64_to_option_usize, symbol_tail};
 

@@ -2,18 +2,15 @@ use std::time::Instant;
 
 use anyhow::Result;
 
-use crate::engine_brief::index_not_ready_error;
 use crate::engine_quality::load_quality_summary;
 use crate::model::{
     AgentBootstrap, AgentBootstrapIncludeOptions, AgentBootstrapTimings, AgentIntentMode,
-    AgentQueryBundle, BootstrapProfile, IndexTelemetry, PrivacyMode, QueryOptions,
-    SemanticFailMode, WorkspaceBrief,
+    BootstrapProfile, PrivacyMode, SemanticFailMode, WorkspaceBrief,
 };
-use crate::report::helpers as report_helpers;
+use crate::report::helpers::degradation;
 
 use super::super::Engine;
-use super::agent_surface::{BootstrapQuerySurfaceInput, build_bootstrap_query_surface};
-use super::intent::SearchIntent;
+use super::agent_query::{AgentQueryBuildInput, build_agent_query_bundle};
 
 impl Engine {
     pub fn agent_bootstrap(
@@ -136,94 +133,34 @@ impl Engine {
 
         let query_bundle = normalized_query
             .as_deref()
-            .map(|value| -> Result<AgentQueryBundle> {
-                if brief.index_status.files == 0 {
-                    return Err(index_not_ready_error());
-                }
-                let requested_limit = limit.max(1);
-                let options = QueryOptions {
-                    query: value.to_string(),
-                    limit: requested_limit,
-                    detailed: true,
-                    semantic,
-                    semantic_fail_mode,
-                    privacy_mode,
-                    context_mode: None,
-                    agent_intent_mode,
-                };
-
-                let phase_started = Instant::now();
-                let execution = self.search_with_meta(&options)?;
-                timings.search_ms = elapsed_ms(phase_started);
-                let followup_intent = agent_intent_mode
-                    .map(SearchIntent::from_agent_mode)
-                    .unwrap_or_else(|| SearchIntent::from_query(value));
-                let followups = followup_intent.bootstrap_followups(&execution.hits);
-
-                let phase_started = Instant::now();
-                let context = self.context_for_hits_with_chunks(
-                    value,
-                    &execution.hits,
-                    Some(&execution.chunk_by_path),
-                    None,
-                    max_chars,
-                    max_tokens,
-                )?;
-                timings.context_ms = elapsed_ms(phase_started);
-                let (chunk_coverage, chunk_source) = super::derive_chunk_telemetry(&context);
-
-                let surface = build_bootstrap_query_surface(
-                    self,
-                    BootstrapQuerySurfaceInput {
-                        project_root: &self.project_root,
+            .map(|value| {
+                let (bundle, degradation_reasons) =
+                    build_agent_query_bundle(AgentQueryBuildInput {
+                        engine: self,
                         query: value,
-                        requested_limit,
+                        limit,
                         semantic,
+                        semantic_fail_mode,
                         privacy_mode,
+                        max_chars,
                         max_tokens,
+                        agent_intent_mode,
                         effective_profile,
                         include_report,
                         include_investigation_summary,
-                        execution: &execution,
-                        context: &context,
-                        index_telemetry: IndexTelemetry {
-                            last_index_lock_wait_ms: brief.index_status.last_index_lock_wait_ms,
-                            last_embedding_cache_hits: brief.index_status.last_embedding_cache_hits,
-                            last_embedding_cache_misses: brief
-                                .index_status
-                                .last_embedding_cache_misses,
-                            chunk_coverage,
-                            chunk_source,
-                        },
-                    },
-                    &mut timings,
-                )?;
-                bootstrap_degradation_reasons = surface.degradation_reasons.clone();
-
-                Ok(AgentQueryBundle {
-                    query: value.to_string(),
-                    limit: requested_limit,
-                    semantic,
-                    resolved_mode: execution.resolved_mode,
-                    mode_source: execution.mode_source,
-                    max_chars,
-                    max_tokens,
-                    hits: execution.hits,
-                    context,
-                    provenance: surface.provenance,
-                    followups,
-                    investigation_summary: surface.investigation_summary,
-                    report: surface.report,
-                })
+                        index_status: &brief.index_status,
+                        timings: &mut timings,
+                    })?;
+                bootstrap_degradation_reasons = degradation_reasons;
+                Ok::<_, anyhow::Error>(bundle)
             })
             .transpose()?;
 
         let degradation_reasons = bootstrap_degradation_reasons;
 
         let deepen_available =
-            report_helpers::deepen_available(Some(effective_profile), &degradation_reasons);
-        let deepen_hint =
-            report_helpers::deepen_hint(Some(effective_profile), &degradation_reasons);
+            degradation::deepen_available(Some(effective_profile), &degradation_reasons);
+        let deepen_hint = degradation::deepen_hint(Some(effective_profile), &degradation_reasons);
 
         timings.total_ms = elapsed_ms(started);
         Ok(AgentBootstrap {
@@ -267,7 +204,7 @@ impl Engine {
     }
 }
 
-fn elapsed_ms(started: Instant) -> u64 {
+pub(super) fn elapsed_ms(started: Instant) -> u64 {
     u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX)
 }
 

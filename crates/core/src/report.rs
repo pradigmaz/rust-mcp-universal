@@ -93,7 +93,7 @@ pub(crate) fn build_query_report(
                     item.score.max(0.0),
                 )
             }),
-            provenance: helpers::canonical_provenance_for_context_item(
+            provenance: helpers::provenance::canonical_provenance_for_context_item(
                 &item.chunk_source,
                 explain_by_path.get(&item.path).cloned().unwrap_or_else(|| {
                     helpers::default_breakdown(
@@ -115,8 +115,8 @@ pub(crate) fn build_query_report(
     if let Some(summary) = investigation_summary.as_ref() {
         provenance_inputs.push(summary.provenance.clone());
     }
-    let provenance = helpers::summarize_provenance(&provenance_inputs, "query_report");
-    let degradation_reasons = helpers::derive_degradation_reasons(
+    let provenance = helpers::provenance::summarize_provenance(&provenance_inputs, "query_report");
+    let degradation_reasons = helpers::degradation::derive_degradation_reasons(
         semantic_requested,
         semantic_outcome,
         context,
@@ -170,8 +170,8 @@ pub(crate) fn build_query_report(
         gaps: helpers::gap_reasons(semantic_requested, semantic_outcome),
         index_telemetry,
         degradation_reasons: degradation_reasons.clone(),
-        deepen_available: helpers::deepen_available(None, &degradation_reasons),
-        deepen_hint: helpers::deepen_hint(None, &degradation_reasons),
+        deepen_available: helpers::degradation::deepen_available(None, &degradation_reasons),
+        deepen_hint: helpers::degradation::deepen_hint(None, &degradation_reasons),
         investigation_summary,
         timings: None,
     };

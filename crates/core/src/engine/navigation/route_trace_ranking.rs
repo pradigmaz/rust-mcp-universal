@@ -2,8 +2,9 @@ use std::cmp::Ordering;
 use std::collections::HashSet;
 
 use crate::engine::investigation::common::CandidateFile;
-use crate::engine::investigation::common::classify_route_segment;
-use crate::engine::investigation::common::classify_route_source_kind;
+use crate::engine::investigation::route_classification::{
+    classify_route_segment, classify_route_source_kind,
+};
 use crate::model::{ConceptSeedKind, RoutePath, RouteSegmentKind};
 
 #[derive(Debug, Clone)]

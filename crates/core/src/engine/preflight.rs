@@ -1,15 +1,18 @@
+#[path = "preflight/messages.rs"]
+mod messages;
+#[path = "preflight/store.rs"]
+mod store;
+
 use std::env;
 use std::path::Path;
 
-use anyhow::{Context, Result};
-use rusqlite::{Connection, OptionalExtension};
+use anyhow::Result;
 
 use super::Engine;
 use super::compatibility::{
     CURRENT_ANN_VERSION, CURRENT_INDEX_FORMAT_VERSION, CURRENT_SCHEMA_VERSION,
 };
 use super::preflight_runtime::{detect_running_binary_stale, detect_same_binary_other_pids};
-use super::schema::OPEN_DB_READ_ONLY_PRAGMAS_SQL;
 use crate::model::{PreflightState, PreflightStatus};
 
 const RUNNING_BINARY_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -24,7 +27,7 @@ impl Engine {
         let stale_process_probe_binary_path = None;
         let launcher_recommended =
             cfg!(windows).then(|| "scripts/rmu-mcp-server-fresh.cmd".to_string());
-        let safe_recovery_hint = compatibility_hint();
+        let safe_recovery_hint = messages::compatibility_hint();
         let mut errors = Vec::new();
         let mut warnings = Vec::new();
         let mut db_schema_version = None;
@@ -33,15 +36,15 @@ impl Engine {
         let running_binary_stale =
             detect_running_binary_stale(Path::new(&binary_path), &mut errors);
         if running_binary_stale {
-            errors.push(stale_running_binary_message(&running_binary_version));
+            errors.push(messages::stale_running_binary(&running_binary_version));
         }
 
         if self.db_path.exists() {
-            match open_preflight_db(&self.db_path) {
+            match store::open_db(&self.db_path) {
                 Ok(conn) => {
-                    db_schema_version = read_meta_u32(&conn, "schema_version")?;
-                    index_format_version = read_meta_u32(&conn, "index_format_version")?;
-                    ann_version = read_meta_u32(&conn, "ann_version")?;
+                    db_schema_version = store::read_meta_u32(&conn, "schema_version")?;
+                    index_format_version = store::read_meta_u32(&conn, "index_format_version")?;
+                    ann_version = store::read_meta_u32(&conn, "ann_version")?;
                     if let Err(err) = super::compatibility::ensure_schema_preflight(&conn) {
                         errors.push(err.to_string());
                     }
@@ -83,40 +86,6 @@ impl Engine {
             errors,
         })
     }
-}
-
-fn open_preflight_db(path: &Path) -> Result<Connection> {
-    let conn = Connection::open_with_flags(path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
-        .with_context(|| format!("failed to open db {}", path.display()))?;
-    conn.execute_batch(OPEN_DB_READ_ONLY_PRAGMAS_SQL)
-        .context("failed to apply sqlite pragmas")?;
-    Ok(conn)
-}
-
-fn read_meta_u32(conn: &Connection, key: &str) -> Result<Option<u32>> {
-    conn.query_row("SELECT value FROM meta WHERE key = ?1", [key], |row| {
-        row.get::<_, String>(0)
-    })
-    .optional()?
-    .map(|raw| {
-        raw.parse::<u32>()
-            .with_context(|| format!("meta key `{key}` has non-u32 value `{raw}`"))
-    })
-    .transpose()
-}
-
-fn compatibility_hint() -> String {
-    if cfg!(windows) {
-        "use scripts/rmu-mcp-server-fresh.cmd so the server is rebuilt/restarted if needed, then re-open the index".to_string()
-    } else {
-        "restart the process with a fresh binary and re-open the index".to_string()
-    }
-}
-
-fn stale_running_binary_message(running_binary_version: &str) -> String {
-    format!(
-        "running binary version `{running_binary_version}` is stale: executable was rebuilt after process start; restart with a fresh binary before serving requests"
-    )
 }
 
 #[cfg(test)]

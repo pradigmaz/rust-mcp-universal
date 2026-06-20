@@ -4,8 +4,6 @@ use crate::model::ContextMode;
 use crate::text_utils::is_low_priority_path;
 use crate::vector_rank::SemanticRerankOutcome;
 
-pub(super) use super::support_fusion::{FusionProfile, derive_fusion_profile, seed_fusion_profile};
-
 pub(super) fn semantic_outcome_code(
     semantic_requested: bool,
     semantic_outcome: SemanticRerankOutcome,
