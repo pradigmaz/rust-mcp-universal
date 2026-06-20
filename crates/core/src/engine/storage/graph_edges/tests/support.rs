@@ -22,7 +22,8 @@ pub(super) fn setup_graph_edge_schema(conn: &Connection) -> anyhow::Result<()> {
         );
         CREATE TABLE symbols (
             path TEXT NOT NULL,
-            name TEXT NOT NULL
+            name TEXT NOT NULL,
+            kind TEXT NOT NULL DEFAULT 'function'
         );
         CREATE TABLE refs (
             path TEXT NOT NULL,
@@ -49,6 +50,27 @@ pub(super) fn insert_file(conn: &Connection, path: &str) -> anyhow::Result<()> {
         "INSERT INTO files(path, graph_edge_out_count, graph_edge_in_count, graph_edge_hash, graph_edge_fingerprint_version)
          VALUES (?1, -1, -1, 'stale', -1)",
         [path],
+    )?;
+    Ok(())
+}
+
+pub(super) fn insert_symbol(
+    conn: &Connection,
+    path: &str,
+    name: &str,
+    kind: &str,
+) -> anyhow::Result<()> {
+    conn.execute(
+        "INSERT INTO symbols(path, name, kind) VALUES (?1, ?2, ?3)",
+        params![path, name, kind],
+    )?;
+    Ok(())
+}
+
+pub(super) fn insert_ref(conn: &Connection, path: &str, symbol: &str) -> anyhow::Result<()> {
+    conn.execute(
+        "INSERT INTO refs(path, symbol) VALUES (?1, ?2)",
+        params![path, symbol],
     )?;
     Ok(())
 }

@@ -158,7 +158,12 @@ fn load_symbol_destinations(
     tx: &rusqlite::Transaction<'_>,
 ) -> Result<HashMap<String, Vec<String>>> {
     let mut by_symbol = BTreeMap::<String, BTreeMap<String, ()>>::new();
-    let mut stmt = tx.prepare("SELECT name, path FROM symbols ORDER BY name ASC, path ASC")?;
+    let mut stmt = tx.prepare(
+        "SELECT name, path
+         FROM symbols
+         WHERE kind <> 'impl'
+         ORDER BY name ASC, path ASC",
+    )?;
     let rows = stmt.query_map([], |row| {
         Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
     })?;

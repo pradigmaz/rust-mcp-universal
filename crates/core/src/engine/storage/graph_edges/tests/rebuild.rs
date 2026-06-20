@@ -1,8 +1,8 @@
 use rusqlite::{Connection, params};
 
 use super::support::{
-    assert_edge_weight, assert_reset_metadata, fetch_edges, insert_file, run_full_rebuild,
-    setup_graph_edge_schema,
+    assert_edge_weight, assert_reset_metadata, fetch_edges, insert_file, insert_ref, insert_symbol,
+    run_full_rebuild, setup_graph_edge_schema,
 };
 
 #[test]
@@ -59,6 +59,48 @@ fn rebuild_file_graph_edges_materializes_ref_tail_unique_edges() -> anyhow::Resu
     assert_eq!(edges[0].2, "ref_tail_unique");
     assert_eq!(edges[0].3, 1);
     assert_edge_weight(edges[0].4, 0.72);
+    Ok(())
+}
+
+#[test]
+fn rebuild_file_graph_edges_does_not_resolve_refs_to_impl_symbols() -> anyhow::Result<()> {
+    let mut conn = Connection::open_in_memory()?;
+    setup_graph_edge_schema(&conn)?;
+    insert_file(&conn, "src/caller.rs")?;
+    insert_file(&conn, "src/impl_block.rs")?;
+    insert_symbol(&conn, "src/impl_block.rs", "Engine", "impl")?;
+    insert_ref(&conn, "src/caller.rs", "Engine")?;
+
+    run_full_rebuild(&mut conn)?;
+
+    assert!(fetch_edges(&conn)?.is_empty());
+    Ok(())
+}
+
+#[test]
+fn rebuild_file_graph_edges_resolves_refs_to_non_impl_symbol_when_impl_shares_name()
+-> anyhow::Result<()> {
+    let mut conn = Connection::open_in_memory()?;
+    setup_graph_edge_schema(&conn)?;
+    insert_file(&conn, "src/caller.rs")?;
+    insert_file(&conn, "src/type_owner.rs")?;
+    insert_file(&conn, "src/impl_block.rs")?;
+    insert_symbol(&conn, "src/type_owner.rs", "Engine", "struct")?;
+    insert_symbol(&conn, "src/impl_block.rs", "Engine", "impl")?;
+    insert_ref(&conn, "src/caller.rs", "Engine")?;
+
+    run_full_rebuild(&mut conn)?;
+
+    assert_eq!(
+        fetch_edges(&conn)?,
+        vec![(
+            "src/caller.rs".to_string(),
+            "src/type_owner.rs".to_string(),
+            "ref_exact".to_string(),
+            1,
+            1.0
+        )]
+    );
     Ok(())
 }
 
