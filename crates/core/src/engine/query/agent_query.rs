@@ -67,7 +67,7 @@ pub(super) fn build_agent_query_bundle(
         input.max_tokens,
     )?;
     input.timings.context_ms = elapsed_ms(phase_started);
-    let (chunk_coverage, chunk_source) = super::context_selection::derive_chunk_telemetry(&context);
+    let (chunk_coverage, chunk_source) = super::context_telemetry::derive_chunk_telemetry(&context);
 
     let surface = build_bootstrap_query_surface(
         input.engine,

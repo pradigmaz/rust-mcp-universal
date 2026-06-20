@@ -3,7 +3,7 @@ use std::time::Instant;
 use anyhow::Result;
 
 use super::super::{Engine, investigation};
-use super::context_selection::{derive_chunk_telemetry, elapsed_ms};
+use super::context_telemetry::{derive_chunk_telemetry, elapsed_ms};
 use super::investigation_embed;
 use crate::model::{
     ContextMode, ContextPackResult, ContextSelection, IndexTelemetry, QueryOptions,

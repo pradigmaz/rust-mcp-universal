@@ -21,6 +21,8 @@ mod brief;
 mod chunking;
 #[path = "query/context_selection.rs"]
 mod context_selection;
+#[path = "query/context_telemetry.rs"]
+mod context_telemetry;
 #[path = "query/fusion.rs"]
 mod fusion;
 #[path = "query/graph_stage.rs"]

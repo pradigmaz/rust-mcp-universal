@@ -34,6 +34,8 @@ mod preview;
 mod query;
 #[path = "engine/readiness.rs"]
 mod readiness;
+#[path = "engine/readiness_scope.rs"]
+mod readiness_scope;
 #[path = "engine/schema.rs"]
 mod schema;
 #[path = "engine/storage.rs"]
