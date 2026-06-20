@@ -212,17 +212,7 @@ fn is_import_like_line(language: &str, trimmed: &str) -> bool {
 }
 
 fn classify_file_kind(rel_path: &str) -> FileKind {
-    let rel_path_lower = rel_path.to_ascii_lowercase();
-    if rel_path_lower.starts_with("tests/")
-        || rel_path_lower.contains("/tests/")
-        || rel_path_lower.starts_with("benches/")
-        || rel_path_lower.contains("/benches/")
-        || rel_path_lower.starts_with("examples/")
-        || rel_path_lower.contains("/examples/")
-        || rel_path_lower.contains(".test.")
-        || rel_path_lower.contains(".spec.")
-        || rel_path_lower.contains("_test.")
-    {
+    if is_test_path(rel_path) {
         return FileKind::Test;
     }
 
@@ -242,4 +232,28 @@ fn classify_file_kind(rel_path: &str) -> FileKind {
     }
 
     FileKind::Default
+}
+
+pub(crate) fn is_test_path(rel_path: &str) -> bool {
+    let rel_path_lower = rel_path.to_ascii_lowercase();
+    rel_path_lower.starts_with("tests/")
+        || rel_path_lower.contains("/tests/")
+        || rel_path_lower.starts_with("benches/")
+        || rel_path_lower.contains("/benches/")
+        || rel_path_lower.starts_with("examples/")
+        || rel_path_lower.contains("/examples/")
+        || rel_path_lower.contains(".test.")
+        || rel_path_lower.contains(".spec.")
+        || rel_path_lower.contains("_test.")
+        || rel_path_lower.contains("_tests.")
+        || rel_path_lower.split('/').any(is_test_path_segment)
+}
+
+fn is_test_path_segment(segment: &str) -> bool {
+    let stem = segment.split('.').next().unwrap_or(segment);
+    matches!(stem, "test" | "tests" | "bench" | "benches")
+        || segment.starts_with("test_")
+        || segment.starts_with("tests_")
+        || stem.ends_with("_test")
+        || stem.ends_with("_tests")
 }

@@ -1,5 +1,6 @@
 use anyhow::Result;
 
+use super::super::metrics::FileKind;
 use super::{
     QualityRule, RuleContext, explicit_violation, is_thin_facade, metric, threshold_violation,
 };
@@ -27,6 +28,9 @@ impl QualityRule for FanInRule {
     }
 
     fn metric(&self, ctx: &RuleContext<'_>) -> Option<crate::quality::QualityMetricEntry> {
+        if is_test_file(ctx) {
+            return None;
+        }
         ctx.facts
             .structural
             .fan_in_count
@@ -34,6 +38,9 @@ impl QualityRule for FanInRule {
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
+        if is_test_file(ctx) {
+            return Ok(None);
+        }
         Ok(ctx.facts.structural.fan_in_count.and_then(|actual| {
             threshold_violation(
                 ctx,
@@ -53,6 +60,9 @@ impl QualityRule for FanOutRule {
     }
 
     fn metric(&self, ctx: &RuleContext<'_>) -> Option<crate::quality::QualityMetricEntry> {
+        if is_test_file(ctx) {
+            return None;
+        }
         ctx.facts
             .structural
             .fan_out_count
@@ -60,6 +70,9 @@ impl QualityRule for FanOutRule {
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
+        if is_test_file(ctx) {
+            return Ok(None);
+        }
         Ok(ctx.facts.structural.fan_out_count.and_then(|actual| {
             threshold_violation(
                 ctx,
@@ -83,6 +96,9 @@ impl QualityRule for CycleMemberRule {
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
+        if is_test_file(ctx) {
+            return Ok(None);
+        }
         if is_thin_facade(ctx) {
             return Ok(None);
         }
@@ -110,6 +126,9 @@ impl QualityRule for HubModuleRule {
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
+        if is_test_file(ctx) {
+            return Ok(None);
+        }
         if is_thin_facade(ctx) {
             return Ok(None);
         }
@@ -143,6 +162,9 @@ impl QualityRule for OrphanModuleRule {
     }
 
     fn evaluate(&self, ctx: &RuleContext<'_>) -> Result<Option<QualityViolationEntry>> {
+        if is_test_file(ctx) {
+            return Ok(None);
+        }
         Ok(ctx.facts.structural.orphan_module.then(|| {
             explicit_violation(
                 ctx,
@@ -155,4 +177,8 @@ impl QualityRule for OrphanModuleRule {
             )
         }))
     }
+}
+
+fn is_test_file(ctx: &RuleContext<'_>) -> bool {
+    ctx.file_kind == FileKind::Test
 }

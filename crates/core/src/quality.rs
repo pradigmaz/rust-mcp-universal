@@ -242,7 +242,7 @@ pub(crate) use evaluate::{
     build_indexed_quality_facts, build_oversize_quality_facts, evaluate_quality,
 };
 pub(crate) use git_risk::load_git_risk_facts;
-pub(crate) use metrics::quality_metrics_hash;
+pub(crate) use metrics::{is_test_path, quality_metrics_hash};
 pub(crate) use policy::{
     EffectiveQualityPolicy, GitRiskPolicy, QualityPolicy, QualityThresholds, StructuralPolicy,
     TestRiskPolicy, default_quality_policy, load_quality_policy, load_quality_policy_digest,

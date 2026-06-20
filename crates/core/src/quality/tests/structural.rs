@@ -91,6 +91,62 @@ fn structural_rules_emit_metrics_and_violations() {
 }
 
 #[test]
+fn test_files_do_not_emit_structural_metrics_or_violations() {
+    for path in [
+        "src/domain/tests/flow_test.rs",
+        "src/engine/tests.rs",
+        "src/engine/schema_tests.rs",
+        "src/rpc_tools_tests/tools/indexing.rs",
+    ] {
+        let mut facts = build_indexed_quality_facts(
+            path,
+            "rust",
+            128,
+            Some(1),
+            "#[test]\nfn flow() { assert!(true); }\n",
+        );
+        facts.structural = StructuralFacts {
+            fan_in_count: Some(25),
+            fan_out_count: Some(24),
+            cycle_member: true,
+            orphan_module: true,
+        };
+
+        let evaluation = evaluate_quality(
+            &facts,
+            &IndexedQualityMetrics::default(),
+            &default_quality_policy(),
+        );
+
+        for rule_id in [
+            "max_fan_in_per_file",
+            "max_fan_out_per_file",
+            "hub_module",
+            "module_cycle_member",
+            "orphan_module",
+        ] {
+            assert!(
+                !evaluation
+                    .snapshot
+                    .violations
+                    .iter()
+                    .any(|violation| violation.rule_id == rule_id),
+                "{rule_id} should be suppressed for test file {path}"
+            );
+        }
+        assert!(
+            !evaluation
+                .snapshot
+                .metrics
+                .iter()
+                .any(|metric| metric.metric_id == "fan_in_count"
+                    || metric.metric_id == "fan_out_count"),
+            "structural metrics should be suppressed for test file {path}"
+        );
+    }
+}
+
+#[test]
 fn orphan_module_violation_is_policy_derived_and_boolean() {
     let mut facts = build_indexed_quality_facts(
         "src/domain/isolated.ts",

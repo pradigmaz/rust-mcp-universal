@@ -7,6 +7,7 @@ use crate::index_scope::IndexScope;
 use crate::model::IndexingOptions;
 use crate::quality::{
     LayeringFacts, QualityPolicy, StructuralFacts, StructuralPolicy, StructuralUnmatchedBehavior,
+    is_test_path,
 };
 
 const ORPHAN_ENTRYPOINTS: &[&str] = &["main", "lib", "mod", "index", "__init__"];
@@ -15,11 +16,19 @@ pub(super) fn load_graph_structural_facts(
     conn: &rusqlite::Connection,
     active_paths: &HashSet<String>,
 ) -> Result<HashMap<String, StructuralFacts>> {
-    let (outgoing, incoming) = load_direct_neighbors(conn, active_paths)?;
+    let structural_paths = active_paths
+        .iter()
+        .filter(|path| !is_test_path(path))
+        .cloned()
+        .collect::<HashSet<_>>();
+    let (outgoing, incoming) = load_direct_neighbors(conn, &structural_paths)?;
     let mut facts = active_paths
         .iter()
         .cloned()
         .map(|path| {
+            if !structural_paths.contains(&path) {
+                return (path, StructuralFacts::default());
+            }
             let fan_in = incoming
                 .get(&path)
                 .map(|neighbors| i64::try_from(neighbors.len()).unwrap_or(i64::MAX))
